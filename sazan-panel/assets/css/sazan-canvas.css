@@ -1,0 +1,373 @@
+/* ==========================================================================
+   سازان پنل — بوم «شناسایی روش‌های طراحی خدمت»
+   سه زنجیره قبل/حین/بعد با مثلث قیفی پس‌زمینه، هماهنگ با تم شیشه‌ای پنل.
+   ========================================================================== */
+
+.szp-canvas {
+	position: relative;
+	border-radius: var(--szp-radius);
+	background: var(--szp-glass);
+	-webkit-backdrop-filter: var(--szp-blur);
+	backdrop-filter: var(--szp-blur);
+	border: 1px solid var(--szp-border);
+	box-shadow: var(--szp-shadow);
+	overflow: hidden;
+}
+
+/* سربرگ -------------------------------------------------------------------- */
+.szp-canvas-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 18px 22px;
+	border-bottom: 1px solid var(--szp-border);
+	background: var(--szp-grad-soft);
+}
+.szp-canvas-title {
+	margin: 0;
+	font-size: 19px;
+	font-weight: 800;
+	color: #fff;
+}
+.szp-canvas-state {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--szp-muted);
+	white-space: nowrap;
+	transition: color .2s, opacity .3s;
+	opacity: 0;
+}
+.szp-canvas-state.is-show { opacity: 1; }
+.szp-canvas-state.is-ok { color: var(--szp-primary); }
+.szp-canvas-state.is-err { color: #ff6b6b; }
+
+/* بدنه + مثلث قیفی پس‌زمینه ------------------------------------------------- */
+.szp-canvas-body {
+	position: relative;
+	padding: 8px;
+}
+/* مثلث: نوک باریک بالا (بعد) → پایه پهن پایین (قبل) مطابق طرح اصلی.
+   فقط یک هاله‌ی نرم بدون خطوط روشن تیز تا از پشت کارت‌ها «ضربه» نزند. */
+.szp-canvas-funnel {
+	position: absolute;
+	top: 26px;
+	bottom: 18px;
+	left: 50%;
+	width: 68%;
+	transform: translateX(-50%);
+	pointer-events: none;
+	z-index: 0;
+	opacity: 1;
+	background: linear-gradient(to bottom, rgba(0,182,241,.07), rgba(247,148,29,.14));
+	-webkit-clip-path: polygon(50% 0, 100% 100%, 0 100%);
+	clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+/* لایت‌مود: روی پس‌زمینهٔ روشن باید کمی غلیظ‌تر باشد تا دیده شود. */
+.szp[data-szp-theme="light"] .szp-canvas-funnel {
+	background: linear-gradient(to bottom, rgba(0,150,210,.12), rgba(247,148,29,.18));
+}
+
+/* یک زنجیره (ردیف) -------------------------------------------------------- */
+.szp-cv-row {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	grid-template-columns: 1fr 240px;
+	gap: 14px;
+	align-items: stretch;
+	padding: 16px;
+	margin: 8px;
+	border-radius: 16px;
+	background: var(--szp-glass);
+	border: 1px solid var(--szp-border);
+}
+.szp-cv-row + .szp-cv-row { margin-top: 12px; }
+
+/* ستون راهنمای راست (تگ + عنوان زنجیره + پرسش + آیکن) --------------------- */
+.szp-cv-side {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 16px;
+	border-radius: 14px;
+	background: var(--szp-grad-soft);
+	border: 1px solid var(--szp-border);
+	text-align: right;
+}
+.szp-cv-tag {
+	position: absolute;
+	top: 12px;
+	left: 14px;
+	font-size: 18px;
+	font-weight: 900;
+	color: var(--szp-primary);
+	opacity: .55;
+	letter-spacing: -.5px;
+}
+.szp-cv-name {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 800;
+	color: #fff;
+	line-height: 1.7;
+}
+.szp-cv-desc {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.9;
+	color: var(--szp-muted);
+}
+.szp-cv-icon {
+	margin-top: auto;
+	width: 40px;
+	height: 40px;
+	color: var(--szp-secondary);
+	opacity: .85;
+}
+.szp-cv-icon svg { width: 100%; height: 100%; display: block; }
+
+/* ستون موارد (چپ) --------------------------------------------------------- */
+.szp-cv-main {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-height: 56px;
+}
+.szp-cv-items {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+.szp-cv-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 3px 6px 3px 10px;
+	border-radius: 9px;
+	background: var(--szp-glass-2);
+	border: 1px solid var(--szp-border);
+	transition: border-color .15s, box-shadow .15s;
+}
+.szp-cv-item:focus-within {
+	border-color: var(--szp-border-2);
+	box-shadow: var(--szp-glow);
+}
+/* درج نرم هنگام افزودن مورد تا «پرش» نداشته باشد. */
+@keyframes szpCvIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.szp-cv-item.szp-cv-new { animation: szpCvIn .16s ease; }
+
+.szp-cv-text {
+	flex: 1;
+	min-width: 0;
+	border: 0;
+	outline: 0;
+	resize: none;
+	overflow: hidden;
+	background: transparent;
+	color: var(--szp-text);
+	font: inherit;
+	font-size: 13.5px;
+	line-height: 1.55;
+	padding: 4px 0;
+}
+.szp-cv-text::placeholder { color: var(--szp-muted); opacity: .7; }
+.szp-cv-del {
+	flex: 0 0 20px;
+	width: 20px;
+	height: 20px;
+	min-width: 20px;
+	padding: 0;
+	margin: 0;
+	-webkit-appearance: none;
+	appearance: none;
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	background: rgba(255,107,107,.12);
+	color: #ff6b6b;
+	font-size: 14px;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background .15s, transform .15s;
+}
+.szp-cv-del:hover { background: rgba(255,107,107,.28); transform: scale(1.1); }
+
+.szp-cv-add {
+	align-self: flex-start;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 14px;
+	border: 1px dashed var(--szp-border-2);
+	border-radius: 10px;
+	cursor: pointer;
+	background: transparent;
+	color: var(--szp-primary);
+	font: inherit;
+	font-weight: 700;
+	font-size: 13px;
+	transition: background .15s, box-shadow .15s;
+}
+.szp-cv-add:hover { background: var(--szp-grad-soft); box-shadow: var(--szp-glow); }
+
+.szp-canvas-note {
+	margin: 4px 12px 16px;
+	padding: 10px 14px;
+	border-radius: 12px;
+	background: var(--szp-grad-soft);
+	border: 1px solid var(--szp-border);
+	color: var(--szp-muted);
+	font-size: 13px;
+	text-align: center;
+}
+
+/* حالت روشن --------------------------------------------------------------- */
+.szp[data-szp-theme="light"] .szp-canvas-title,
+.szp[data-szp-theme="light"] .szp-cv-name { color: #0e1b26; }
+.szp[data-szp-theme="light"] .szp-cv-text { color: #16242f; }
+
+/* موبایل ------------------------------------------------------------------ */
+@media (max-width: 720px) {
+	.szp-cv-row { grid-template-columns: 1fr; }
+	.szp-cv-side { order: -1; }
+	.szp-canvas-funnel { display: none; }
+}
+
+/* ==========================================================================
+   گالری شرکت‌کنندگان (کاروسل/شبکه)
+   ========================================================================== */
+.szp-cvg-title {
+	font-size: 20px;
+	font-weight: 800;
+	margin: 0 0 16px;
+	background: var(--szp-grad);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.szp-cvg-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 14px;
+}
+
+/* کارت یک شرکت‌کننده ------------------------------------------------------- */
+.szp-cvg-card {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+	border-radius: var(--szp-radius);
+	background: var(--szp-glass);
+	-webkit-backdrop-filter: var(--szp-blur);
+	backdrop-filter: var(--szp-blur);
+	border: 1px solid var(--szp-border);
+	box-shadow: var(--szp-shadow);
+	transition: transform .25s, border-color .25s, box-shadow .25s;
+}
+.szp-cvg-card:hover {
+	transform: translateY(-3px);
+	border-color: var(--szp-border-2);
+	box-shadow: var(--szp-glow);
+}
+
+.szp-cvg-head { display: flex; align-items: center; gap: 10px; }
+.szp-cvg-avatar img {
+	width: 44px; height: 44px;
+	border-radius: 50%;
+	border: 2px solid var(--szp-border-2);
+	display: block;
+}
+.szp-cvg-id { display: flex; flex-direction: column; min-width: 0; }
+.szp-cvg-name { font-weight: 800; color: #fff; font-size: 15px; }
+.szp-cvg-count { font-size: 12px; color: var(--szp-primary); font-weight: 700; }
+
+.szp-cvg-body { display: flex; flex-direction: column; gap: 6px; }
+
+/* آکاردون هر زنجیره (native details/summary، بدون JS) ---------------------- */
+.szp-cvg-sec {
+	border: 1px solid var(--szp-border);
+	border-radius: 10px;
+	background: var(--szp-glass-2);
+	overflow: hidden;
+}
+.szp-cvg-sum {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	cursor: pointer;
+	list-style: none;
+	user-select: none;
+}
+.szp-cvg-sum::-webkit-details-marker { display: none; }
+.szp-cvg-tag {
+	font-size: 12px;
+	font-weight: 800;
+	color: #fff;
+	padding: 1px 10px;
+	border-radius: 8px;
+	background: var(--szp-primary);
+}
+.szp-cvg-tag-after  { background: #f7941d; }
+.szp-cvg-tag-during { background: #00b6f1; }
+.szp-cvg-tag-before { background: #7a8cff; }
+.szp-cvg-secnt { font-size: 12px; color: var(--szp-muted); font-weight: 700; }
+.szp-cvg-chev { margin-right: auto; color: var(--szp-muted); transition: transform .2s; font-size: 12px; }
+.szp-cvg-sec[open] .szp-cvg-chev { transform: rotate(180deg); }
+
+.szp-cvg-items {
+	margin: 0;
+	padding: 0 10px 8px;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.szp-cvg-items li {
+	padding: 4px 10px;
+	font-size: 13px;
+	line-height: 1.7;
+	color: var(--szp-text);
+	background: var(--szp-glass);
+	border: 1px solid var(--szp-border);
+	border-radius: 7px;
+}
+
+.szp-cvg-foot {
+	margin-top: auto;
+	font-size: 12px;
+	color: var(--szp-muted);
+	border-top: 1px solid var(--szp-border);
+	padding-top: 8px;
+}
+
+/* کاروسل: کارت‌های با عرض ثابت ------------------------------------------- */
+.szp-cvg-carousel .szp-car-track { display: flex; gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding: 4px; scrollbar-width: thin; }
+.szp-cvg-carousel .szp-cvg-card { flex: 0 0 280px; width: 280px; }
+/* RTL: «قبلی» سمت چپ (عقب) و «بعدی» سمت راست (جلو) تا برعکس نباشد. */
+.szp-cvg-carousel .szp-car-prev { left: -8px; right: auto; }
+.szp-cvg-carousel .szp-car-next { right: -8px; left: auto; }
+
+/* حالت روشن --------------------------------------------------------------- */
+.szp[data-szp-theme="light"] .szp-cvg-name { color: #0e1b26; }
+.szp[data-szp-theme="light"] .szp-cvg-items li { color: #16242f; }
+.szp[data-szp-theme="light"] .szp-cvg-items li { background: rgba(255,255,255,.95); }
+.szp[data-szp-theme="light"] .szp-cvg-secnt { color: #5d6e7d; }
+.szp[data-szp-theme="light"] .szp-canvas-title,
+.szp[data-szp-theme="light"] .szp-cv-name { color: #0e1b26; }
+.szp[data-szp-theme="light"] .szp-cv-text { color: #16242f; }
+/* فلش دکمه‌های کاروسل در لایت‌مود سفید بماند (روی گرادیان). */
+.szp[data-szp-theme="light"] .szp-cvg-carousel .szp-car-btn { color: #fff; }
+
+@media (max-width: 480px) {
+	.szp-cvg-grid { grid-template-columns: 1fr; }
+}
