@@ -22,6 +22,12 @@
 .szp-member-del:hover{background:#b32d2e;color:#fff}
 .szp-members-empty{color:#888;margin-top:8px}
 .szp-members-count{color:#0f9fb3;font-weight:600;font-size:13px}
+.szp-addnew{margin-top:10px}
+.szp-addnew-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.szp-addnew-form input[type=text]{flex:0 1 200px}
+.szp-bulk-new{margin-top:14px}
+.szp-bulk-new summary{cursor:pointer;font-weight:600;color:#0f9fb3}
+.szp-bulk-new textarea{margin-top:8px;direction:ltr;text-align:right}
 .szp-user-chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
 .szp-chip{background:#eef6f8;border:1px solid #cfe6ec;border-radius:16px;padding:3px 10px;font-size:12px;display:inline-flex;align-items:center}
 .szp-group-list{max-height:160px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:6px 10px}

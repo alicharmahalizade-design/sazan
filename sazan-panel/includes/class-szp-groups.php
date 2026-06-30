@@ -110,6 +110,81 @@ class SZP_Groups {
 		return '';
 	}
 
+	/** Find an existing user by mobile number (login or common phone meta keys). 0 if none. */
+	public static function find_user_by_mobile( $mobile ) {
+		$mobile = szp_normalize_mobile( $mobile );
+		if ( $mobile === '' ) {
+			return 0;
+		}
+		$u = get_user_by( 'login', $mobile );
+		if ( $u ) {
+			return (int) $u->ID;
+		}
+		foreach ( array( 'mobile', 'billing_phone', 'phone', 'digits_phone', 'user_mobile', 'mobile_number' ) as $key ) {
+			$ids = get_users( array( 'meta_key' => $key, 'meta_value' => $mobile, 'number' => 1, 'fields' => 'ID' ) );
+			if ( $ids ) {
+				return (int) $ids[0];
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * Find or create a WordPress user from a mobile number + name.
+	 * Returns array( 'id' => int, 'created' => bool ). id is 0 on failure.
+	 */
+	public static function create_user_from_phone( $mobile, $first = '', $last = '' ) {
+		$mobile = szp_normalize_mobile( $mobile );
+		$first  = sanitize_text_field( $first );
+		$last   = sanitize_text_field( $last );
+		if ( strlen( $mobile ) < 7 ) {
+			return array( 'id' => 0, 'created' => false );
+		}
+
+		$existing = self::find_user_by_mobile( $mobile );
+		if ( $existing ) {
+			// Backfill name/mobile meta if it was empty.
+			if ( $first !== '' && get_user_meta( $existing, 'first_name', true ) === '' ) {
+				update_user_meta( $existing, 'first_name', $first );
+			}
+			if ( $last !== '' && get_user_meta( $existing, 'last_name', true ) === '' ) {
+				update_user_meta( $existing, 'last_name', $last );
+			}
+			if ( get_user_meta( $existing, 'mobile', true ) === '' ) {
+				update_user_meta( $existing, 'mobile', $mobile );
+			}
+			return array( 'id' => $existing, 'created' => false );
+		}
+
+		// Unique login derived from the mobile number.
+		$login = $mobile;
+		$i     = 1;
+		while ( username_exists( $login ) ) {
+			$login = $mobile . '_' . ( ++$i );
+		}
+		// Synthetic but unique email (phone registrations have no real email).
+		$email = $mobile . '@no-email.local';
+		while ( email_exists( $email ) ) {
+			$email = $mobile . '-' . wp_generate_password( 4, false ) . '@no-email.local';
+		}
+		$name = trim( $first . ' ' . $last );
+		$uid  = wp_insert_user( array(
+			'user_login'   => $login,
+			'user_pass'    => wp_generate_password( 16 ),
+			'user_email'   => $email,
+			'display_name' => $name !== '' ? $name : $mobile,
+			'first_name'   => $first,
+			'last_name'    => $last,
+			'role'         => get_option( 'default_role', 'subscriber' ),
+		) );
+		if ( is_wp_error( $uid ) ) {
+			return array( 'id' => 0, 'created' => false );
+		}
+		update_user_meta( $uid, 'mobile', $mobile );
+		update_user_meta( $uid, 'billing_phone', $mobile );
+		return array( 'id' => (int) $uid, 'created' => true );
+	}
+
 	/** Display row for a member: id, first name, last name, mobile, email, full name. */
 	public static function user_info( $user_id ) {
 		$u = get_userdata( $user_id );

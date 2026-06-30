@@ -64,6 +64,22 @@ function szp_fa_digits( $str ) {
 	) );
 }
 
+/** Convert Persian/Arabic digits in a string to Latin digits. */
+function szp_latin_digits( $str ) {
+	return strtr( (string) $str, array(
+		'۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
+		'۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
+		'٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
+		'٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
+	) );
+}
+
+/** Normalize a phone number to Latin digits only (drops spaces, dashes, etc.). */
+function szp_normalize_mobile( $raw ) {
+	$digits = preg_replace( '/\D+/', '', szp_latin_digits( (string) $raw ) );
+	return (string) $digits;
+}
+
 /** Gregorian -> Jalali. Returns array( jy, jm, jd ). Self-contained, no external dependency. */
 function szp_g2j( $gy, $gm, $gd ) {
 	$g_d_m = array( 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 );

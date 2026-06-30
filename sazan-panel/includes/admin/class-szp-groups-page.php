@@ -8,6 +8,7 @@ class SZP_Groups_Page {
 		add_action( 'admin_post_szp_save_group', array( __CLASS__, 'handle_save' ) );
 		add_action( 'admin_post_szp_delete_group', array( __CLASS__, 'handle_delete' ) );
 		add_action( 'admin_post_szp_group_add_all', array( __CLASS__, 'handle_add_all' ) );
+		add_action( 'admin_post_szp_group_add_people', array( __CLASS__, 'handle_add_people' ) );
 	}
 
 	public static function menu() {
@@ -18,11 +19,24 @@ class SZP_Groups_Page {
 		$edit = isset( $_GET['edit'] ) ? absint( $_GET['edit'] ) : 0;
 		echo '<div class="wrap szp-groups-wrap"><h1>گروه‌ها</h1>';
 		if ( isset( $_GET['msg'] ) ) {
-			$texts = array(
-				'added_all' => 'همه کاربران به گروه اضافه شدند.',
-			);
 			$key = sanitize_key( wp_unslash( $_GET['msg'] ) );
-			$txt = isset( $texts[ $key ] ) ? $texts[ $key ] : 'با موفقیت ذخیره شد.';
+			if ( 'imported' === $key ) {
+				$c   = isset( $_GET['c'] ) ? absint( $_GET['c'] ) : 0;
+				$e   = isset( $_GET['e'] ) ? absint( $_GET['e'] ) : 0;
+				$f   = isset( $_GET['f'] ) ? absint( $_GET['f'] ) : 0;
+				$txt = sprintf(
+					'%s کاربر جدید ساخته و افزوده شد، %s کاربر موجود به گروه اضافه شد.',
+					szp_fa_digits( $c ), szp_fa_digits( $e )
+				);
+				if ( $f ) {
+					$txt .= sprintf( ' %s مورد نامعتبر/ناموفق بود.', szp_fa_digits( $f ) );
+				}
+			} else {
+				$texts = array(
+					'added_all' => 'همه کاربران به گروه اضافه شدند.',
+				);
+				$txt = isset( $texts[ $key ] ) ? $texts[ $key ] : 'با موفقیت ذخیره شد.';
+			}
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $txt ) . '</p></div>';
 		}
 		if ( $edit ) {
@@ -137,6 +151,34 @@ class SZP_Groups_Page {
 				<a class="button" href="<?php echo esc_url( add_query_arg( 'page', 'szp-groups', admin_url( 'admin.php' ) ) ); ?>">بازگشت</a>
 			</p>
 		</form>
+
+		<hr>
+		<div class="szp-addnew">
+			<h3>افزودن کاربر جدید (ثبت‌نام با موبایل)</h3>
+			<p class="description">اگر فرد هنوز در سایت ثبت‌نام نکرده است، نام و شماره موبایلش را وارد کنید تا به‌عنوان کاربر ساخته و مستقیم به این گروه اضافه شود.</p>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="szp-addnew-form">
+				<?php wp_nonce_field( 'szp_group_add_people' ); ?>
+				<input type="hidden" name="action" value="szp_group_add_people">
+				<input type="hidden" name="group_id" value="<?php echo (int) $id; ?>">
+				<input type="text" name="szp_first" placeholder="نام">
+				<input type="text" name="szp_last" placeholder="نام خانوادگی">
+				<input type="text" name="szp_mobile" placeholder="موبایل (مثلاً ۰۹۱۲۰۰۰۰۰۰۰)" required>
+				<button class="button button-primary">ثبت و افزودن به گروه</button>
+			</form>
+
+			<details class="szp-bulk-new">
+				<summary>افزودن گروهی چند نفر هم‌زمان</summary>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<?php wp_nonce_field( 'szp_group_add_people' ); ?>
+					<input type="hidden" name="action" value="szp_group_add_people">
+					<input type="hidden" name="group_id" value="<?php echo (int) $id; ?>">
+					<p class="description">هر خط = یک نفر. فرمت‌های مجاز: «موبایل، نام، نام خانوادگی» یا «نام نام‌خانوادگی موبایل». جداکننده می‌تواند ویرگول، فاصله یا تب باشد. کاربرانِ موجود (با همان موبایل) دوباره ساخته نمی‌شوند و فقط به گروه اضافه می‌شوند.</p>
+					<textarea name="szp_rows" rows="7" class="large-text code" placeholder="۰۹۱۲۰۰۰۰۰۰۰، علی، رضایی&#10;۰۹۱۲۰۰۰۰۰۰۱، مریم، محمدی&#10;علی کریمی ۰۹۳۰۱۱۱۱۱۱۱"></textarea>
+					<p><button class="button button-primary">ثبت گروهی و افزودن به گروه</button></p>
+				</form>
+			</details>
+		</div>
 		<?php
 	}
 
@@ -177,5 +219,81 @@ class SZP_Groups_Page {
 		}
 		wp_safe_redirect( add_query_arg( array( 'page' => 'szp-groups', 'edit' => $id, 'msg' => 'added_all' ), admin_url( 'admin.php' ) ) );
 		exit;
+	}
+
+	/** Create users from name + mobile (single field set or a bulk textarea) and add them to the group. */
+	public static function handle_add_people() {
+		if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'szp_group_add_people' ) ) {
+			wp_die( 'دسترسی غیرمجاز' );
+		}
+		$id      = absint( $_POST['group_id'] ?? 0 );
+		$people  = array();
+
+		// Single entry.
+		$mobile = isset( $_POST['szp_mobile'] ) ? sanitize_text_field( wp_unslash( $_POST['szp_mobile'] ) ) : '';
+		if ( trim( $mobile ) !== '' ) {
+			$people[] = array(
+				szp_normalize_mobile( $mobile ),
+				sanitize_text_field( wp_unslash( $_POST['szp_first'] ?? '' ) ),
+				sanitize_text_field( wp_unslash( $_POST['szp_last'] ?? '' ) ),
+			);
+		}
+
+		// Bulk textarea: one person per line.
+		$rows = isset( $_POST['szp_rows'] ) ? (string) wp_unslash( $_POST['szp_rows'] ) : '';
+		if ( trim( $rows ) !== '' ) {
+			$lines = preg_split( '/\r\n|\r|\n/', $rows );
+			$lines = array_slice( $lines, 0, 2000 ); // safety cap
+			foreach ( $lines as $line ) {
+				$parsed = self::parse_person_line( $line );
+				if ( $parsed ) {
+					$people[] = $parsed;
+				}
+			}
+		}
+
+		$created = $existing = $failed = 0;
+		$ids     = array();
+		foreach ( $people as $p ) {
+			$res = SZP_Groups::create_user_from_phone( $p[0], $p[1], $p[2] );
+			if ( $res['id'] ) {
+				$ids[] = $res['id'];
+				$res['created'] ? $created++ : $existing++;
+			} else {
+				$failed++;
+			}
+		}
+		if ( $id && $ids ) {
+			SZP_Groups::add_members( $id, $ids );
+		}
+
+		wp_safe_redirect( add_query_arg( array(
+			'page' => 'szp-groups', 'edit' => $id, 'msg' => 'imported',
+			'c'    => $created, 'e' => $existing, 'f' => $failed,
+		), admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
+	/** Parse a single bulk line into array( mobile, first, last ). Returns null if no phone found. */
+	protected static function parse_person_line( $line ) {
+		$line = trim( szp_latin_digits( (string) $line ) );
+		if ( $line === '' ) {
+			return null;
+		}
+		// Extract the phone (a digit run of length >= 7, allowing spaces/dashes inside).
+		if ( ! preg_match( '/\+?\d[\d\s\-]{5,}\d/', $line, $m ) ) {
+			return null;
+		}
+		$mobile = szp_normalize_mobile( $m[0] );
+		if ( strlen( $mobile ) < 7 ) {
+			return null;
+		}
+		// Whatever is left (after removing the phone + separators) is the name.
+		$name  = trim( str_replace( $m[0], ' ', $line ) );
+		$name  = trim( preg_replace( '/[,،;]+/u', ' ', $name ) );
+		$parts = $name !== '' ? preg_split( '/\s+/u', $name ) : array();
+		$first = isset( $parts[0] ) ? $parts[0] : '';
+		$last  = count( $parts ) > 1 ? implode( ' ', array_slice( $parts, 1 ) ) : '';
+		return array( $mobile, $first, $last );
 	}
 }
