@@ -13,6 +13,7 @@ class SZP_Install {
 	}
 
 	public static function deactivate() {
+		wp_clear_scheduled_hook( 'szp_eval_daily' );
 		flush_rewrite_rules();
 	}
 

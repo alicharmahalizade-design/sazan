@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان پنل (Sazan Panel)
  * Description: نمایش دوره‌ها و جلسات اختصاصی هر کاربر یا گروه در پنل کاربری از طریق شورت‌کد [sazan_panel].
- * Version: 1.15.0
+ * Version: 1.16.0
  * Author: Sazan
  * Text Domain: sazan-panel
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.15.0' );
+define( 'SZP_VERSION', '1.16.0' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -31,6 +31,7 @@ require_once SZP_DIR . 'includes/class-szp-chat.php';
 require_once SZP_DIR . 'includes/class-szp-ai.php';
 require_once SZP_DIR . 'includes/class-szp-canvas.php';
 require_once SZP_DIR . 'includes/class-szp-eval.php';
+require_once SZP_DIR . 'includes/class-szp-sms.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-frontend.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-front-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-chat-ajax.php';
@@ -48,6 +49,7 @@ if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-coach-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-canvas-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-eval-admin.php';
+	require_once SZP_DIR . 'includes/admin/class-szp-eval-settings.php';
 }
 
 register_activation_hook( __FILE__, array( 'SZP_Install', 'activate' ) );
@@ -66,6 +68,14 @@ function szp_init() {
 	SZP_Canvas_Ajax::init();
 	SZP_Eval_Ajax::init();
 
+	// یادآور پیامکی روزانه (ارزیابی).
+	add_action( 'szp_eval_daily', array( 'SZP_SMS', 'run_daily_reminders' ) );
+	if ( ! wp_next_scheduled( 'szp_eval_daily' ) ) {
+		// اجرای روزانه؛ ساعت ۹ صبح به‌وقت سایت.
+		$first = strtotime( 'tomorrow 09:00' );
+		wp_schedule_event( $first ? $first : ( time() + HOUR_IN_SECONDS ), 'daily', 'szp_eval_daily' );
+	}
+
 	// Elementor integration (loaded lazily, only when Elementor is active).
 	add_action( 'elementor/elements/categories_registered', 'szp_elementor_category' );
 	add_action( 'elementor/widgets/register', 'szp_elementor_widgets' );
@@ -81,6 +91,7 @@ function szp_init() {
 		SZP_Coach_Admin::init();
 		SZP_Canvas_Admin::init();
 		SZP_Eval_Admin::init();
+		SZP_Eval_Settings::init();
 	}
 }
 

@@ -12,6 +12,7 @@ class SZP_Frontend {
 		add_shortcode( 'sazan_service_canvas', array( __CLASS__, 'sc_canvas' ) );
 		add_shortcode( 'sazan_canvas_gallery', array( __CLASS__, 'sc_canvas_gallery' ) );
 		add_shortcode( 'sazan_my_eval', array( __CLASS__, 'sc_eval' ) );
+		add_shortcode( 'sazan_eval_board', array( __CLASS__, 'sc_eval_board' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
 
@@ -62,6 +63,14 @@ class SZP_Frontend {
 		wp_enqueue_style( 'szp-eval' );
 		wp_enqueue_script( 'szp-eval' );
 		return SZP_Eval::render( $a );
+	}
+
+	/** تابلوی ارزیابی همه‌ی اشخاص (شبکه‌ای) — مخصوص مدیر/مدرّب. */
+	public static function sc_eval_board( $atts ) {
+		$a = shortcode_atts( array( 'title' => '', 'currency' => '', 'group' => '0' ), $atts, 'sazan_eval_board' );
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_style( 'szp-eval' );
+		return SZP_Eval::board( $a );
 	}
 
 	/* ---------------- service canvas shortcode ---------------- */

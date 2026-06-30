@@ -49,6 +49,7 @@
 		var btn = form.querySelector('.szp-ev-submit');
 		var preview = form.querySelector('.szp-ev-preview');
 		var msg = form.querySelector('.szp-ev-msg');
+		var noteEl = form.querySelector('.szp-ev-note');
 
 		function renderPreview() {
 			var val = toNumber(input.value);
@@ -79,6 +80,7 @@
 			showMsg('در حال ثبت…', '');
 			var d = new FormData();
 			d.append('amount', String(val));
+			if (mode === 'result' && noteEl) d.append('note', noteEl.value);
 			ajax(mode === 'result' ? 'szp_eval_result' : 'szp_eval_target', d, function (res) {
 				if (res && res.success) {
 					showMsg((res.data && res.data.msg) || 'ثبت شد ✓', 'ok');

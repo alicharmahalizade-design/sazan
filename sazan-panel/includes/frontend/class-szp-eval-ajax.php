@@ -35,7 +35,8 @@ class SZP_Eval_Ajax {
 			wp_send_json_error( array( 'msg' => 'ثبت نتیجه فقط در روز ' . SZP_Eval::day_name( SZP_Eval::DAY_RESULT ) . ' امکان‌پذیر است.' ) );
 		}
 		$amount = isset( $_POST['amount'] ) ? szp_parse_amount( wp_unslash( $_POST['amount'] ) ) : 0;
-		$res    = SZP_Eval::save_result( get_current_user_id(), $amount );
+		$note   = isset( $_POST['note'] ) ? (string) wp_unslash( $_POST['note'] ) : '';
+		$res    = SZP_Eval::save_result( get_current_user_id(), $amount, $note );
 		if ( empty( $res['ok'] ) ) {
 			wp_send_json_error( array( 'msg' => 'هفته‌ی بازی برای ثبت نتیجه وجود ندارد. ابتدا تارگت را ثبت کنید.' ) );
 		}

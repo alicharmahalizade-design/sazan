@@ -171,6 +171,20 @@
 		szpRefreshMembers(box);
 	});
 
+	// ---- ارزیابی: ارسال پیامک تست ----
+	$(document).on('click', '.szp-ev-testsms', function () {
+		var btn = $(this);
+		var out = $('.szp-ev-testmsg');
+		var to = $('#szp-ev-testnum').val();
+		out.css('color', '#555').text('در حال ارسال…');
+		btn.prop('disabled', true);
+		$.post(SZP_ADMIN.ajax, { action: 'szp_eval_test_sms', nonce: btn.data('nonce') || SZP_ADMIN.nonce, to: to }, function (r) {
+			btn.prop('disabled', false);
+			if (r && r.success) { out.css('color', '#16a34a').text((r.data && r.data.msg) || 'ارسال شد'); }
+			else { out.css('color', '#dc2626').text((r && r.data && r.data.msg) || 'خطا در ارسال'); }
+		}).fail(function () { btn.prop('disabled', false); out.css('color', '#dc2626').text('خطای ارتباط'); });
+	});
+
 	/* ============ Jalali date + time picker ============ */
 	function faDigits(s) {
 		return String(s).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; });
