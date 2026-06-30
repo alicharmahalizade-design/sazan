@@ -80,6 +80,22 @@ function szp_normalize_mobile( $raw ) {
 	return (string) $digits;
 }
 
+/** Parse a financial amount entered by the user (Persian/Latin digits, separators) into a float. */
+function szp_parse_amount( $raw ) {
+	$s = preg_replace( '/[^\d.]/', '', szp_latin_digits( (string) $raw ) );
+	if ( $s === '' || $s === '.' ) {
+		return 0.0;
+	}
+	return (float) $s;
+}
+
+/** Format a number with thousands separators and Persian digits, with an optional currency label. */
+function szp_money( $n, $currency = '' ) {
+	$n   = (float) $n;
+	$str = szp_fa_digits( number_format( $n, 0, '.', '،' ) );
+	return $currency !== '' ? $str . ' ' . $currency : $str;
+}
+
 /** Gregorian -> Jalali. Returns array( jy, jm, jd ). Self-contained, no external dependency. */
 function szp_g2j( $gy, $gm, $gd ) {
 	$g_d_m = array( 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 );

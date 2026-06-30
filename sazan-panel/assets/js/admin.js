@@ -122,6 +122,13 @@
 		var text = $(this).attr('data-text');
 		var clear = function () { box.find('.szp-user-results').empty(); box.find('.szp-user-q').val(''); };
 
+		// --- "go" mode: navigate to a per-user admin page ---
+		var go = box.attr('data-go');
+		if (go) {
+			window.location = go + (go.indexOf('?') === -1 ? '?' : '&') + 'user=' + encodeURIComponent(id);
+			return;
+		}
+
 		// --- table mode (group members with full info) ---
 		var body = box.find('.szp-members-body');
 		if (body.length) {

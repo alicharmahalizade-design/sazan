@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان پنل (Sazan Panel)
  * Description: نمایش دوره‌ها و جلسات اختصاصی هر کاربر یا گروه در پنل کاربری از طریق شورت‌کد [sazan_panel].
- * Version: 1.14.0
+ * Version: 1.15.0
  * Author: Sazan
  * Text Domain: sazan-panel
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.14.0' );
+define( 'SZP_VERSION', '1.15.0' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -30,11 +30,13 @@ require_once SZP_DIR . 'includes/class-szp-coach-render.php';
 require_once SZP_DIR . 'includes/class-szp-chat.php';
 require_once SZP_DIR . 'includes/class-szp-ai.php';
 require_once SZP_DIR . 'includes/class-szp-canvas.php';
+require_once SZP_DIR . 'includes/class-szp-eval.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-frontend.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-front-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-chat-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-coach-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-canvas-ajax.php';
+require_once SZP_DIR . 'includes/frontend/class-szp-eval-ajax.php';
 
 if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-admin.php';
@@ -45,6 +47,7 @@ if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-reports.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-coach-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-canvas-admin.php';
+	require_once SZP_DIR . 'includes/admin/class-szp-eval-admin.php';
 }
 
 register_activation_hook( __FILE__, array( 'SZP_Install', 'activate' ) );
@@ -61,6 +64,7 @@ function szp_init() {
 	SZP_Chat_Ajax::init();
 	SZP_Coach_Ajax::init();
 	SZP_Canvas_Ajax::init();
+	SZP_Eval_Ajax::init();
 
 	// Elementor integration (loaded lazily, only when Elementor is active).
 	add_action( 'elementor/elements/categories_registered', 'szp_elementor_category' );
@@ -76,6 +80,7 @@ function szp_init() {
 		SZP_Reports::init();
 		SZP_Coach_Admin::init();
 		SZP_Canvas_Admin::init();
+		SZP_Eval_Admin::init();
 	}
 }
 

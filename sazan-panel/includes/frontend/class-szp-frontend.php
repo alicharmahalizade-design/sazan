@@ -11,6 +11,7 @@ class SZP_Frontend {
 		add_shortcode( 'sazan_coaching', array( __CLASS__, 'sc_coaching' ) );
 		add_shortcode( 'sazan_service_canvas', array( __CLASS__, 'sc_canvas' ) );
 		add_shortcode( 'sazan_canvas_gallery', array( __CLASS__, 'sc_canvas_gallery' ) );
+		add_shortcode( 'sazan_my_eval', array( __CLASS__, 'sc_eval' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
 
@@ -43,6 +44,24 @@ class SZP_Frontend {
 		$cvjs  = SZP_DIR . 'assets/js/sazan-canvas.js';
 		wp_register_style( 'szp-canvas', SZP_URL . 'assets/css/sazan-canvas.css', array( 'szp-front' ), file_exists( $cvcss ) ? filemtime( $cvcss ) : SZP_VERSION );
 		wp_register_script( 'szp-canvas', SZP_URL . 'assets/js/sazan-canvas.js', array( 'szp-front' ), file_exists( $cvjs ) ? filemtime( $cvjs ) : SZP_VERSION, true );
+
+		$evcss = SZP_DIR . 'assets/css/sazan-eval.css';
+		$evjs  = SZP_DIR . 'assets/js/sazan-eval.js';
+		wp_register_style( 'szp-eval', SZP_URL . 'assets/css/sazan-eval.css', array( 'szp-front' ), file_exists( $evcss ) ? filemtime( $evcss ) : SZP_VERSION );
+		wp_register_script( 'szp-eval', SZP_URL . 'assets/js/sazan-eval.js', array( 'szp-front' ), file_exists( $evjs ) ? filemtime( $evjs ) : SZP_VERSION, true );
+	}
+
+	/* ---------------- «ارزیابی من» shortcode ---------------- */
+
+	public static function sc_eval( $atts ) {
+		$a = shortcode_atts( array( 'title' => '', 'currency' => 'تومان' ), $atts, 'sazan_my_eval' );
+		if ( ! is_user_logged_in() ) {
+			return self::login_box();
+		}
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_style( 'szp-eval' );
+		wp_enqueue_script( 'szp-eval' );
+		return SZP_Eval::render( $a );
 	}
 
 	/* ---------------- service canvas shortcode ---------------- */

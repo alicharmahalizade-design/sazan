@@ -387,6 +387,43 @@ abstract class SZP_W_Canvas_Gallery extends SZP_Widget_Base {
 	protected function output( $id, $uid ) { return ''; }
 }
 
+class SZP_W_My_Eval extends SZP_Widget_Base {
+	protected $ctx = 'none';
+	public function get_name() { return 'szp_my_eval'; }
+	public function get_title() { return 'سازان: ارزیابی من'; }
+	public function get_icon() { return 'eicon-number-field'; }
+	public function get_keywords() { return array( 'sazan', 'eval', 'target', 'ارزیابی', 'تارگت', 'سازان' ); }
+
+	protected function register_controls() {
+		$this->start_controls_section( 'szp_ev', array( 'label' => 'تنظیمات' ) );
+		$this->add_control( 'title', array(
+			'label'   => 'عنوان',
+			'type'    => \Elementor\Controls_Manager::TEXT,
+			'default' => 'ارزیابی من',
+		) );
+		$this->add_control( 'currency', array(
+			'label'   => 'واحد پول',
+			'type'    => \Elementor\Controls_Manager::TEXT,
+			'default' => 'تومان',
+		) );
+		$this->end_controls_section();
+	}
+
+	public function render() {
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_style( 'szp-eval' );
+		wp_enqueue_script( 'szp-eval' );
+		if ( ! is_user_logged_in() ) {
+			$this->empty_box( 'برای مشاهده «ارزیابی من» ابتدا وارد شوید.' );
+			return;
+		}
+		$s = $this->get_settings_for_display();
+		echo SZP_Eval::render( array( 'title' => $s['title'] ?? '', 'currency' => $s['currency'] ?? 'تومان' ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+	}
+
+	protected function output( $id, $uid ) { return ''; }
+}
+
 class SZP_W_Canvas_Carousel extends SZP_W_Canvas_Gallery {
 	protected $view = 'carousel';
 	public function get_name() { return 'szp_canvas_carousel'; }
@@ -406,6 +443,7 @@ function szp_elementor_widget_list() {
 	return array(
 		'SZP_W_Panel',
 		'SZP_W_Coaching',
+		'SZP_W_My_Eval',
 		'SZP_W_Service_Canvas',
 		'SZP_W_Canvas_Carousel',
 		'SZP_W_Canvas_Grid',

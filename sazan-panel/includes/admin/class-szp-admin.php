@@ -45,7 +45,7 @@ class SZP_Admin {
 	public static function assets( $hook ) {
 		$screen = get_current_screen();
 		$is_cpt = $screen && in_array( $screen->post_type, array( 'szp_course', 'szp_session' ), true );
-		$is_szp = ( strpos( (string) $hook, 'sazan-panel' ) !== false ) || ( strpos( (string) $hook, 'szp-groups' ) !== false ) || $is_cpt;
+		$is_szp = ( strpos( (string) $hook, 'sazan-panel' ) !== false ) || ( strpos( (string) $hook, 'szp-groups' ) !== false ) || ( strpos( (string) $hook, 'szp-eval' ) !== false ) || $is_cpt;
 		if ( ! $is_szp ) {
 			return;
 		}

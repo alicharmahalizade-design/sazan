@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SZP_Install {
 
-	const DB_VERSION = '1.3.0';
+	const DB_VERSION = '1.4.0';
 
 	public static function activate() {
 		self::create_tables();
@@ -245,6 +245,28 @@ class SZP_Install {
 			updated_at datetime DEFAULT NULL,
 			PRIMARY KEY  (id),
 			UNIQUE KEY canvas_user (canvas_key,user_id)
+		) $charset;";
+
+		// ---- ارزیابی من (weekly target evaluation) ----
+		$ev = $wpdb->prefix . 'szp_eval';
+
+		$sql .= "
+		CREATE TABLE $ev (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			week_no int(11) NOT NULL DEFAULT 0,
+			title varchar(191) NOT NULL DEFAULT '',
+			target double NOT NULL DEFAULT 0,
+			result double NOT NULL DEFAULT 0,
+			has_result tinyint(1) NOT NULL DEFAULT 0,
+			note text NULL,
+			target_set_at datetime DEFAULT NULL,
+			result_set_at datetime DEFAULT NULL,
+			created_at datetime DEFAULT NULL,
+			updated_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY user_week (user_id,week_no),
+			KEY user_id (user_id)
 		) $charset;";
 
 		dbDelta( $sql );
