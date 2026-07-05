@@ -45,6 +45,7 @@ class Hero extends Widget_Base {
 				'fusion'   => esc_html__( 'طرح ۳ — تلفیقی 💎', 'sazan-core' ),
 				'minimal'  => esc_html__( 'طرح ۴ — مینیمال / خلوت 🕊️', 'sazan-core' ),
 				'zen'      => esc_html__( 'طرح ۵ — خیلی مینیمال / وسط‌چین 🤍', 'sazan-core' ),
+				'banner'   => esc_html__( 'طرح ۶ — بنر تصویری (فقط عکس) 🖼️', 'sazan-core' ),
 			),
 			'description' => esc_html__( 'هر سه طرح از یک محتوا استفاده می‌کنند؛ فقط چیدمان و ظاهر تغییر می‌کند.', 'sazan-core' ),
 		) );
@@ -265,7 +266,7 @@ class Hero extends Widget_Base {
 
 	protected function render() {
 		$s    = $this->get_settings_for_display();
-		$skin = in_array( $s['skin'], array( 'personal', 'academy', 'fusion', 'minimal', 'zen' ), true ) ? $s['skin'] : 'personal';
+		$skin = in_array( $s['skin'], array( 'personal', 'academy', 'fusion', 'minimal', 'zen', 'banner' ), true ) ? $s['skin'] : 'personal';
 		$side = ( 'right' === $s['media_side'] ) ? ' media-right' : '';
 		$fade = ( 'fade' === $s['effect'] );
 		$peek = ( ! $fade && 'yes' === $s['peek'] ) ? ' is-peek' : '';
@@ -281,6 +282,7 @@ class Hero extends Widget_Base {
 		$isAcademy = ( 'academy' === $skin );
 		$isMinimal = ( 'minimal' === $skin );
 		$isZen     = ( 'zen' === $skin );
+		$isBanner  = ( 'banner' === $skin );
 		$autoCls   = ( 'yes' === $s['autoplay'] ) ? ' is-auto' : '';
 		$fxCls     = ( 'yes' === $s['ken_burns'] ) ? ' kb' : '';
 		$fxCls    .= ( 'yes' === $s['parallax'] ) ? ' parallax' : '';
@@ -313,6 +315,25 @@ class Hero extends Widget_Base {
 		echo '<div class="sz-hero-viewport"><div class="sz-hero-track">';
 
 		foreach ( $slides as $i => $sl ) {
+
+			/* طرح ۶: بنر تصویری — فقط عکس (بدون متن)، با لینک اختیاری */
+			if ( $isBanner ) {
+				echo '<div class="sz-hero-slide">';
+				if ( ! empty( $sl['image']['url'] ) ) {
+					$img  = '<img src="' . esc_url( $sl['image']['url'] ) . '" alt="" loading="lazy">';
+					$link = $sl['b1_link']['url'] ?? '';
+					if ( $link && '#' !== $link ) {
+						$target   = ! empty( $sl['b1_link']['is_external'] ) ? ' target="_blank"' : '';
+						$nofollow = ! empty( $sl['b1_link']['nofollow'] ) ? ' rel="nofollow"' : '';
+						echo '<a class="sz-hero-banner" href="' . esc_url( $link ) . '"' . $target . $nofollow . '>' . $img . '</a>';
+					} else {
+						echo '<div class="sz-hero-banner">' . $img . '</div>';
+					}
+				}
+				echo '</div>';
+				continue;
+			}
+
 			echo '<div class="sz-hero-slide">';
 
 			/* طرح ۵: تصویر به‌صورت پس‌زمینه‌ی محو پشت متن */
@@ -422,7 +443,7 @@ class Hero extends Widget_Base {
 		}
 
 		/* نوار آمار */
-		if ( 'yes' === $s['show_stats'] && ! empty( $s['stats'] ) && ! $isZen ) {
+		if ( 'yes' === $s['show_stats'] && ! empty( $s['stats'] ) && ! $isZen && ! $isBanner ) {
 			echo '<div class="sz-hero-stats">';
 			foreach ( (array) $s['stats'] as $st ) {
 				printf(

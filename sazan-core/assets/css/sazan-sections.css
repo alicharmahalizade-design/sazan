@@ -1456,3 +1456,17 @@ body.sz-hero-modal-open{ overflow:hidden; }
 	border:1px solid var(--sz-border,#1d3744); background:rgba(255,255,255,.05); color:var(--sz-text,#e8f0f4); font-size:22px; line-height:1;
 }
 .sz-hero-modal-x:hover{ background:var(--sz-accent,#f7941d); border-color:transparent; color:#fff; }
+
+/* ====== طرح ۶: بنر تصویری (فقط عکس + پیک) ====== */
+.sazan-hero.skin-banner{ background:none; border:none; padding:18px 0; overflow:visible; }
+.sazan-hero.skin-banner .sz-hero-viewport{ overflow:hidden; padding:6px 0; }
+.sazan-hero.skin-banner .sz-hero-slide{ display:flex; }
+.sz-hero-banner{ display:block; width:100%; border-radius:var(--sz-radius); overflow:hidden; box-shadow:0 30px 70px -34px rgba(0,0,0,.7); line-height:0; }
+.sz-hero-banner img{ width:100%; height:auto; display:block; }
+/* پیک برای بنر: اسلاید فعال وسط، لبه‌ی بقلی‌ها کم‌رنگ */
+.sazan-hero.skin-banner.is-peek .sz-hero-slide{ opacity:.45; transform:scale(.96); transition:opacity .5s ease, transform .5s ease; }
+.sazan-hero.skin-banner.is-peek .sz-hero-slide.is-current{ opacity:1; transform:none; }
+/* فلش‌ها گوشه‌ی پایین (مثل نمونه) و نقطه‌ها وسط */
+.sazan-hero.skin-banner .sz-hero-nav{ bottom:22px; inset-inline-start:22px; }
+.sazan-hero.skin-banner .sz-hero-dots{ margin-top:14px; }
+@media (max-width:1024px){ .sazan-hero.skin-banner.is-peek .sz-hero-slide{ opacity:1; transform:none; } }
