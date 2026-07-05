@@ -43,6 +43,7 @@ class Hero extends Widget_Base {
 				'personal' => esc_html__( 'طرح ۱ — برند فردی (حسین‌طاهری) ✨', 'sazan-core' ),
 				'academy'  => esc_html__( 'طرح ۲ — آکادمی / دوره 🎓', 'sazan-core' ),
 				'fusion'   => esc_html__( 'طرح ۳ — تلفیقی 💎', 'sazan-core' ),
+				'minimal'  => esc_html__( 'طرح ۴ — مینیمال / خلوت 🕊️', 'sazan-core' ),
 			),
 			'description' => esc_html__( 'هر سه طرح از یک محتوا استفاده می‌کنند؛ فقط چیدمان و ظاهر تغییر می‌کند.', 'sazan-core' ),
 		) );
@@ -212,6 +213,12 @@ class Hero extends Widget_Base {
 		return $out;
 	}
 
+	/** شماره‌ی دو رقمی با ارقام فارسی (۰۱، ۰۲ ...). */
+	private function fa_index( $n ) {
+		$s = str_pad( (string) (int) $n, 2, '0', STR_PAD_LEFT );
+		return strtr( $s, array( '0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹' ) );
+	}
+
 	/** ردیف چیپ‌های ویژگی (مشترک بین اسلایدها). */
 	private function render_chips( $s ) {
 		if ( 'yes' !== $s['show_chips'] || empty( $s['chips'] ) ) { return; }
@@ -233,7 +240,7 @@ class Hero extends Widget_Base {
 
 	protected function render() {
 		$s    = $this->get_settings_for_display();
-		$skin = in_array( $s['skin'], array( 'personal', 'academy', 'fusion' ), true ) ? $s['skin'] : 'personal';
+		$skin = in_array( $s['skin'], array( 'personal', 'academy', 'fusion', 'minimal' ), true ) ? $s['skin'] : 'personal';
 		$side = ( 'right' === $s['media_side'] ) ? ' media-right' : '';
 		$fade = ( 'fade' === $s['effect'] );
 		$peek = ( ! $fade && 'yes' === $s['peek'] ) ? ' is-peek' : '';
@@ -247,11 +254,13 @@ class Hero extends Widget_Base {
 		if ( empty( $slides ) ) { return; }
 		$multi     = count( $slides ) > 1;
 		$isAcademy = ( 'academy' === $skin );
+		$isMinimal = ( 'minimal' === $skin );
+		$autoCls   = ( 'yes' === $s['autoplay'] ) ? ' is-auto' : '';
 
 		// در طرح ۲ اگر پیک روشن باشد آن را خاموش می‌کنیم (تصویر ثابت است).
 		if ( $isAcademy ) { $peek = ''; }
 
-		echo '<div class="sazan-sec sazan-hero skin-' . esc_attr( $skin ) . esc_attr( $side . $eff . $peek ) . '"'
+		echo '<div class="sazan-sec sazan-hero skin-' . esc_attr( $skin ) . esc_attr( $side . $eff . $peek . $autoCls ) . '"'
 			. ' data-autoplay="' . esc_attr( $auto ) . '" data-speed="' . esc_attr( (int) $ms ) . '"'
 			. ' data-effect="' . esc_attr( $fade ? 'fade' : 'slide' ) . '"'
 			. ' data-peek="' . esc_attr( '' !== $peek ? '1' : '0' ) . '">';
@@ -273,7 +282,7 @@ class Hero extends Widget_Base {
 
 		echo '<div class="sz-hero-viewport"><div class="sz-hero-track">';
 
-		foreach ( $slides as $sl ) {
+		foreach ( $slides as $i => $sl ) {
 			echo '<div class="sz-hero-slide"><div class="sz-hero-inner">';
 
 			/* رسانه‌ی داخل اسلاید (طرح ۱ و ۳): پرتره + رادار + نام روی عکس */
@@ -294,7 +303,12 @@ class Hero extends Widget_Base {
 			/* متن */
 			echo '<div class="sz-hero-body">';
 
-			if ( ! empty( $sl['badge_image']['url'] ) ) {
+			/* طرح ۴: شماره‌ی بزرگ توخالی به‌عنوان امضای بصری */
+			if ( $isMinimal ) {
+				echo '<span class="sz-hero-index" aria-hidden="true">' . esc_html( $this->fa_index( $i + 1 ) ) . '</span>';
+			}
+
+			if ( ! $isMinimal && ! empty( $sl['badge_image']['url'] ) ) {
 				echo '<div class="sz-hero-badgeimg"><img src="' . esc_url( $sl['badge_image']['url'] ) . '" alt="" loading="lazy"></div>';
 			}
 
@@ -318,7 +332,7 @@ class Hero extends Widget_Base {
 				echo '<p class="sz-hero-sub">' . esc_html( $sl['subtitle'] ) . '</p>';
 			}
 
-			$this->render_chips( $s );
+			if ( ! $isMinimal ) { $this->render_chips( $s ); }
 
 			$b1 = $this->btn( $sl['b1_text'] ?? '', $sl['b1_link'] ?? array(), 'sazan-btn-orange' );
 			$b2 = $this->btn( $sl['b2_text'] ?? '', $sl['b2_link'] ?? array(), 'sz-hero-ghost' );

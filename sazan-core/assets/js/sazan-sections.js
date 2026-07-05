@@ -385,6 +385,9 @@
 		var speed  = parseInt( hero.getAttribute( 'data-speed' ), 10 ) || 6000;
 		var idx = 0, timer = null, n = slides.length;
 
+		// مدت هر اسلاید را برای نوار پیشرفتِ طرح مینیمال در CSS در دسترس می‌گذاریم
+		hero.style.setProperty( '--sz-dur', speed + 'ms' );
+
 		function paint() {
 			if ( isFade ) {
 				slides.forEach( function( s, i ) { s.classList.toggle( 'is-active', i === idx ); } );
