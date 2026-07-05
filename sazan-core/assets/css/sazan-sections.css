@@ -1,0 +1,1130 @@
+/* ============================================================
+   بخش‌های دارک‌مود سازان (دوره‌ها، تقویم، پادکست، وبلاگ، نوار چرخان)
+   رنگ‌ها از متغیرهای --sz-* خوانده می‌شوند (با کنترل پالت قابل تغییر)
+   ============================================================ */
+.sazan-sec, .sazan-marquee {
+	--sz-accent:#f7941d; --sz-accent2:#d97f12; --sz-cyan:#00b6f1;
+	--sz-card:#13242f; --sz-border:#1d3744; --sz-text:#e8f0f4;
+	--sz-text2:#a7bcc8; --sz-muted:#7d94a1; --sz-radius:16px;
+	font-family:inherit; direction:rtl;
+}
+.sazan-sec *{ box-sizing:border-box; }
+
+/* --- سرتیتر بخش --- */
+.sazan-sec-head{ text-align:right; margin-bottom:34px; }
+.sazan-sec-en{ color:var(--sz-cyan); font-size:13px; font-weight:600; letter-spacing:2px; text-transform:uppercase; font-family:ui-monospace,monospace; }
+.sazan-sec-title{ font-size:26px; font-weight:800; color:var(--sz-text); margin:4px 0 0; position:relative; display:inline-block; }
+.sazan-sec-title::after{ content:""; position:absolute; right:0; bottom:-10px; width:54px; height:4px; border-radius:3px; background:var(--sz-accent); }
+
+/* دکمه‌ها */
+.sazan-btn{ display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer; font-family:inherit; font-weight:600; border-radius:999px; padding:11px 26px; font-size:14px; transition:.2s ease; white-space:nowrap; text-decoration:none; }
+.sazan-btn.sm{ padding:8px 20px; font-size:13px; }
+.sazan-btn-orange{ background:linear-gradient(180deg,var(--sz-accent),var(--sz-accent2)); color:#fff; box-shadow:0 10px 22px -10px rgba(246,146,30,.7); }
+.sazan-btn-orange:hover{ filter:brightness(1.08); transform:translateY(-1px); }
+.sazan-btn-cyan{ background:linear-gradient(180deg,#34c8e6,#1ea2c2); color:#04222b; box-shadow:0 10px 22px -10px rgba(45,193,223,.6); }
+
+.sazan-marquee {
+  overflow: hidden;
+  width: 100%;
+  background-color: #0c1c28;
+}
+
+.sazan-marquee .sazan-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: sazan-slide 26s linear infinite;
+  will-change: transform;
+  direction: ltr;
+}
+
+.sazan-marquee .sazan-mq-group {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: var(--sz-mq-gap, 46px);
+  padding-inline-start: var(--sz-mq-gap, 46px);
+}
+
+@keyframes sazan-slide {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* قواعد ضروری که در فایل آپلودی نبودند و بدون آن‌ها فیچرها می‌شکنند */
+.sazan-marquee.rev .sazan-track{ animation-direction:reverse; }
+.sazan-marquee .sazan-track .sazan-mq-item{ direction:rtl; color:#fff; font-weight:700; font-size:15px; display:inline-flex; align-items:center; gap:46px; text-decoration:none; }
+.sazan-marquee .sazan-track .sazan-mq-item::after{ content:attr(data-sep); opacity:.7; }
+.sazan-mq-pause-yes .sazan-marquee:hover .sazan-track{ animation-play-state:paused; }
+
+/* ====== نوار چرخان: طرح حرفه‌ای (چیپ‌های شیشه‌ای) ====== */
+.sazan-marquee.skin-pro .sazan-track{ align-items:center; padding:14px 0; }
+.sazan-marquee.skin-pro .sazan-mq-item{
+	gap:10px; padding:9px 18px; font-size:14px; font-weight:700; border-radius:999px;
+	background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+	-webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+	transition:transform .2s, background .2s, border-color .2s; will-change:transform;
+}
+.sazan-marquee.skin-pro .sazan-mq-item::after{ content:none; }
+.sazan-marquee.skin-pro .sazan-mq-item::before{
+	content:""; flex:0 0 auto; width:8px; height:8px; border-radius:50%;
+	background:#00b6f1; box-shadow:0 0 0 4px rgba(0,182,241,.18), 0 0 12px #00b6f1;
+}
+.sazan-marquee.skin-pro .sazan-mq-item:hover{ transform:translateY(-2px); background:rgba(255,255,255,.13); border-color:rgba(0,182,241,.6); }
+/* محو شدن لبه‌ها */
+.sazan-mq-fade-yes .sazan-marquee.skin-pro{
+	-webkit-mask:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+	mask:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+/* ============== فیلتر دوره‌ها ============== */
+.sazan-filters{ display:flex; gap:9px; justify-content:flex-start; flex-wrap:wrap; margin-bottom:30px; }
+.sazan-chip{ padding:8px 18px; border-radius:999px; font-size:13px; border:1px solid var(--sz-border); color:var(--sz-text2); background:var(--sz-card); cursor:pointer; transition:.18s; }
+.sazan-chip:hover{ color:var(--sz-cyan); }
+.sazan-chip.active{ background:linear-gradient(180deg,var(--sz-accent),var(--sz-accent2)); color:#fff; border-color:transparent; }
+
+/* ============== کارت دوره ============== */
+.sazan-course-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.sazan-course-card{ background:var(--sz-card); border:1px solid var(--sz-border); border-radius:var(--sz-radius); overflow:hidden; transition:.22s; display:flex; flex-direction:column; }
+.sazan-course-link{ color:inherit; text-decoration:none; display:flex; flex-direction:column; flex:1; }
+.sazan-course-card:hover{ transform:translateY(-5px); border-color:var(--sz-cyan); box-shadow:0 18px 40px -22px rgba(0,0,0,.8); }
+.sazan-course-media{ position:relative; height:170px; background:repeating-linear-gradient(135deg,#1a3543 0 11px,#163040 11px 22px); }
+.sazan-course-media img{ width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+.sazan-course-media .ribbon{ position:absolute; top:14px; right:0; background:var(--sz-accent); color:#fff; font-weight:700; font-size:12px; padding:5px 14px; border-radius:8px 0 0 8px; z-index:2; }
+.sazan-course-media .tutor{ position:absolute; bottom:12px; right:14px; color:#fff; font-size:11px; background:rgba(8,24,32,.6); padding:4px 9px; border-radius:7px; z-index:2; }
+.sazan-course-body{ padding:18px; display:flex; flex-direction:column; flex:1; }
+.sazan-course-tags{ display:flex; gap:7px; margin-bottom:12px; }
+.sazan-course-tags span{ font-size:11px; color:var(--sz-cyan); background:rgba(45,193,223,.12); padding:3px 11px; border-radius:999px; }
+.sazan-course-body h3{ font-size:17px; color:var(--sz-text); margin:0 0 9px; }
+.sazan-course-body p{ font-size:13px; color:var(--sz-text2); margin:0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.sazan-course-meta{ display:flex; justify-content:space-between; border-top:1px solid var(--sz-border); margin-top:auto; padding-top:13px; font-size:12px; color:var(--sz-muted); }
+.sazan-course-meta b{ color:var(--sz-text2); font-weight:600; }
+
+/* ====== دوره‌ها: طرح حرفه‌ای (پوستری، متن روی تصویر) ====== */
+.sazan-courses.skin-pro .sazan-course-card{ position:relative; min-height:330px; border-radius:calc(var(--sz-radius) + 6px); }
+.sazan-courses.skin-pro .sazan-course-link{ height:100%; }
+.sazan-courses.skin-pro .sazan-course-media{ position:absolute; inset:0; height:100%; }
+.sazan-courses.skin-pro .sazan-course-media img{ transition:transform .55s cubic-bezier(.22,1,.36,1); }
+.sazan-courses.skin-pro .sazan-course-card:hover .sazan-course-media img{ transform:scale(1.08); }
+.sazan-courses.skin-pro .sazan-course-media::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(8,24,32,.1) 0, rgba(8,24,32,.6) 52%, rgba(7,20,27,.96) 100%); z-index:1; }
+.sazan-courses.skin-pro .sazan-course-media .ribbon{ z-index:3; border-radius:0 0 0 12px; top:0; box-shadow:0 8px 18px -8px rgba(246,146,30,.7); }
+.sazan-courses.skin-pro .sazan-course-media .tutor{ display:none; }
+.sazan-courses.skin-pro .sazan-course-body{ position:absolute; left:0; right:0; bottom:0; z-index:3; padding:18px; }
+.sazan-courses.skin-pro .sazan-course-tags span{ background:rgba(255,255,255,.14); color:#fff; -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+.sazan-courses.skin-pro .sazan-course-body h3{ color:#fff; font-size:17px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.sazan-courses.skin-pro .sazan-course-body p{ color:rgba(255,255,255,.78); -webkit-line-clamp:2; }
+.sazan-courses.skin-pro .sazan-course-meta{ color:rgba(255,255,255,.92); border-top-color:rgba(255,255,255,.18); }
+.sazan-courses.skin-pro .sazan-course-meta b{ color:#fff; }
+.sazan-courses.skin-pro .sazan-course-card:hover{ border-color:var(--sz-accent); box-shadow:0 28px 54px -26px rgba(0,0,0,.9); }
+
+/* ============== تقویم (ردیفی) ============== */
+.sazan-cal-table{ display:flex; flex-direction:column; gap:13px; }
+.sazan-cal-row{ display:grid; grid-template-columns:1.2fr 1.4fr 1fr 1fr auto; gap:14px; align-items:center; background:var(--sz-card); border:1px solid var(--sz-border); border-radius:14px; padding:15px 22px; transition:.18s; }
+.sazan-cal-row:hover{ border-color:var(--sz-cyan); }
+.sazan-cal-row h4{ font-size:15px; color:var(--sz-text); margin:0; }
+.sazan-cal-row .c{ font-size:13px; color:var(--sz-text2); }
+.sazan-cal-row .status{ font-size:12px; color:var(--sz-cyan); }
+
+/* ====== تقویم آموزشی: طرح حرفه‌ای (کارت‌های شیشه‌ای) ====== */
+.sazan-calendar.skin-pro .sazan-cal-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.sazan-calendar.skin-pro .sazan-cal-card{
+	position:relative; isolation:isolate; overflow:hidden;
+	display:flex; flex-direction:column; gap:14px;
+	padding:22px 22px 20px; border-radius:20px;
+	background:linear-gradient(158deg, rgba(255,255,255,.06), rgba(255,255,255,0) 42%), var(--sz-card);
+	border:1px solid var(--sz-border);
+	box-shadow:0 18px 40px -26px rgba(0,0,0,.9);
+	transition:transform .28s cubic-bezier(.2,.7,.3,1), border-color .28s, box-shadow .28s;
+}
+/* نوار گرادینتی بالای کارت */
+.sazan-calendar.skin-pro .sazan-cal-card::before{
+	content:""; position:absolute; inset:0 0 auto 0; height:3px;
+	background:linear-gradient(90deg, var(--sz-cyan), var(--sz-accent));
+	opacity:.9; transition:.28s;
+}
+/* هاله‌ی درخشانِ روی هاور */
+.sazan-calendar.skin-pro .cc-glow{
+	position:absolute; z-index:-1; top:-60%; left:50%; transform:translateX(-50%);
+	width:140%; height:160%; pointer-events:none; opacity:0; transition:opacity .35s;
+	background:radial-gradient(closest-side, rgba(0,182,241,.22), transparent 70%);
+}
+.sazan-calendar.skin-pro .sazan-cal-card:hover{
+	transform:translateY(-7px);
+	border-color:rgba(0,182,241,.55);
+	box-shadow:0 30px 60px -28px rgba(0,182,241,.45), 0 14px 30px -24px rgba(0,0,0,.9);
+}
+.sazan-calendar.skin-pro .sazan-cal-card:hover .cc-glow{ opacity:1; }
+.sazan-calendar.skin-pro .sazan-cal-card:hover::before{ height:4px; }
+
+.sazan-calendar.skin-pro .cc-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.sazan-calendar.skin-pro .cc-date{
+	display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600;
+	color:var(--sz-text2); background:rgba(255,255,255,.05);
+	border:1px solid var(--sz-border); padding:5px 12px; border-radius:999px;
+	font-family:ui-monospace,monospace; letter-spacing:.3px;
+}
+.sazan-calendar.skin-pro .cc-date svg{ color:var(--sz-cyan); }
+.sazan-calendar.skin-pro .cc-status{
+	display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:700;
+	color:var(--sz-cyan); background:rgba(0,182,241,.1);
+	border:1px solid rgba(0,182,241,.28); padding:5px 12px; border-radius:999px; white-space:nowrap;
+}
+.sazan-calendar.skin-pro .cc-dot{
+	width:8px; height:8px; border-radius:50%; background:var(--sz-cyan);
+	box-shadow:0 0 0 0 rgba(0,182,241,.6); animation:sazan-cal-pulse 1.8s ease-out infinite;
+}
+@keyframes sazan-cal-pulse{
+	0%{ box-shadow:0 0 0 0 rgba(0,182,241,.6); }
+	70%{ box-shadow:0 0 0 7px rgba(0,182,241,0); }
+	100%{ box-shadow:0 0 0 0 rgba(0,182,241,0); }
+}
+.sazan-calendar.skin-pro .cc-title{
+	font-size:18px; font-weight:800; line-height:1.55; color:var(--sz-text); margin:2px 0 0;
+	display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.2em;
+}
+.sazan-calendar.skin-pro .cc-tutor{
+	display:inline-flex; align-items:center; gap:8px; font-size:13.5px; color:var(--sz-text2);
+}
+.sazan-calendar.skin-pro .cc-tutor svg{ color:var(--sz-muted); flex:0 0 auto; }
+.sazan-calendar.skin-pro .cc-btn{
+	margin-top:6px; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+	padding:12px 20px; border-radius:13px; font-weight:800; font-size:14px; text-decoration:none;
+	color:#fff; background:linear-gradient(135deg, var(--sz-accent), var(--sz-accent2));
+	box-shadow:0 14px 28px -14px rgba(246,146,30,.75); transition:.22s;
+}
+.sazan-calendar.skin-pro .cc-btn svg{ transition:transform .22s; }
+.sazan-calendar.skin-pro .cc-btn:hover{ filter:brightness(1.07); box-shadow:0 18px 34px -14px rgba(246,146,30,.85); }
+.sazan-calendar.skin-pro .cc-btn:hover svg{ transform:translateX(-4px); }
+
+/* ============== پادکست ============== */
+.sazan-pod-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+.sazan-pod-card{ position:relative; background:var(--sz-card); border:1px solid var(--sz-border); border-radius:calc(var(--sz-radius) + 4px); padding:18px; transition:transform .25s, box-shadow .25s, border-color .25s; }
+.sazan-pod-card:hover{ border-color:var(--sz-cyan); box-shadow:0 22px 44px -26px rgba(0,0,0,.85); }
+
+/* دکمه‌ها و آیکن‌ها (مشترک) */
+.sazan-pod-play{ border:0; cursor:pointer; color:#fff; display:grid; place-items:center; background:linear-gradient(180deg,var(--sz-accent),var(--sz-accent2)); box-shadow:0 10px 20px -10px rgba(246,146,30,.8); transition:transform .15s; }
+.sazan-pod-play:hover{ transform:scale(1.06); }
+.sazan-pod-play svg{ width:42%; height:42%; }
+.sazan-pod-card.no-audio .sazan-pod-play{ opacity:.5; cursor:default; }
+.sazan-pod-play .ico-pause{ display:none; }
+.sazan-pod-card.is-playing .ico-play{ display:none; }
+.sazan-pod-card.is-playing .ico-pause{ display:block; }
+.sazan-pod-head .dl{ width:34px; height:34px; border-radius:50%; background:rgba(45,193,223,.12); color:var(--sz-cyan); display:grid; place-items:center; text-decoration:none; }
+.sazan-pod-head .dl svg{ width:16px; height:16px; }
+
+/* اکولایزر */
+.sazan-wave{ display:flex; align-items:flex-end; gap:3px; height:40px; justify-content:center; margin:4px 0 12px; }
+.sazan-wave i{ width:3px; min-height:4px; background:var(--sz-cyan); border-radius:3px; opacity:.5; transform-origin:bottom; transition:height .07s linear; }
+.sazan-pod-card.is-playing .sazan-wave i{ opacity:.95; }
+.sazan-pod-card.is-playing.eq-fallback .sazan-wave i{ animation:sazan-eq .9s ease-in-out infinite; }
+.sazan-pod-card.eq-fallback .sazan-wave i:nth-child(3n){ animation-delay:.15s; }
+.sazan-pod-card.eq-fallback .sazan-wave i:nth-child(3n+1){ animation-delay:.3s; }
+@keyframes sazan-eq{ 0%,100%{ transform:scaleY(.35); } 50%{ transform:scaleY(1); } }
+
+/* نوار پیشرفت */
+.sazan-pod-progress{ margin-top:6px; }
+.sazan-pod-bar{ height:6px; border-radius:4px; background:rgba(255,255,255,.1); cursor:pointer; overflow:hidden; }
+.sazan-pod-bar .fill{ display:block; height:100%; width:0; border-radius:4px; background:linear-gradient(90deg,var(--sz-accent),var(--sz-accent2)); transition:width .1s linear; }
+.sazan-pod-time{ display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--sz-muted); }
+
+.sazan-pod-card h4{ font-size:15px; color:var(--sz-text); margin:0; line-height:1.6; }
+.sazan-pod-card p{ font-size:12px; color:var(--sz-text2); margin-top:5px; line-height:1.8; }
+.sazan-pod-meta{ display:flex; gap:14px; margin-top:9px; font-size:11px; color:var(--sz-muted); }
+.sazan-empty{ grid-column:1/-1; text-align:center; color:var(--sz-text2); padding:24px; }
+
+/* ====== طرح کلاسیک (عمودی، وسط‌چین) ====== */
+.skin-classic .sazan-pod-cover{ display:none; }
+.skin-classic .sazan-pod-card{ text-align:center; }
+.skin-classic .sazan-pod-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.skin-classic .sazan-pod-head .pl-top{ width:46px; height:46px; border-radius:50%; order:2; }
+.skin-classic .sazan-pod-head .dl{ order:1; }
+.skin-classic .sazan-pod-meta{ justify-content:center; }
+
+/* ====== طرح حرفه‌ای (افقی، کاور + پلیر) ====== */
+.skin-pro .sazan-pod-card{
+	display:flex; gap:16px; align-items:center; padding:16px;
+	background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)), var(--sz-card);
+}
+.skin-pro .sazan-pod-cover{
+	position:relative; flex:0 0 auto; width:108px; height:108px; border-radius:16px; overflow:hidden;
+	background:linear-gradient(140deg,#16323f,#0e242e); display:grid; place-items:center; color:rgba(255,255,255,.25);
+}
+.skin-pro .sazan-pod-cover img{ width:100%; height:100%; object-fit:cover; }
+.skin-pro .sazan-pod-cover-ph svg{ width:40px; height:40px; }
+.skin-pro .sazan-pod-cover .pl-cover{
+	position:absolute; inset:0; margin:auto; width:48px; height:48px; border-radius:50%;
+	background:rgba(255,255,255,.92); color:#13202a; box-shadow:0 8px 22px -6px rgba(0,0,0,.6);
+}
+.skin-pro .sazan-pod-cover .pl-cover svg{ width:44%; height:44%; }
+.skin-pro .sazan-pod-main{ flex:1 1 auto; min-width:0; }
+.skin-pro .sazan-pod-head{ display:none; }            /* در طرح حرفه‌ای پلی روی کاور است */
+.skin-pro .sazan-pod-card h4{ font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.skin-pro .sazan-pod-card p{ display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+.skin-pro .sazan-wave{ height:26px; justify-content:flex-start; margin:8px 0; }
+.skin-pro .sazan-pod-meta{ margin-top:7px; }
+
+/* ============== وبلاگ ============== */
+.sazan-blog-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:22px; align-items:stretch; }
+.sazan-blog-card{
+	display:flex; flex-direction:column; height:100%; position:relative;
+	background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)), var(--sz-card);
+	border:1px solid var(--sz-border); border-radius:calc(var(--sz-radius) + 4px); overflow:hidden;
+	transition:transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s, border-color .28s;
+}
+.sazan-blog-card:hover{ transform:translateY(-6px); border-color:var(--sz-cyan); box-shadow:0 26px 50px -26px rgba(0,0,0,.85); }
+
+/* تصویر */
+.sazan-blog-media{ position:relative; aspect-ratio:16/10; min-height:150px; overflow:hidden; background:repeating-linear-gradient(135deg,#1a3543 0 11px,#163040 11px 22px); }
+.sazan-blog-media img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s cubic-bezier(.22,1,.36,1); }
+.sazan-blog-card:hover .sazan-blog-media img{ transform:scale(1.07); }
+.sazan-blog-media::before{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(8,24,32,0) 45%, rgba(8,24,32,.55) 100%); }
+.sazan-blog-media .b-tag{ position:absolute; top:12px; right:12px; z-index:2; background:var(--sz-cyan); color:#04222b; font-size:11px; font-weight:800; padding:5px 12px; border-radius:999px; box-shadow:0 6px 14px -6px rgba(45,193,223,.8); }
+.sazan-blog-media .b-views{ position:absolute; top:12px; left:12px; z-index:2; display:inline-flex; align-items:center; gap:5px; background:rgba(8,24,32,.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); color:#fff; font-size:11px; font-weight:600; padding:5px 11px; border-radius:999px; }
+
+/* بدنه */
+.sazan-blog-body{ display:flex; flex-direction:column; flex:1 1 auto; padding:18px; }
+.sazan-blog-body h4{
+	font-size:15.5px; line-height:1.6; font-weight:700; color:var(--sz-text); margin:0 0 8px;
+	display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:3.2em;
+}
+.sazan-blog-card:hover .sazan-blog-body h4{ color:var(--sz-cyan); transition:color .2s; }
+.sazan-blog-body p{
+	font-size:12.5px; line-height:1.85; color:var(--sz-text2); margin:0;
+	display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+
+/* فوتر: همیشه پایین کارت */
+.sazan-blog-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:auto; padding-top:14px; border-top:1px solid var(--sz-border); }
+.sazan-blog-foot .date{ font-size:12px; color:var(--sz-muted); display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.sazan-blog-foot .sazan-btn{ flex:0 0 auto; }
+
+@media(max-width:980px){
+	.sazan-course-grid{ grid-template-columns:1fr; }
+	.sazan-pod-grid,.sazan-blog-grid{ grid-template-columns:repeat(2,1fr); }
+	.sazan-cal-row{ grid-template-columns:1fr 1fr; gap:10px; }
+	.sazan-calendar.skin-pro .sazan-cal-grid{ grid-template-columns:repeat(2,1fr) !important; }
+}
+@media(max-width:620px){
+	.sazan-calendar.skin-pro .sazan-cal-grid{ grid-template-columns:1fr !important; }
+}
+
+/* ============================================================
+   ویجت کارت‌های خدمات/ویژگی (sazan-features)
+   ============================================================ */
+.sazan-features-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+.sazan-features-grid{ padding-top:34px; } /* فضای لازم برای بیرون‌زدگی آیکن */
+.sazan-feature-card{
+	position:relative; min-height:170px; padding:34px 34px 30px;
+	background:var(--sz-card); border:1px solid var(--sz-border);
+	border-radius:var(--sz-radius); text-align:right; overflow:visible;
+	background-image:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,0) 42%);
+	transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.sazan-feature-card:hover{ transform:translateY(-4px); border-color:var(--sz-cyan); box-shadow:0 18px 40px -22px rgba(0,182,241,.5); }
+/* آیکن شناور روی لبه بالایی باکس (موقعیت افقی/عمودی از کنترل‌ها) */
+.sazan-feature-icon{ position:absolute; top:0; left:var(--sz-fi-edge,32px); width:92px; height:92px; display:block; pointer-events:none; z-index:3; transform:translate(var(--sz-fi-tx,0), var(--sz-fi-y,-50%)); }
+.sazan-feature-icon img{ width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 10px 18px rgba(0,0,0,.35)); }
+.sazan-feature-card h3{ margin:18px 0 12px; color:var(--sz-text); font-size:22px; font-weight:800; line-height:1.4; }
+.sazan-feature-card p{ margin:0 0 22px; color:var(--sz-text2); font-size:14px; line-height:1.95; }
+.sazan-feature-btn{
+	display:inline-flex; align-items:center; justify-content:center;
+	padding:9px 22px; border-radius:10px; font-family:inherit; font-size:14px; font-weight:600;
+	color:var(--sz-text); text-decoration:none; cursor:pointer;
+	background:linear-gradient(180deg,#1c7f9c,#15697f); border:1px solid rgba(0,182,241,.35);
+	transition:.2s ease;
+}
+.sazan-feature-btn:hover{ filter:brightness(1.1); transform:translateY(-1px); }
+
+@media(max-width:1024px){
+	.sazan-feature-card{ padding:30px 26px 26px; min-height:160px; }
+	.sazan-feature-card h3{ font-size:20px; margin-top:16px; }
+}
+@media(max-width:600px){
+	.sazan-features-grid{ padding-top:30px; }
+	.sazan-feature-card{ padding:26px 22px 24px; min-height:auto; }
+	.sazan-feature-card h3{ font-size:19px; }
+	.sazan-feature-card p{ font-size:13px; line-height:1.85; }
+	.sazan-feature-btn{ width:100%; }
+	.sazan-features.skin-pro .sazan-features-grid{ padding-top:42px; }
+}
+
+/* ============================================================
+   طرح درخشان / حرفه‌ای (sazan-features .skin-pro)
+   ============================================================ */
+.sazan-features.skin-pro .sazan-features-grid{ padding-top:48px; }
+.sazan-features.skin-pro .sazan-feature-card{
+	min-height:200px; padding:40px 32px 30px;
+	background:
+		radial-gradient(120% 80% at 50% -10%, rgba(0,182,241,.10), transparent 55%),
+		linear-gradient(165deg, rgba(22,40,52,.92), rgba(9,18,26,.96));
+	border:1px solid transparent;
+	-webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+	box-shadow:0 26px 60px -34px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.07);
+	isolation:isolate;
+}
+/* قاب گرادینتی درخشان دور کارت */
+.sazan-features.skin-pro .sazan-feature-card::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; padding:1.4px;
+	background:linear-gradient(135deg, var(--sz-cyan), rgba(0,182,241,0) 38%, rgba(247,148,29,0) 62%, var(--sz-accent));
+	-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite:xor; mask-composite:exclude;
+	pointer-events:none; opacity:.55; transition:opacity .35s ease; z-index:1;
+}
+/* هالهٔ نوری بالای کارت */
+.sazan-features.skin-pro .sazan-feature-card::after{
+	content:""; position:absolute; top:-30px; left:50%; transform:translateX(-50%);
+	width:65%; height:130px; pointer-events:none; z-index:-1;
+	background:radial-gradient(ellipse at center, rgba(0,182,241,.28), transparent 70%);
+	filter:blur(22px); opacity:.7; transition:opacity .35s ease;
+}
+.sazan-features.skin-pro .sazan-feature-card:hover{
+	transform:translateY(-6px);
+	box-shadow:0 34px 70px -30px rgba(0,182,241,.45), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.sazan-features.skin-pro .sazan-feature-card:hover::before{ opacity:1; }
+.sazan-features.skin-pro .sazan-feature-card:hover::after{ opacity:1; }
+
+/* آیکن شناور + هالهٔ نورانی پشت آن */
+.sazan-features.skin-pro .sazan-feature-icon::before{
+	content:""; position:absolute; inset:-28%; border-radius:50%; z-index:-1;
+	background:radial-gradient(circle, rgba(0,182,241,.40), transparent 62%);
+	filter:blur(12px); transition:transform .35s ease, opacity .35s ease;
+}
+.sazan-features.skin-pro .sazan-feature-card:hover .sazan-feature-icon::before{ transform:scale(1.18); }
+.sazan-features.skin-pro .sazan-feature-icon img{ filter:drop-shadow(0 12px 22px rgba(0,182,241,.4)); }
+
+/* تایپوگرافی درخشان */
+.sazan-features.skin-pro .sazan-feature-card h3{
+	background:linear-gradient(90deg, #ffffff, #cfe9f3);
+	-webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.sazan-features.skin-pro .sazan-feature-card p{ color:var(--sz-text2); }
+
+/* دکمهٔ گرادینتی متحرک */
+.sazan-features.skin-pro .sazan-feature-btn{
+	position:relative; overflow:hidden; border:none; color:#fff; font-weight:700;
+	background:linear-gradient(120deg, #00b6f1, #1c8fb0 45%, var(--sz-accent) 120%);
+	background-size:220% 100%; background-position:0 0;
+	box-shadow:0 10px 26px -10px rgba(0,182,241,.75);
+	transition:background-position .5s ease, transform .2s ease, box-shadow .3s ease;
+}
+.sazan-features.skin-pro .sazan-feature-btn::after{
+	content:""; position:absolute; top:0; left:-120%; width:60%; height:100%;
+	background:linear-gradient(120deg, transparent, rgba(255,255,255,.45), transparent);
+	transform:skewX(-20deg); transition:left .6s ease;
+}
+.sazan-features.skin-pro .sazan-feature-btn:hover{
+	background-position:100% 0; transform:translateY(-2px);
+	box-shadow:0 16px 34px -12px rgba(0,182,241,.9);
+}
+.sazan-features.skin-pro .sazan-feature-btn:hover::after{ left:130%; }
+
+/* ============================================================
+   تقویم آموزشی — طرح ردیفی لاکچری / درخشان (skin-lux)
+   ============================================================ */
+.sazan-calendar.skin-lux .sazan-cal-rail{ display:flex; flex-direction:column; gap:16px; }
+.sazan-calendar.skin-lux .sazan-cal-lux{
+	position:relative; display:flex; align-items:center; gap:22px;
+	padding:20px 24px 20px 22px; border-radius:var(--sz-radius); isolation:isolate;
+	background:
+		radial-gradient(120% 180% at 100% -40%, rgba(0,182,241,.10), transparent 50%),
+		linear-gradient(140deg, rgba(22,40,52,.92), rgba(10,20,28,.96));
+	border:1px solid transparent;
+	-webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+	box-shadow:0 22px 50px -34px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.06);
+	transition:transform .28s ease, box-shadow .3s ease;
+	overflow:hidden;
+}
+/* قاب گرادینتی */
+.sazan-calendar.skin-lux .sazan-cal-lux::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; padding:1.4px;
+	background:linear-gradient(120deg, var(--sz-cyan), rgba(0,182,241,0) 40%, rgba(247,148,29,0) 60%, var(--sz-accent));
+	-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.55; transition:opacity .3s ease; z-index:2;
+}
+.sazan-calendar.skin-lux .sazan-cal-lux:hover{ transform:translateY(-3px); box-shadow:0 30px 60px -30px rgba(0,182,241,.4), inset 0 1px 0 rgba(255,255,255,.1); }
+.sazan-calendar.skin-lux .sazan-cal-lux:hover::before{ opacity:1; }
+/* هاله نوری گوشه */
+.cl-glow{ position:absolute; top:-50%; right:-10%; width:240px; height:200px; pointer-events:none; z-index:-1;
+	background:radial-gradient(ellipse at center, rgba(0,182,241,.22), transparent 70%); filter:blur(20px); }
+/* میله رنگی شروع (سمت راست در RTL) */
+.cl-bar{ position:absolute; inset-inline-start:0; top:14px; bottom:14px; width:4px; border-radius:4px;
+	background:linear-gradient(180deg, var(--sz-cyan), var(--sz-accent)); box-shadow:0 0 14px rgba(0,182,241,.6); }
+/* بَدج تاریخ */
+.cl-date{ flex:0 0 auto; display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:12px;
+	font-size:14px; font-weight:700; color:var(--sz-text); white-space:nowrap;
+	background:rgba(0,182,241,.10); border:1px solid rgba(0,182,241,.30); }
+.cl-date svg{ color:var(--sz-cyan); }
+/* محتوای میانی */
+.cl-main{ flex:1 1 auto; min-width:0; }
+.cl-title{ margin:0 0 6px; font-size:18px; font-weight:800; line-height:1.5;
+	background:linear-gradient(90deg,#fff,#cfe9f3); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+	white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cl-tutor{ display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--sz-text2); }
+.cl-tutor svg{ color:var(--sz-muted); }
+/* وضعیت */
+.cl-status{ flex:0 0 auto; display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border-radius:999px;
+	font-size:13px; font-weight:700; color:#7ff0c2; background:rgba(40,200,140,.10); border:1px solid rgba(40,200,140,.3); white-space:nowrap; }
+.cl-dot{ width:8px; height:8px; border-radius:50%; background:#28c88c; box-shadow:0 0 0 4px rgba(40,200,140,.18); animation:sz-pulse 1.8s ease-in-out infinite; }
+@keyframes sz-pulse{ 0%,100%{ box-shadow:0 0 0 3px rgba(40,200,140,.14);} 50%{ box-shadow:0 0 0 7px rgba(40,200,140,.05);} }
+/* دکمه */
+.cl-btn{ flex:0 0 auto; position:relative; overflow:hidden; display:inline-flex; align-items:center; gap:7px;
+	padding:11px 24px; border-radius:12px; font-family:inherit; font-size:14px; font-weight:700; color:#fff; text-decoration:none;
+	background:linear-gradient(120deg,#00b6f1,#1c8fb0 45%,var(--sz-accent) 130%); background-size:220% 100%; background-position:0 0;
+	box-shadow:0 10px 26px -10px rgba(0,182,241,.75); transition:background-position .5s ease, transform .2s ease, box-shadow .3s ease; }
+.cl-btn svg{ transition:transform .25s ease; }
+.cl-btn::after{ content:""; position:absolute; top:0; left:-120%; width:55%; height:100%;
+	background:linear-gradient(120deg,transparent,rgba(255,255,255,.45),transparent); transform:skewX(-20deg); transition:left .6s ease; }
+.cl-btn:hover{ background-position:100% 0; transform:translateY(-2px); box-shadow:0 16px 34px -12px rgba(0,182,241,.9); }
+.cl-btn:hover svg{ transform:translateX(-4px); }
+.cl-btn:hover::after{ left:130%; }
+
+@media(max-width:900px){
+	.sazan-calendar.skin-lux .sazan-cal-lux{ flex-wrap:wrap; row-gap:14px; column-gap:12px; padding:18px 20px; }
+	.sazan-calendar.skin-lux .cl-date{ order:1; }
+	.sazan-calendar.skin-lux .cl-status{ order:2; margin-inline-start:auto; }
+	.sazan-calendar.skin-lux .cl-main{ order:3; flex:1 1 100%; }
+	.sazan-calendar.skin-lux .cl-title{ white-space:normal; }
+	.sazan-calendar.skin-lux .cl-btn{ order:4; flex:1 1 100%; justify-content:center; }
+}
+@media(max-width:520px){
+	.sazan-calendar.skin-lux .sazan-cal-lux{ padding:16px 16px 16px 18px; }
+	.sazan-calendar.skin-lux .cl-status{ margin-inline-start:0; }
+	.sazan-calendar.skin-lux .cl-date,
+	.sazan-calendar.skin-lux .cl-status{ flex:0 1 auto; }
+	.sazan-calendar.skin-lux .cl-title{ font-size:16px; }
+	.sazan-calendar.skin-lux .cl-date{ font-size:13px; padding:8px 12px; }
+}
+
+/* ============================================================
+   دوره‌ها — طرح پوستری لاکچری / درخشان (skin-lux)
+   پوستر تمام‌قاب + پنل شیشه‌ای شناور + قاب گرادینتی درخشان
+   ============================================================ */
+.sazan-courses.skin-lux .sazan-course-card{
+	position:relative; min-height:360px; border:1px solid transparent;
+	border-radius:calc(var(--sz-radius) + 6px); overflow:hidden; isolation:isolate;
+	background:#0a141b; box-shadow:0 26px 60px -34px rgba(0,0,0,.9);
+	transition:transform .3s ease, box-shadow .3s ease;
+}
+.sazan-courses.skin-lux .sazan-course-card:hover{ transform:translateY(-6px); box-shadow:0 36px 70px -28px rgba(0,182,241,.45); }
+.sazan-courses.skin-lux .sazan-course-link{ height:100%; }
+/* تصویر تمام‌قاب + زوم */
+.sazan-courses.skin-lux .sazan-course-media{ position:absolute; inset:0; height:100%; }
+.sazan-courses.skin-lux .sazan-course-media img{ transition:transform .6s cubic-bezier(.22,1,.36,1); }
+.sazan-courses.skin-lux .sazan-course-card:hover .sazan-course-media img{ transform:scale(1.08); }
+.sazan-courses.skin-lux .sazan-course-media::after{
+	content:""; position:absolute; inset:0; z-index:1;
+	background:linear-gradient(180deg, rgba(8,24,32,.05) 0, rgba(8,24,32,.35) 40%, rgba(7,20,27,.92) 100%);
+}
+/* برق‌زدن روی پوستر هنگام هاور */
+.sazan-courses.skin-lux .sazan-course-media::before{
+	content:""; position:absolute; top:0; left:-130%; width:55%; height:100%; z-index:2; pointer-events:none;
+	background:linear-gradient(120deg, transparent, rgba(255,255,255,.28), transparent); transform:skewX(-20deg); transition:left .7s ease;
+}
+.sazan-courses.skin-lux .sazan-course-card:hover .sazan-course-media::before{ left:140%; }
+/* قاب گرادینتی درخشان */
+.sazan-courses.skin-lux .sazan-course-card::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px; z-index:4; pointer-events:none;
+	background:linear-gradient(135deg, var(--sz-cyan), rgba(0,182,241,0) 38%, rgba(247,148,29,0) 62%, var(--sz-accent));
+	-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite:xor; mask-composite:exclude; opacity:.55; transition:opacity .3s ease;
+}
+.sazan-courses.skin-lux .sazan-course-card:hover::before{ opacity:1; }
+/* ربان درخشان */
+.sazan-courses.skin-lux .sazan-course-media .ribbon{
+	z-index:5; top:14px; right:14px; border-radius:999px; padding:6px 16px;
+	background:linear-gradient(120deg, var(--sz-accent), #ffb347);
+	box-shadow:0 10px 22px -8px rgba(246,146,30,.8), 0 0 0 1px rgba(255,255,255,.12) inset;
+}
+.sazan-courses.skin-lux .sazan-course-media .tutor{ display:none; }
+/* پنل شیشه‌ای شناور پایین */
+.sazan-courses.skin-lux .sazan-course-body{
+	position:absolute; left:14px; right:14px; bottom:14px; z-index:5; padding:16px 18px; border-radius:16px;
+	background:rgba(12,24,32,.5); border:1px solid rgba(255,255,255,.14);
+	-webkit-backdrop-filter:blur(12px) saturate(1.2); backdrop-filter:blur(12px) saturate(1.2);
+	box-shadow:0 12px 30px -16px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.1);
+	transform:translateY(0); transition:transform .3s ease;
+}
+.sazan-courses.skin-lux .sazan-course-tags span{ background:rgba(0,182,241,.18); color:#bdeeff; border:1px solid rgba(0,182,241,.3); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+.sazan-courses.skin-lux .sazan-course-body h3{
+	font-size:18px; -webkit-line-clamp:2; -webkit-box-orient:vertical; display:-webkit-box; overflow:hidden;
+	background:linear-gradient(90deg,#fff,#cfe9f3); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.sazan-courses.skin-lux .sazan-course-body p{ color:rgba(255,255,255,.8); -webkit-line-clamp:2; }
+.sazan-courses.skin-lux .sazan-course-meta{ color:rgba(255,255,255,.92); border-top-color:rgba(255,255,255,.18); }
+.sazan-courses.skin-lux .sazan-course-meta b{ color:var(--sz-cyan); }
+
+@media(max-width:600px){ .sazan-courses.skin-lux .sazan-course-card{ min-height:320px; } }
+
+/* ============================================================
+   دوره‌ها — کاروسل طرح لاکچری (skin-lux)
+   ============================================================ */
+.sazan-course-carousel{ position:relative; }
+.sazan-cc-viewport{
+	display:flex; gap:22px; overflow-x:auto; overflow-y:hidden;
+	scroll-snap-type:x mandatory; scroll-behavior:smooth; -webkit-overflow-scrolling:touch;
+	padding:30px 6px 48px; scrollbar-width:none;
+}
+.sazan-cc-viewport::-webkit-scrollbar{ display:none; }
+.sazan-courses.skin-lux .sazan-cc-viewport .sazan-course-card{
+	flex:0 0 calc((100% - 44px) / 3); scroll-snap-align:center;
+	box-shadow:0 14px 26px -16px rgba(0,0,0,.7); /* سایه مهارشده تا با overflow کات نشود */
+}
+.sazan-courses.skin-lux .sazan-cc-viewport .sazan-course-card:hover{
+	transform:translateY(-4px); box-shadow:0 18px 34px -18px rgba(0,182,241,.42);
+}
+/* فلش‌های ناوبری */
+.sz-cc-arrow{
+	position:absolute; top:50%; transform:translateY(-50%); z-index:6;
+	width:46px; height:46px; border-radius:50%; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+	color:#fff; border:1px solid rgba(0,182,241,.4);
+	background:linear-gradient(160deg, rgba(22,40,52,.9), rgba(10,20,28,.92));
+	-webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+	box-shadow:0 12px 28px -12px rgba(0,182,241,.6); transition:.2s ease;
+}
+.sz-cc-arrow:hover{ border-color:var(--sz-cyan); box-shadow:0 16px 34px -12px rgba(0,182,241,.9); transform:translateY(-50%) scale(1.06); }
+.sz-cc-arrow:disabled{ opacity:.35; cursor:default; box-shadow:none; }
+.sz-cc-arrow.prev{ inset-inline-end:-10px; }   /* RTL: «قبلی» سمت راست */
+.sz-cc-arrow.next{ inset-inline-start:-10px; }  /* RTL: «بعدی» سمت چپ */
+/* نقطه‌ها */
+.sazan-cc-dots{ display:flex; justify-content:center; gap:8px; margin-top:14px; }
+.sz-cc-dot{ width:8px; height:8px; padding:0; border:none; border-radius:999px; cursor:pointer;
+	background:rgba(255,255,255,.22); transition:.25s ease; }
+.sz-cc-dot.active{ width:26px; background:linear-gradient(90deg, var(--sz-cyan), var(--sz-accent)); box-shadow:0 0 12px rgba(0,182,241,.6); }
+
+/* ---- موبایل: یک کارت وسط، همسایه‌ها نیمه‌نمایان و بلور ---- */
+@media(max-width:768px){
+	.sazan-cc-viewport{ gap:10px; padding:22px 13% 40px; }
+	.sazan-courses.skin-lux .sazan-cc-viewport .sazan-course-card{
+		flex:0 0 74%; min-height:360px;
+		box-shadow:0 12px 24px -16px rgba(0,0,0,.7);
+		filter:blur(4px); transform:scale(.86); opacity:.5;
+		transition:filter .4s ease, transform .4s ease, opacity .4s ease;
+	}
+	.sazan-courses.skin-lux .sazan-cc-viewport .sazan-course-card.is-active{
+		filter:none; transform:scale(1); opacity:1; z-index:2;
+		box-shadow:0 16px 30px -18px rgba(0,182,241,.4);
+	}
+	.sazan-courses.skin-lux .sazan-cc-viewport .sazan-course-card:hover,
+	.sazan-courses.skin-lux .sazan-cc-viewport .sazan-course-card.is-active:hover{ transform:scale(1); }
+	.sz-cc-arrow{ display:none; }
+
+	/* پنل متن جادارتر و خلوت‌تر */
+	.sazan-courses.skin-lux .sazan-course-body{ left:10px; right:10px; bottom:10px; padding:15px 16px 14px; border-radius:14px; }
+	.sazan-courses.skin-lux .sazan-course-tags{ gap:6px; margin-bottom:10px; }
+	.sazan-courses.skin-lux .sazan-course-tags span{ font-size:10px; padding:3px 10px; }
+	.sazan-courses.skin-lux .sazan-course-body h3{ font-size:16px; line-height:1.55; margin:0 0 10px; }
+	.sazan-courses.skin-lux .sazan-course-body p{ display:none; } /* توضیح در موبایل مخفی */
+	.sazan-courses.skin-lux .sazan-course-meta{
+		flex-direction:row; align-items:center; justify-content:space-between; gap:8px;
+		margin-top:0; padding-top:11px; font-size:11px; line-height:1.6;
+	}
+	.sazan-courses.skin-lux .sazan-course-meta span{ white-space:nowrap; }
+}
+@media(max-width:480px){
+	.sazan-cc-viewport{ padding:20px 9% 36px; }
+	.sazan-courses.skin-lux .sazan-cc-viewport .sazan-course-card{ flex:0 0 82%; min-height:340px; }
+}
+
+/* ============================================================
+   ویجت «درباره سازان» (sazan-about)
+   ============================================================ */
+.sazan-about .sa-inner{ display:flex; align-items:center; gap:42px; }
+/* ترتیب RTL: تصویر(راست) | متن(وسط) | آمار(چپ) */
+.sazan-about .sa-photo{ order:1; flex:0 0 auto; }
+.sazan-about .sa-content{ order:2; flex:1 1 auto; min-width:0; }
+.sazan-about .sa-stats{ order:3; flex:0 0 auto; }
+.sazan-about.is-reverse .sa-photo{ order:3; }
+.sazan-about.is-reverse .sa-stats{ order:1; }
+
+/* تصویر گرد */
+.sa-photo{ position:relative; width:170px; height:170px; }
+.sa-photo img{ width:100%; height:100%; object-fit:cover; border-radius:50%; position:relative; z-index:1; }
+.sa-photo.shape-rounded img, .sa-photo.shape-rounded .sa-photo-ring{ border-radius:24px; }
+.sa-photo-ring{ position:absolute; inset:-6px; border-radius:50%; border:2px solid var(--sz-cyan); opacity:.5; }
+
+/* سرتیتر */
+.sa-head{ margin-bottom:16px; }
+.sa-head-top{ display:flex; align-items:center; gap:10px; flex-direction:row-reverse; justify-content:flex-end; }
+.sa-icon{ color:var(--sz-cyan); display:inline-flex; }
+.sa-title{ margin:0; font-size:26px; font-weight:800; color:var(--sz-text); }
+.sa-en{ margin-top:4px; color:var(--sz-muted); font-size:13px; letter-spacing:3px; font-family:ui-monospace,monospace; }
+.sa-desc{ color:var(--sz-text2); font-size:15px; line-height:2.1; text-align:justify; }
+.sa-desc p{ margin:0 0 10px; }
+.sa-desc p:last-child{ margin-bottom:0; }
+
+/* کپسول‌های آمار */
+.sa-stats{ display:flex; gap:14px; }
+.sa-stat{
+	width:84px; min-height:210px; border-radius:999px; padding:14px 8px 26px;
+	display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;
+	background:linear-gradient(180deg, #2a2417, #14110a); border:1px solid #3a3320;
+}
+.sa-stat-num{
+	width:58px; height:58px; border-radius:50%; display:grid; place-items:center;
+	font-size:18px; font-weight:800; color:#fff; flex:0 0 auto;
+	background:linear-gradient(180deg, var(--sz-accent), var(--sz-accent2)); box-shadow:0 8px 18px -8px rgba(246,146,30,.7);
+}
+.sa-stat-label{ color:var(--sz-text2); font-size:13px; font-weight:700; line-height:1.7; }
+
+/* ---------- طرح درخشان / میلیاردی ---------- */
+.sazan-about.skin-pro .sa-photo-ring{
+	inset:-8px; border:none; opacity:1; z-index:0;
+	background:conic-gradient(from 0deg, var(--sz-cyan), var(--sz-accent), var(--sz-cyan));
+	border-radius:50%; -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px)); mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+	animation:sa-spin 6s linear infinite; filter:drop-shadow(0 0 10px rgba(0,182,241,.5));
+}
+@keyframes sa-spin{ to{ transform:rotate(360deg); } }
+.sazan-about.skin-pro .sa-photo::after{
+	content:""; position:absolute; inset:-22px; border-radius:50%; z-index:-1;
+	background:radial-gradient(circle, rgba(0,182,241,.3), transparent 65%); filter:blur(14px);
+}
+.sazan-about.skin-pro .sa-title{
+	background:linear-gradient(90deg,#fff,#cfe9f3); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.sazan-about.skin-pro .sa-stat{
+	position:relative; isolation:isolate; border:1px solid transparent;
+	background:linear-gradient(180deg, rgba(22,40,52,.92), rgba(10,20,28,.96));
+	-webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+	box-shadow:0 20px 46px -28px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.06);
+	transition:transform .28s ease, box-shadow .3s ease;
+}
+.sazan-about.skin-pro .sa-stat::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; padding:1.4px; z-index:-1;
+	background:linear-gradient(160deg, var(--sz-cyan), rgba(0,182,241,0) 45%, rgba(247,148,29,0) 55%, var(--sz-accent));
+	-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude;
+	opacity:.6; transition:opacity .3s ease;
+}
+.sazan-about.skin-pro .sa-stat:hover{ transform:translateY(-5px); box-shadow:0 30px 60px -28px rgba(0,182,241,.5); }
+.sazan-about.skin-pro .sa-stat:hover::before{ opacity:1; }
+.sazan-about.skin-pro .sa-stat-num{
+	background:linear-gradient(140deg, #00b6f1, #1c8fb0 50%, var(--sz-accent));
+	box-shadow:0 0 0 4px rgba(0,182,241,.12), 0 10px 24px -8px rgba(0,182,241,.7);
+}
+.sazan-about.skin-pro .sa-stat-label{ color:var(--sz-text); }
+
+/* ---------- ریسپانسیو ---------- */
+@media(max-width:1024px){
+	.sazan-about .sa-inner{ gap:30px; }
+	.sa-photo{ width:140px; height:140px; }
+	.sa-stat{ width:74px; min-height:190px; }
+	.sa-stat-num{ width:50px; height:50px; font-size:16px; }
+}
+@media(max-width:820px){
+	.sazan-about .sa-inner{ flex-wrap:wrap; justify-content:center; text-align:center; gap:26px; }
+	.sazan-about .sa-photo{ order:1; flex:1 1 100%; display:flex; justify-content:center; }
+	.sazan-about .sa-content{ order:2; flex:1 1 100%; }
+	.sazan-about .sa-stats{ order:3; flex:1 1 100%; justify-content:center; }
+	.sazan-about.is-reverse .sa-photo,
+	.sazan-about.is-reverse .sa-stats{ order:initial; }
+	.sa-head-top{ justify-content:center; }
+	.sa-desc{ text-align:center; }
+}
+@media(max-width:480px){
+	.sa-stats{ gap:10px; }
+	.sa-stat{ width:32%; min-height:170px; }
+	.sa-stat-label{ font-size:12px; }
+	.sa-title{ font-size:22px; }
+}
+
+/* ============================================================
+   درباره سازان — طرح پریمیوم / پنل شیشه‌ای (skin-lux)
+   ============================================================ */
+.sazan-about.skin-lux .sa-inner{
+	position:relative; isolation:isolate; gap:40px; padding:46px 48px; border-radius:28px;
+	background:
+		radial-gradient(90% 120% at 100% -20%, rgba(0,182,241,.12), transparent 55%),
+		radial-gradient(70% 120% at 0% 120%, rgba(247,148,29,.10), transparent 55%),
+		linear-gradient(150deg, rgba(20,38,50,.9), rgba(9,17,25,.96));
+	-webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+	box-shadow:0 40px 90px -50px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.06);
+}
+/* قاب گرادینتی پنل */
+.sazan-about.skin-lux .sa-inner::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px; z-index:-1;
+	background:linear-gradient(135deg, var(--sz-cyan), rgba(0,182,241,0) 40%, rgba(247,148,29,0) 60%, var(--sz-accent));
+	-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:.7;
+}
+
+/* تصویر: قاب آفست گرادینتی */
+.sazan-about.skin-lux .sa-photo{ width:180px; height:180px; }
+.sazan-about.skin-lux .sa-photo img{ border-radius:26px; }
+.sazan-about.skin-lux .sa-photo-ring{
+	inset:14px -14px -14px 14px; border:none; border-radius:26px; opacity:1; z-index:0;
+	background:linear-gradient(135deg, var(--sz-cyan), var(--sz-accent)); filter:drop-shadow(0 10px 24px rgba(0,182,241,.4));
+}
+.sazan-about.skin-lux .sa-photo::after{
+	content:""; position:absolute; inset:-20px; border-radius:30px; z-index:-1;
+	background:radial-gradient(circle, rgba(0,182,241,.28), transparent 65%); filter:blur(16px);
+}
+
+/* عنوان با خط تأکید درخشان */
+.sazan-about.skin-lux .sa-title{
+	position:relative; padding-bottom:10px;
+	background:linear-gradient(90deg,#fff,#cfe9f3); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.sazan-about.skin-lux .sa-head{ position:relative; }
+.sazan-about.skin-lux .sa-en{ color:var(--sz-cyan); opacity:.9; }
+.sazan-about.skin-lux .sa-desc{ color:var(--sz-text2); }
+
+/* آمار: تایل‌های مدرن با عدد بزرگ گرادینتی */
+.sazan-about.skin-lux .sa-stats{ gap:14px; }
+.sazan-about.skin-lux .sa-stat{
+	position:relative; isolation:isolate; width:108px; min-height:auto; border-radius:18px;
+	padding:20px 12px 18px; gap:8px; border:1px solid rgba(255,255,255,.1);
+	background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0) 60%), rgba(10,20,28,.5);
+	box-shadow:inset 0 1px 0 rgba(255,255,255,.06); transition:transform .26s ease, box-shadow .3s ease, border-color .3s ease;
+}
+/* خط تأکید بالای تایل */
+.sazan-about.skin-lux .sa-stat::before{
+	content:""; position:absolute; top:0; left:22%; right:22%; height:2px; border-radius:2px;
+	background:linear-gradient(90deg, var(--sz-cyan), var(--sz-accent)); box-shadow:0 0 10px rgba(0,182,241,.7);
+}
+.sazan-about.skin-lux .sa-stat:hover{ transform:translateY(-5px); border-color:rgba(0,182,241,.45); box-shadow:0 26px 50px -28px rgba(0,182,241,.55); }
+.sazan-about.skin-lux .sa-stat-num{
+	width:auto; height:auto; border-radius:0; background:none; box-shadow:none; font-size:30px; line-height:1;
+	background:linear-gradient(135deg, #00d0ff, var(--sz-accent)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+	text-shadow:0 0 20px rgba(0,182,241,.25);
+}
+.sazan-about.skin-lux .sa-stat-label{ color:var(--sz-text2); font-size:12px; }
+
+@media(max-width:820px){
+	.sazan-about.skin-lux .sa-inner{ padding:34px 22px; gap:24px; }
+}
+@media(max-width:480px){
+	.sazan-about.skin-lux .sa-stat{ width:32%; padding:16px 8px 14px; }
+	.sazan-about.skin-lux .sa-stat-num{ font-size:24px; }
+}
+
+/* ============================================================
+   پادکست — طرح پوستری لاکچری / درخشان (skin-lux)
+   کاور تمام‌قاب + پنل شیشه‌ای پایین + قاب گرادینتی
+   ============================================================ */
+.sazan-podcast.skin-lux .sazan-pod-card{
+	position:relative; min-height:300px; padding:0; isolation:isolate; overflow:hidden;
+	border:1px solid transparent; border-radius:calc(var(--sz-radius) + 6px); background:#0a141b;
+	box-shadow:0 24px 54px -32px rgba(0,0,0,.9); transition:transform .3s ease, box-shadow .3s ease;
+}
+.sazan-podcast.skin-lux .sazan-pod-card:hover{ transform:translateY(-6px); box-shadow:0 34px 66px -28px rgba(0,182,241,.45); }
+/* قاب گرادینتی درخشان */
+.sazan-podcast.skin-lux .sazan-pod-card::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px; z-index:6; pointer-events:none;
+	background:linear-gradient(135deg, var(--sz-cyan), rgba(0,182,241,0) 38%, rgba(247,148,29,0) 62%, var(--sz-accent));
+	-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude;
+	opacity:.55; transition:opacity .3s ease;
+}
+.sazan-podcast.skin-lux .sazan-pod-card:hover::before{ opacity:1; }
+/* کاور تمام‌قاب */
+.sazan-podcast.skin-lux .sazan-pod-cover{
+	position:absolute; inset:0; width:100%; height:100%; border-radius:0; overflow:hidden;
+	background:linear-gradient(140deg,#16323f,#0e242e); color:rgba(255,255,255,.25);
+}
+.sazan-podcast.skin-lux .sazan-pod-cover img{ width:100%; height:100%; object-fit:cover; transition:transform .6s cubic-bezier(.22,1,.36,1); }
+.sazan-podcast.skin-lux .sazan-pod-card:hover .sazan-pod-cover img{ transform:scale(1.07); }
+.sazan-podcast.skin-lux .sazan-pod-cover-ph{ position:absolute; inset:0; display:grid; place-items:center; }
+.sazan-podcast.skin-lux .sazan-pod-cover-ph svg{ width:46px; height:46px; }
+/* تیرگی پایین برای خوانایی */
+.sazan-podcast.skin-lux .sazan-pod-cover::after{
+	content:""; position:absolute; inset:0; z-index:1;
+	background:linear-gradient(180deg, rgba(8,24,32,.12) 0, rgba(8,24,32,.5) 45%, rgba(7,20,27,.94) 100%);
+}
+/* برق‌زدن روی پوستر */
+.sazan-podcast.skin-lux .sazan-pod-card::after{
+	content:""; position:absolute; top:0; left:-130%; width:55%; height:100%; z-index:5; pointer-events:none;
+	background:linear-gradient(120deg, transparent, rgba(255,255,255,.25), transparent); transform:skewX(-20deg); transition:left .7s ease;
+}
+.sazan-podcast.skin-lux .sazan-pod-card:hover::after{ left:140%; }
+/* دکمه پخش درخشان روی کاور */
+.sazan-podcast.skin-lux .sazan-pod-cover .pl-cover{
+	position:absolute; inset:0; margin:auto; width:62px; height:62px; border-radius:50%; z-index:4;
+	color:#fff; background:linear-gradient(140deg,#00b6f1,#1c8fb0 50%,var(--sz-accent));
+	box-shadow:0 0 0 5px rgba(0,182,241,.14), 0 14px 30px -10px rgba(0,182,241,.8);
+}
+.sazan-podcast.skin-lux .sazan-pod-cover .pl-cover svg{ width:40%; height:40%; }
+/* پنل شیشه‌ای پایین */
+.sazan-podcast.skin-lux .sazan-pod-main{
+	position:absolute; left:12px; right:12px; bottom:12px; z-index:5; padding:13px 15px 12px; border-radius:14px;
+	background:rgba(12,24,32,.45); border:1px solid rgba(255,255,255,.14);
+	-webkit-backdrop-filter:blur(12px) saturate(1.2); backdrop-filter:blur(12px) saturate(1.2);
+	box-shadow:0 12px 28px -16px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.sazan-podcast.skin-lux .sazan-pod-head{ display:none; }
+.sazan-podcast.skin-lux .sazan-pod-card h4{
+	font-size:15px; line-height:1.5; white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+	background:linear-gradient(90deg,#fff,#cfe9f3); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.sazan-podcast.skin-lux .sazan-pod-card p{ display:none; }
+.sazan-podcast.skin-lux .sazan-wave{ height:22px; justify-content:flex-start; margin:9px 0 6px; }
+.sazan-podcast.skin-lux .sazan-pod-meta{ margin-top:7px; color:rgba(255,255,255,.85); }
+
+@media(max-width:600px){ .sazan-podcast.skin-lux .sazan-pod-card{ min-height:280px; } }
+
+/* ============================================================
+   بنر دعوت به اقدام (sazan-cta)
+   ============================================================ */
+.sazan-cta{ --sc-ph:300px; --sc-pw:220px; --sc-px:0px; --sc-py:0px; }
+.sazan-cta .sc-inner{
+	position:relative; display:flex; align-items:center; gap:26px; overflow:visible;
+	background:#0e212b; border:1px solid var(--sz-border); border-radius:24px; padding:40px 44px; min-height:150px;
+}
+.sazan-cta.side-left .sc-inner{ flex-direction:row-reverse; }
+
+/* تصویر شخص که از بالای بنر بیرون می‌زند */
+.sazan-cta .sc-photo{ position:relative; flex:0 0 var(--sc-pw); align-self:stretch; }
+.sazan-cta .sc-photo img{
+	position:absolute; bottom:var(--sc-py); left:calc(50% + var(--sc-px)); transform:translateX(-50%);
+	height:var(--sc-ph); width:auto; max-width:none; z-index:2; display:block;
+}
+.sazan-cta .sc-photo-glow{ display:none; }
+
+/* متن (دسکتاپ: راست‌چین) */
+.sazan-cta .sc-text{ flex:1 1 auto; min-width:0; text-align:right; }
+.sazan-cta .sc-title{ margin:0 0 12px; font-size:22px; font-weight:800; line-height:1.7; color:var(--sz-text); }
+.sazan-cta .sc-desc{ margin:0; font-size:15px; line-height:2; color:var(--sz-text2); }
+
+/* دکمه */
+.sazan-cta .sc-btn{
+	flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;
+	padding:12px 28px; border-radius:10px; font-family:inherit; font-size:15px; font-weight:700; text-decoration:none; cursor:pointer;
+	color:#fff; background:linear-gradient(180deg,#1c7f9c,#15697f); border:1px solid rgba(0,182,241,.35); transition:.2s ease;
+}
+.sazan-cta .sc-btn:hover{ filter:brightness(1.1); transform:translateY(-2px); }
+
+/* ---------- طرح درخشان ---------- */
+.sazan-cta.skin-pro .sc-inner{
+	isolation:isolate; border:1px solid transparent;
+	background:
+		radial-gradient(80% 160% at 100% -30%, rgba(0,182,241,.12), transparent 55%),
+		linear-gradient(150deg, rgba(20,38,50,.92), rgba(9,17,25,.96));
+	-webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+	box-shadow:0 34px 80px -46px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.sazan-cta.skin-pro .sc-inner::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px; z-index:-1;
+	background:linear-gradient(135deg, var(--sz-cyan), rgba(0,182,241,0) 42%, rgba(247,148,29,0) 58%, var(--sz-accent));
+	-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:.7;
+}
+.sazan-cta.skin-pro .sc-title{
+	background:linear-gradient(90deg,#fff,#cfe9f3); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+/* هاله نوری پشت تصویر */
+.sazan-cta.skin-pro .sc-photo-glow{
+	display:block; position:absolute; bottom:var(--sc-py); left:calc(50% + var(--sc-px)); transform:translateX(-50%);
+	width:calc(var(--sc-pw) + 60px); height:calc(var(--sc-ph) * .8); z-index:1; pointer-events:none;
+	background:radial-gradient(ellipse at bottom, rgba(0,182,241,.28), transparent 70%); filter:blur(20px);
+}
+/* دکمه گرادینتی با برق‌زدن */
+.sazan-cta.skin-pro .sc-btn{
+	position:relative; overflow:hidden; border:none;
+	background:linear-gradient(120deg,#00b6f1,#1c8fb0 45%,var(--sz-accent) 130%); background-size:220% 100%; background-position:0 0;
+	box-shadow:0 12px 28px -10px rgba(0,182,241,.75); transition:background-position .5s ease, transform .2s ease, box-shadow .3s ease;
+}
+.sazan-cta.skin-pro .sc-btn::after{
+	content:""; position:absolute; top:0; left:-120%; width:55%; height:100%;
+	background:linear-gradient(120deg,transparent,rgba(255,255,255,.45),transparent); transform:skewX(-20deg); transition:left .6s ease;
+}
+.sazan-cta.skin-pro .sc-btn:hover{ background-position:100% 0; transform:translateY(-2px); box-shadow:0 18px 36px -12px rgba(0,182,241,.9); }
+.sazan-cta.skin-pro .sc-btn:hover::after{ left:130%; }
+
+/* ---------- ریسپانسیو ---------- */
+@media(max-width:820px){
+	.sazan-cta .sc-inner,
+	.sazan-cta.side-left .sc-inner{ flex-direction:column; gap:18px; padding:30px 24px; }
+	.sazan-cta .sc-photo{ flex:0 0 auto; width:100%; height:calc(var(--sc-ph) * .9); }
+	.sazan-cta .sc-photo img{ position:static; transform:none; height:100%; margin-inline:auto; }
+	.sazan-cta .sc-photo-glow{ display:none; }
+	.sazan-cta .sc-text{ width:100%; text-align:center; }
+	.sazan-cta .sc-btn{ width:100%; }
+	/* حالت تصویر در موبایل */
+	.sazan-cta.m-img-hide .sc-photo{ display:none; }
+	.sazan-cta.m-img-bottom .sc-text{ order:1; }
+	.sazan-cta.m-img-bottom .sc-btn{ order:2; }
+	.sazan-cta.m-img-bottom .sc-photo{ order:3; }
+}
+@media(max-width:480px){
+	.sazan-cta .sc-title{ font-size:19px; line-height:1.6; }
+	.sazan-cta .sc-desc{ font-size:14px; }
+}
+
+/* ============================================================
+   CTA — طرح اولترا / میلیاردی (skin-lux): شفق متحرک + قاب گرادینتی چرخان
+   ============================================================ */
+@property --sc-ang{ syntax:'<angle>'; inherits:false; initial-value:0deg; }
+
+.sazan-cta.skin-lux .sc-inner{
+	position:relative; isolation:isolate; overflow:visible; border:1px solid transparent;
+	background:linear-gradient(150deg,#0a1722,#0c2230);
+	box-shadow:0 40px 90px -48px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.sazan-cta.skin-lux .sc-inner > *{ position:relative; z-index:1; }
+/* شفق متحرک (aurora) */
+.sazan-cta.skin-lux .sc-inner::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; z-index:0; pointer-events:none;
+	background:
+		radial-gradient(42% 65% at 14% 18%, rgba(0,182,241,.28), transparent 60%),
+		radial-gradient(42% 65% at 86% 84%, rgba(247,148,29,.24), transparent 60%),
+		radial-gradient(52% 72% at 62% -5%, rgba(120,90,255,.20), transparent 60%);
+	background-size:200% 200%; animation:sc-aurora 13s ease-in-out infinite alternate;
+}
+@keyframes sc-aurora{ from{ background-position:0% 0%; } to{ background-position:100% 100%; } }
+/* قاب گرادینتی چرخان */
+.sazan-cta.skin-lux .sc-inner::after{
+	content:""; position:absolute; inset:0; border-radius:inherit; padding:1.6px; z-index:0; pointer-events:none;
+	background:conic-gradient(from var(--sc-ang), var(--sz-cyan), var(--sz-accent), #7a5aff, var(--sz-cyan));
+	-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude;
+	animation:sc-rot 7s linear infinite; filter:drop-shadow(0 0 8px rgba(0,182,241,.4));
+}
+@keyframes sc-rot{ to{ --sc-ang:360deg; } }
+
+/* عنوان درخشان */
+.sazan-cta.skin-lux .sc-title{
+	background:linear-gradient(90deg,#fff,#bfe9f7 60%,#ffd9a8); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+	text-shadow:0 0 26px rgba(0,182,241,.18);
+}
+.sazan-cta.skin-lux .sc-desc{ color:var(--sz-text2); }
+/* هاله نوری پشت تصویر */
+.sazan-cta.skin-lux .sc-photo-glow{
+	display:block; position:absolute; bottom:var(--sc-py); left:calc(50% + var(--sc-px)); transform:translateX(-50%);
+	width:calc(var(--sc-pw) + 80px); height:calc(var(--sc-ph) * .85); z-index:0; pointer-events:none;
+	background:radial-gradient(ellipse at bottom, rgba(0,182,241,.32), transparent 70%); filter:blur(24px);
+}
+/* دکمه پیل گرادینتی + برق‌زدن */
+.sazan-cta.skin-lux .sc-btn{
+	position:relative; overflow:hidden; border:none; border-radius:999px; padding:13px 32px; font-weight:800; color:#fff;
+	background:linear-gradient(120deg,#00b6f1,#1c8fb0 42%,var(--sz-accent) 130%); background-size:220% 100%; background-position:0 0;
+	box-shadow:0 14px 32px -10px rgba(0,182,241,.8), 0 0 0 4px rgba(0,182,241,.10);
+	transition:background-position .5s ease, transform .2s ease, box-shadow .3s ease;
+}
+.sazan-cta.skin-lux .sc-btn::after{
+	content:""; position:absolute; top:0; left:-120%; width:55%; height:100%;
+	background:linear-gradient(120deg,transparent,rgba(255,255,255,.5),transparent); transform:skewX(-20deg); transition:left .6s ease;
+}
+.sazan-cta.skin-lux .sc-btn:hover{ background-position:100% 0; transform:translateY(-2px); box-shadow:0 20px 40px -12px rgba(0,182,241,.95), 0 0 0 5px rgba(0,182,241,.14); }
+.sazan-cta.skin-lux .sc-btn:hover::after{ left:130%; }
+
+/* ============================================================
+   وبلاگ — طرح لاکچری / میلیاردی (skin-lux): کارت شیشه‌ای + قاب درخشان
+   ============================================================ */
+.sazan-blog.skin-lux .sazan-blog-card{
+	position:relative; isolation:isolate; border:1px solid transparent; border-radius:calc(var(--sz-radius) + 6px); overflow:hidden;
+	background:linear-gradient(180deg, rgba(22,40,52,.92), rgba(10,20,28,.96));
+	-webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+	box-shadow:0 24px 54px -32px rgba(0,0,0,.9); transition:transform .3s ease, box-shadow .3s ease;
+}
+.sazan-blog.skin-lux .sazan-blog-card:hover{ transform:translateY(-6px); box-shadow:0 34px 66px -28px rgba(0,182,241,.45); }
+/* قاب گرادینتی درخشان */
+.sazan-blog.skin-lux .sazan-blog-card::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px; z-index:4; pointer-events:none;
+	background:linear-gradient(135deg, var(--sz-cyan), rgba(0,182,241,0) 38%, rgba(247,148,29,0) 62%, var(--sz-accent));
+	-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude;
+	opacity:.55; transition:opacity .3s ease;
+}
+.sazan-blog.skin-lux .sazan-blog-card:hover::before{ opacity:1; }
+/* تصویر: زوم + برق‌زدن */
+.sazan-blog.skin-lux .sazan-blog-media::after{
+	content:""; position:absolute; top:0; left:-130%; width:55%; height:100%; z-index:3; pointer-events:none;
+	background:linear-gradient(120deg, transparent, rgba(255,255,255,.28), transparent); transform:skewX(-20deg); transition:left .7s ease;
+}
+.sazan-blog.skin-lux .sazan-blog-card:hover .sazan-blog-media::after{ left:140%; }
+/* برچسب و بازدید درخشان */
+.sazan-blog.skin-lux .b-tag{
+	background:linear-gradient(120deg, var(--sz-cyan), var(--sz-accent)); color:#fff;
+	box-shadow:0 8px 18px -8px rgba(0,182,241,.8), 0 0 0 1px rgba(255,255,255,.12) inset;
+}
+.sazan-blog.skin-lux .b-views{ border:1px solid rgba(255,255,255,.14); }
+/* بدنه شیشه‌ای */
+.sazan-blog.skin-lux .sazan-blog-body{
+	background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 50%);
+}
+.sazan-blog.skin-lux .sazan-blog-body h4{
+	background:linear-gradient(90deg,#fff,#cfe9f3); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.sazan-blog.skin-lux .sazan-blog-card:hover .sazan-blog-body h4{ color:inherit; -webkit-text-fill-color:transparent; }
+.sazan-blog.skin-lux .sazan-blog-body p{ color:rgba(255,255,255,.78); }
+.sazan-blog.skin-lux .sazan-blog-foot{ border-top-color:rgba(255,255,255,.12); }
+.sazan-blog.skin-lux .sazan-blog-foot .date{ color:var(--sz-text2); }
+/* دکمه گرادینتی با برق‌زدن */
+.sazan-blog.skin-lux .sazan-blog-foot .sazan-btn{
+	position:relative; overflow:hidden; border:none; color:#fff;
+	background:linear-gradient(120deg,#00b6f1,#1c8fb0 45%,var(--sz-accent) 130%); background-size:220% 100%; background-position:0 0;
+	box-shadow:0 10px 24px -10px rgba(0,182,241,.75); transition:background-position .5s ease, transform .2s ease, box-shadow .3s ease;
+}
+.sazan-blog.skin-lux .sazan-blog-foot .sazan-btn::after{
+	content:""; position:absolute; top:0; left:-120%; width:55%; height:100%;
+	background:linear-gradient(120deg,transparent,rgba(255,255,255,.45),transparent); transform:skewX(-20deg); transition:left .6s ease;
+}
+.sazan-blog.skin-lux .sazan-blog-foot .sazan-btn:hover{ background-position:100% 0; transform:translateY(-2px); box-shadow:0 16px 32px -12px rgba(0,182,241,.9); }
+.sazan-blog.skin-lux .sazan-blog-foot .sazan-btn:hover::after{ left:130%; }
+
+/* ============================================================
+   وبلاگ — اسکرول موبایل شبیه دوره‌ها (کارت وسط + همسایه بلور)
+   ============================================================ */
+@media(max-width:620px){
+	.sazan-blog .sazan-blog-grid{
+		display:flex !important; grid-template-columns:none !important; gap:10px;
+		overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scroll-behavior:smooth;
+		-webkit-overflow-scrolling:touch; padding:8px 13% 30px; scrollbar-width:none; align-items:stretch;
+	}
+	.sazan-blog .sazan-blog-grid::-webkit-scrollbar{ display:none; }
+	.sazan-blog .sazan-blog-card{
+		flex:0 0 74%; scroll-snap-align:center;
+		filter:blur(4px); transform:scale(.88); opacity:.5;
+		transition:filter .4s ease, transform .4s ease, opacity .4s ease;
+	}
+	.sazan-blog .sazan-blog-card.is-active{ filter:none; transform:scale(1); opacity:1; z-index:2; }
+	.sazan-blog .sazan-blog-card:hover{ transform:scale(.88); }
+	.sazan-blog .sazan-blog-card.is-active:hover{ transform:scale(1); }
+}
+@media(max-width:420px){
+	.sazan-blog .sazan-blog-grid{ padding-inline:9%; }
+	.sazan-blog .sazan-blog-card{ flex:0 0 82%; }
+}
+
+/* ============================================================
+   فروشگاه سازان — استفاده از طرح لاکچری دوره‌ها + دکمه خرید
+   ============================================================ */
+.sazan-shop .sazan-course-card{ display:flex; flex-direction:column; }
+/* دکمه‌ی خرید شناور پایین کارت */
+.sazan-shop.skin-lux .sazan-shop-buy{
+	position:absolute; left:14px; right:14px; bottom:14px; z-index:6;
+	display:flex; align-items:center; justify-content:center; gap:8px;
+	padding:12px 16px; border-radius:14px; text-decoration:none; font-weight:700; font-size:14px; color:#fff;
+	background:linear-gradient(120deg, var(--sz-accent), #ffb347);
+	box-shadow:0 14px 30px -12px rgba(246,146,30,.75), inset 0 1px 0 rgba(255,255,255,.25);
+	transform:translateY(120%); opacity:0; transition:transform .32s cubic-bezier(.22,1,.36,1), opacity .25s ease;
+}
+.sazan-shop.skin-lux .sazan-course-card:hover .sazan-shop-buy{ transform:translateY(0); opacity:1; }
+.sazan-shop.skin-lux .sazan-course-card:hover .sazan-course-body{ transform:translateY(-58px); }
+.sazan-shop.skin-lux .sazan-shop-buy:hover{ filter:brightness(1.06); box-shadow:0 18px 38px -12px rgba(246,146,30,.95); }
+.sazan-shop.skin-lux .sazan-shop-buy.added{ background:linear-gradient(120deg,#0a7d24,#16a34a); box-shadow:0 14px 30px -12px rgba(22,163,74,.7); }
+/* قیمت در پنل شیشه‌ای */
+.sazan-shop .sz-shop-price{ font-size:16px; font-weight:800; color:#fff; }
+.sazan-shop .sz-shop-price del{ color:rgba(255,255,255,.5); font-weight:500; font-size:13px; margin-inline-start:6px; }
+.sazan-shop .sz-shop-price ins{ text-decoration:none; color:var(--sz-cyan); }
+/* تعداد ستون قابل تنظیم در کاروسل فروشگاه */
+.sazan-shop.skin-lux .sazan-cc-viewport{ --sz-cc-cols:3; }
+.sazan-shop.skin-lux .sazan-cc-viewport .sazan-course-card{
+	flex:0 0 calc((100% - (var(--sz-cc-cols) - 1) * 22px) / var(--sz-cc-cols));
+}
+@media(max-width:781px){ .sazan-shop.skin-lux .sazan-cc-viewport{ --sz-cc-cols:1.15; } }
+
+/* فروشگاه — حالت گرید (آرشیو) */
+.sazan-shop.skin-lux.is-grid .sazan-course-grid{ padding:14px 4px; }
+.sazan-shop.skin-lux.is-grid .sazan-course-card{ width:100%; }
+.sazan-shop-pagination{ margin-top:26px; display:flex; justify-content:center; }
+.sazan-shop-pagination .woocommerce-pagination ul{ display:flex; gap:8px; list-style:none; margin:0; padding:0; }
+.sazan-shop-pagination .page-numbers{
+	display:inline-flex; align-items:center; justify-content:center; min-width:42px; height:42px; padding:0 12px;
+	border-radius:12px; color:var(--sz-text2); text-decoration:none; font-weight:700;
+	background:var(--sz-card); border:1px solid var(--sz-border); transition:.2s;
+}
+.sazan-shop-pagination .page-numbers:hover{ border-color:var(--sz-cyan); color:#fff; }
+.sazan-shop-pagination .page-numbers.current{
+	color:#fff; border-color:transparent;
+	background:linear-gradient(135deg,var(--sz-cyan),#0090c4); box-shadow:0 8px 20px -8px rgba(0,182,241,.6);
+}

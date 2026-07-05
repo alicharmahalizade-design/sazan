@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان پنل (Sazan Panel)
  * Description: نمایش دوره‌ها و جلسات اختصاصی هر کاربر یا گروه در پنل کاربری از طریق شورت‌کد [sazan_panel].
- * Version: 1.16.0
+ * Version: 1.17.0
  * Author: Sazan
  * Text Domain: sazan-panel
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.16.0' );
+define( 'SZP_VERSION', '1.17.0' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -42,6 +42,7 @@ require_once SZP_DIR . 'includes/frontend/class-szp-eval-ajax.php';
 if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-metaboxes.php';
+	require_once SZP_DIR . 'includes/admin/class-szp-sessions-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-groups-page.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-chat-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-ajax.php';
@@ -84,6 +85,7 @@ function szp_init() {
 		add_action( 'admin_init', array( 'SZP_Install', 'maybe_upgrade' ) );
 		SZP_Admin::init();
 		SZP_Metaboxes::init();
+		SZP_Sessions_Admin::init();
 		SZP_Groups_Page::init();
 		SZP_Chat_Admin::init();
 		SZP_Ajax::init();

@@ -19,7 +19,7 @@ class SZP_Eval_Ajax {
 	public static function set_target() {
 		self::guard();
 		if ( SZP_Eval::day_locked( 'target' ) ) {
-			wp_send_json_error( array( 'msg' => 'ثبت تارگت فقط در روز ' . SZP_Eval::day_name( SZP_Eval::DAY_TARGET ) . ' امکان‌پذیر است.' ) );
+			wp_send_json_error( array( 'msg' => 'ثبت تارگت فقط در روز ' . SZP_Eval::day_name( SZP_Eval::day_target() ) . ' امکان‌پذیر است.' ) );
 		}
 		$amount = isset( $_POST['amount'] ) ? szp_parse_amount( wp_unslash( $_POST['amount'] ) ) : 0;
 		if ( $amount <= 0 ) {
@@ -32,7 +32,7 @@ class SZP_Eval_Ajax {
 	public static function set_result() {
 		self::guard();
 		if ( SZP_Eval::day_locked( 'result' ) ) {
-			wp_send_json_error( array( 'msg' => 'ثبت نتیجه فقط در روز ' . SZP_Eval::day_name( SZP_Eval::DAY_RESULT ) . ' امکان‌پذیر است.' ) );
+			wp_send_json_error( array( 'msg' => 'ثبت نتیجه فقط در روز ' . SZP_Eval::day_name( SZP_Eval::day_result() ) . ' امکان‌پذیر است.' ) );
 		}
 		$amount = isset( $_POST['amount'] ) ? szp_parse_amount( wp_unslash( $_POST['amount'] ) ) : 0;
 		$note   = isset( $_POST['note'] ) ? (string) wp_unslash( $_POST['note'] ) : '';

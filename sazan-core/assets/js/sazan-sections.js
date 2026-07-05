@@ -1,0 +1,390 @@
+( function() {
+	'use strict';
+
+	/* ===== فیلتر دوره‌ها ===== */
+	function initCourses( scope ) {
+		if ( scope.dataset.szCourses === '1' ) { return; }
+		scope.dataset.szCourses = '1';
+		var chips = scope.querySelectorAll( '.sazan-chip' );
+		var cards = scope.querySelectorAll( '.sazan-course-card' );
+		if ( ! chips.length ) { return; }
+		chips.forEach( function( chip ) {
+			chip.addEventListener( 'click', function() {
+				chips.forEach( function( c ) { c.classList.remove( 'active' ); } );
+				chip.classList.add( 'active' );
+				var key = chip.getAttribute( 'data-filter' ) || '';
+				cards.forEach( function( card ) {
+					var cat = card.getAttribute( 'data-cat' ) || '';
+					card.style.display = ( ! key || cat === key ) ? '' : 'none';
+				} );
+			} );
+		} );
+	}
+
+	/* ===== ابزارها ===== */
+	function toFa( s ) { return String( s ).replace( /[0-9]/g, function( d ) { return '۰۱۲۳۴۵۶۷۸۹'.charAt( +d ); } ); }
+	function fmtTime( sec ) {
+		if ( ! isFinite( sec ) || sec < 0 ) { return ''; }
+		sec = Math.floor( sec );
+		var m = Math.floor( sec / 60 ), s = sec % 60;
+		return toFa( m + ':' + ( s < 10 ? '0' + s : s ) );
+	}
+	function isSameOrigin( url ) {
+		try { return new URL( url, location.href ).origin === location.origin; }
+		catch ( e ) { return false; }
+	}
+
+	/* ===== پخش‌کننده پادکست + اکولایزر دقیق ===== */
+	var AC = null;
+	var srcMap = new WeakMap();
+
+	function audioCtx() {
+		if ( ! AC ) {
+			var Ctor = window.AudioContext || window.webkitAudioContext;
+			if ( Ctor ) { AC = new Ctor(); }
+		}
+		return AC;
+	}
+	function setupAnalyser( audio ) {
+		if ( srcMap.has( audio ) ) { return srcMap.get( audio ); }
+		var c = audioCtx();
+		if ( ! c ) { return null; }
+		var src = c.createMediaElementSource( audio );
+		var an = c.createAnalyser();
+		an.fftSize = 128;
+		an.smoothingTimeConstant = 0.8;
+		src.connect( an );
+		an.connect( c.destination );
+		var obj = { an: an, data: new Uint8Array( an.frequencyBinCount ) };
+		srcMap.set( audio, obj );
+		return obj;
+	}
+
+	function initCard( card, audios, cards ) {
+		if ( card.dataset.szPod === '1' ) { return; }
+		card.dataset.szPod = '1';
+
+		var audio = card.querySelector( '.sazan-pod-audio' );
+		var btns = card.querySelectorAll( '.sazan-pod-play' );
+		var bars = card.querySelectorAll( '.sazan-wave i' );
+		var fill = card.querySelector( '.sazan-pod-progress .fill' );
+		var barEl = card.querySelector( '.sazan-pod-bar' );
+		var curEl = card.querySelector( '.sazan-pod-time .cur' );
+		var durEl = card.querySelector( '.sazan-pod-time .dur' );
+		if ( ! audio || ! btns.length ) { return; }
+		audios.push( audio );
+
+		var base = Array.prototype.map.call( bars, function( b ) { return b.style.height; } );
+		var raf = null, analyser = null;
+		var useWeb = isSameOrigin( audio.getAttribute( 'src' ) || '' );
+
+		function stopRaf() { if ( raf ) { cancelAnimationFrame( raf ); raf = null; } }
+
+		function loop() {
+			if ( analyser ) {
+				analyser.an.getByteFrequencyData( analyser.data );
+				var n = bars.length;
+				var usable = Math.floor( analyser.data.length * 0.78 );
+				for ( var i = 0; i < n; i++ ) {
+					var v = analyser.data[ Math.floor( i / n * usable ) ] || 0;
+					var h = Math.min( 100, Math.max( 6, ( v / 255 ) * 110 ) );
+					bars[ i ].style.height = h + '%';
+				}
+			}
+			raf = requestAnimationFrame( loop );
+		}
+
+		function onPlay() {
+			audios.forEach( function( a ) { if ( a !== audio ) { a.pause(); } } );
+			cards.forEach( function( c ) { if ( c !== card ) { c.classList.remove( 'is-playing' ); } } );
+			card.classList.add( 'is-playing' );
+			if ( useWeb ) {
+				try {
+					var c = audioCtx();
+					if ( c && c.state === 'suspended' ) { c.resume(); }
+					analyser = setupAnalyser( audio );
+					if ( analyser ) { card.classList.remove( 'eq-fallback' ); stopRaf(); loop(); }
+					else { card.classList.add( 'eq-fallback' ); }
+				} catch ( e ) {
+					useWeb = false;
+					card.classList.add( 'eq-fallback' );
+				}
+			} else {
+				card.classList.add( 'eq-fallback' );
+			}
+		}
+		function onStop() {
+			card.classList.remove( 'is-playing' );
+			stopRaf();
+			for ( var i = 0; i < bars.length; i++ ) { bars[ i ].style.height = base[ i ] || ''; }
+		}
+
+		btns.forEach( function( btn ) {
+			if ( btn.tagName !== 'BUTTON' ) { return; }
+			btn.addEventListener( 'click', function( e ) {
+				e.preventDefault();
+				if ( audio.paused ) { audio.play(); } else { audio.pause(); }
+			} );
+		} );
+		audio.addEventListener( 'play', onPlay );
+		audio.addEventListener( 'pause', onStop );
+		audio.addEventListener( 'ended', onStop );
+
+		// نوار پیشرفت و زمان
+		audio.addEventListener( 'loadedmetadata', function() {
+			if ( durEl && isFinite( audio.duration ) ) { durEl.textContent = fmtTime( audio.duration ); }
+		} );
+		audio.addEventListener( 'timeupdate', function() {
+			if ( fill && isFinite( audio.duration ) && audio.duration > 0 ) {
+				fill.style.width = ( audio.currentTime / audio.duration * 100 ) + '%';
+			}
+			if ( curEl ) { curEl.textContent = fmtTime( audio.currentTime ); }
+		} );
+		if ( barEl ) {
+			barEl.addEventListener( 'click', function( e ) {
+				if ( ! isFinite( audio.duration ) || audio.duration <= 0 ) { return; }
+				var rect = barEl.getBoundingClientRect();
+				var ratio = ( e.clientX - rect.left ) / rect.width;
+				if ( getComputedStyle( barEl ).direction === 'rtl' ) { ratio = 1 - ratio; }
+				ratio = Math.min( 1, Math.max( 0, ratio ) );
+				audio.currentTime = ratio * audio.duration;
+			} );
+		}
+	}
+
+	function initPodcast( scope ) {
+		var cards = Array.prototype.slice.call( scope.querySelectorAll( '.sazan-pod-card' ) );
+		var audios = [];
+		cards.forEach( function( card ) { initCard( card, audios, cards ); } );
+	}
+
+	/* نوار چرخان: هر گروه را آن‌قدر تکرار می‌کنیم که عرضش از عرض ظرف بیشتر شود،
+	   تا حلقهٔ translateX(-50%) هیچ‌وقت فضای خالی نشان ندهد و قطع نشود. */
+	function fillGroup( group, minW ) {
+		if ( null == group.getAttribute( 'data-sz-seed' ) ) {
+			group.setAttribute( 'data-sz-seed', group.innerHTML );
+		}
+		var seed = group.getAttribute( 'data-sz-seed' );
+		group.innerHTML = seed;
+		var guard = 0;
+		while ( group.scrollWidth < minW && guard < 60 ) {
+			group.insertAdjacentHTML( 'beforeend', seed );
+			guard++;
+		}
+	}
+
+	function initMarquee( scope ) {
+		var list = Array.prototype.slice.call( scope.querySelectorAll( '.sazan-marquee' ) );
+		if ( scope.classList && scope.classList.contains( 'sazan-marquee' ) ) { list.push( scope ); }
+		list.forEach( function( mq ) {
+			var track = mq.querySelector( '.sazan-track' );
+			if ( ! track ) { return; }
+			var groups = track.querySelectorAll( '.sazan-mq-group' );
+			if ( groups.length < 2 ) { return; }
+			function relayout() {
+				var minW = mq.clientWidth + 60; // کمی بیشتر از عرض ظرف تا لبه‌ها خالی نماند
+				if ( minW < 60 ) { return; }
+				fillGroup( groups[0], minW );
+				fillGroup( groups[1], minW );
+				// انیمیشن را با فاصلهٔ دقیقِ یک گروه اجرا می‌کنیم تا حلقه قطعاً بی‌درز باشد
+				if ( typeof track.animate !== 'function' ) { return; } // مرورگر قدیمی: CSS کار می‌کند
+				var w = groups[0].getBoundingClientRect().width;
+				if ( ! w ) { return; }
+				var dur = parseFloat( mq.getAttribute( 'data-sz-speed' ) ) || 26;
+				var rev = mq.classList.contains( 'rev' );
+				if ( mq._szAnim ) { try { mq._szAnim.cancel(); } catch ( e ) {} }
+				track.style.animation = 'none'; // غیرفعال‌کردن انیمیشن CSS و سپردن کار به JS
+				mq._szAnim = track.animate(
+					[ { transform: 'translateX(0)' }, { transform: 'translateX(' + ( -w ) + 'px)' } ],
+					{ duration: dur * 1000, iterations: Infinity, easing: 'linear', direction: rev ? 'reverse' : 'normal' }
+				);
+			}
+			relayout();
+			if ( ! mq.getAttribute( 'data-sz-bound' ) ) {
+				mq.setAttribute( 'data-sz-bound', '1' );
+				var t;
+				window.addEventListener( 'resize', function() { clearTimeout( t ); t = setTimeout( relayout, 150 ); } );
+				if ( mq.closest && mq.closest( '.sazan-mq-pause-yes' ) ) {
+					mq.addEventListener( 'mouseenter', function() { if ( mq._szAnim ) { mq._szAnim.pause(); } } );
+					mq.addEventListener( 'mouseleave', function() { if ( mq._szAnim ) { mq._szAnim.play(); } } );
+				}
+			}
+		} );
+	}
+
+	function initCarousel( scope ) {
+		var car = scope.querySelector ? scope.querySelector( '.sazan-course-carousel' ) : null;
+		if ( scope.classList && scope.classList.contains( 'sazan-course-carousel' ) ) { car = scope; }
+		if ( ! car || car.dataset.szCc === '1' ) { return; }
+		car.dataset.szCc = '1';
+
+		var vp    = car.querySelector( '.sazan-cc-viewport' );
+		var cards = Array.prototype.slice.call( car.querySelectorAll( '.sazan-course-card' ) );
+		var dotsW = car.querySelector( '.sazan-cc-dots' );
+		var prev  = car.querySelector( '.sz-cc-arrow.prev' );
+		var next  = car.querySelector( '.sz-cc-arrow.next' );
+		if ( ! vp || ! cards.length ) { return; }
+
+		var active = 0, dots = [];
+
+		if ( dotsW ) {
+			cards.forEach( function( c, i ) {
+				var d = document.createElement( 'button' );
+				d.type = 'button'; d.className = 'sz-cc-dot';
+				d.addEventListener( 'click', function() { goTo( i ); } );
+				dotsW.appendChild( d ); dots.push( d );
+			} );
+		}
+
+		function scrollToCard( card, smooth ) {
+			// فقط خودِ کاروسل اسکرول می‌شود، نه کل صفحه (RTL-safe)
+			var vpRect = vp.getBoundingClientRect();
+			var cRect  = card.getBoundingClientRect();
+			var delta  = ( cRect.left + cRect.width / 2 ) - ( vpRect.left + vpRect.width / 2 );
+			vp.scrollTo( { left: vp.scrollLeft + delta, behavior: smooth ? 'smooth' : 'auto' } );
+		}
+		function goTo( i, smooth ) {
+			i = Math.max( 0, Math.min( cards.length - 1, i ) );
+			scrollToCard( cards[ i ], smooth !== false );
+		}
+
+		function update() {
+			var box = vp.getBoundingClientRect();
+			var mid = box.left + box.width / 2;
+			var best = 0, bestD = Infinity;
+			cards.forEach( function( card, i ) {
+				var r = card.getBoundingClientRect();
+				if ( ! r.width ) { return; }
+				var d = Math.abs( ( r.left + r.width / 2 ) - mid );
+				if ( d < bestD ) { bestD = d; best = i; }
+			} );
+			active = best;
+			cards.forEach( function( card, i ) { card.classList.toggle( 'is-active', i === best ); } );
+			dots.forEach( function( d, i ) { d.classList.toggle( 'active', i === best ); } );
+			if ( prev ) { prev.disabled = ( best === 0 ); }
+			if ( next ) { next.disabled = ( best === cards.length - 1 ); }
+		}
+
+		var ticking = false;
+		vp.addEventListener( 'scroll', function() {
+			if ( ticking ) { return; }
+			ticking = true;
+			requestAnimationFrame( function() { update(); ticking = false; } );
+		} );
+		if ( prev ) { prev.addEventListener( 'click', function() { goTo( active - 1 ); } ); }
+		if ( next ) { next.addEventListener( 'click', function() { goTo( active + 1 ); } ); }
+		window.addEventListener( 'resize', update );
+
+		update();
+		// مرکز کردن کارت اول بدون اسکرول صفحه (آنی)
+		requestAnimationFrame( function() { goTo( 0, false ); update(); } );
+	}
+
+	/* ===== اسکرول موبایلِ «کارت وسط + همسایه بلور» (وبلاگ) ===== */
+	function initPeek( scroller ) {
+		if ( ! scroller || scroller.dataset.szPeek === '1' ) { return; }
+		scroller.dataset.szPeek = '1';
+		var cards = Array.prototype.slice.call( scroller.children ).filter( function( c ) {
+			return c.classList && c.classList.contains( 'sazan-blog-card' );
+		} );
+		if ( ! cards.length ) { return; }
+
+		function scrollable() { return scroller.scrollWidth > scroller.clientWidth + 4; }
+
+		function update() {
+			if ( ! scrollable() ) { cards.forEach( function( c ) { c.classList.remove( 'is-active' ); } ); return; }
+			var box = scroller.getBoundingClientRect();
+			var mid = box.left + box.width / 2;
+			var best = 0, bd = Infinity;
+			cards.forEach( function( c, i ) {
+				var r = c.getBoundingClientRect();
+				if ( ! r.width ) { return; }
+				var d = Math.abs( ( r.left + r.width / 2 ) - mid );
+				if ( d < bd ) { bd = d; best = i; }
+			} );
+			cards.forEach( function( c, i ) { c.classList.toggle( 'is-active', i === best ); } );
+		}
+
+		var t = false;
+		scroller.addEventListener( 'scroll', function() {
+			if ( t ) { return; }
+			t = true;
+			requestAnimationFrame( function() { update(); t = false; } );
+		} );
+		window.addEventListener( 'resize', update );
+
+		update();
+		// مرکز کردن کارت اول در موبایل بدون اسکرول صفحه
+		requestAnimationFrame( function() {
+			if ( scrollable() ) {
+				var c = cards[0], vp = scroller.getBoundingClientRect(), cr = c.getBoundingClientRect();
+				var delta = ( cr.left + cr.width / 2 ) - ( vp.left + vp.width / 2 );
+				scroller.scrollTo( { left: scroller.scrollLeft + delta, behavior: 'auto' } );
+			}
+			update();
+		} );
+	}
+
+	function initBlog( scope ) {
+		var r = scope || document;
+		( r.querySelectorAll ? r.querySelectorAll( '.sazan-blog .sazan-blog-grid' ) : [] ).forEach( initPeek );
+		if ( r.classList && r.classList.contains( 'sazan-blog' ) ) {
+			var g = r.querySelector( '.sazan-blog-grid' ); if ( g ) { initPeek( g ); }
+		}
+	}
+
+	/* ===== فروشگاه: افزودن به سبد با AJAX ووکامرس (در صورت دسترسی) ===== */
+	function initShopBuy( scope ) {
+		var r = scope || document;
+		var btns = r.querySelectorAll ? r.querySelectorAll( '.sazan-shop-buy[data-product_id]' ) : [];
+		btns.forEach( function( btn ) {
+			if ( btn.dataset.szBuy === '1' ) { return; }
+			btn.dataset.szBuy = '1';
+			btn.addEventListener( 'click', function( e ) {
+				var hasWC = window.wc_add_to_cart_params && window.jQuery;
+				if ( ! hasWC ) { return; } // بدون ووکامرس‌ایجکس، لینک معمولی عمل می‌کند
+				e.preventDefault();
+				var $ = window.jQuery, pid = btn.getAttribute( 'data-product_id' );
+				var orig = btn.textContent;
+				btn.classList.add( 'loading' );
+				$.post(
+					wc_add_to_cart_params.ajax_url || ( wc_add_to_cart_params.wc_ajax_url || '' ).toString().replace( '%%endpoint%%', 'add_to_cart' ),
+					{ product_id: pid, quantity: 1, 'add-to-cart': pid },
+					function( res ) {
+						btn.classList.remove( 'loading' );
+						if ( res && res.error && res.product_url ) { window.location = res.product_url; return; }
+						$( document.body ).trigger( 'added_to_cart', [ res && res.fragments, res && res.cart_hash, $( btn ) ] );
+						btn.classList.add( 'added' );
+						btn.textContent = '✓ اضافه شد';
+						setTimeout( function() { btn.classList.remove( 'added' ); btn.textContent = orig; }, 2200 );
+					}
+				);
+			} );
+		} );
+	}
+
+	function initAll( root ) {
+		var r = root || document;
+		r.querySelectorAll( '.sazan-courses' ).forEach( initCourses );
+		r.querySelectorAll( '.sazan-courses.skin-lux' ).forEach( initCarousel );
+		r.querySelectorAll( '.sazan-podcast' ).forEach( initPodcast );
+		initBlog( r );
+		initMarquee( r );
+		initShopBuy( r );
+	}
+
+	if ( document.readyState !== 'loading' ) { initAll(); }
+	else { document.addEventListener( 'DOMContentLoaded', function() { initAll(); } ); }
+
+	if ( window.jQuery ) {
+		jQuery( window ).on( 'elementor/frontend/init', function() {
+			if ( window.elementorFrontend ) {
+				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-courses.default', function( $s ) { initCourses( $s[0] ); initCarousel( $s[0] ); } );
+				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-shop.default', function( $s ) { initCourses( $s[0] ); initCarousel( $s[0] ); initShopBuy( $s[0] ); } );
+				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-podcast.default', function( $s ) { initPodcast( $s[0] ); } );
+				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-blog.default', function( $s ) { initBlog( $s[0] ); } );
+				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-marquee.default', function( $s ) { initMarquee( $s[0] ); } );
+			}
+		} );
+	}
+} )();

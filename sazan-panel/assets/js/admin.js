@@ -185,6 +185,37 @@
 		}).fail(function () { btn.prop('disabled', false); out.css('color', '#dc2626').text('خطای ارتباط'); });
 	});
 
+	// ---- گروه‌ها: فعال/غیرفعال‌کردن انتخاب «یک عضو» ----
+	$(document).on('change', 'input[name="szp_sms_mode"]', function () {
+		var one = $(this).val() === 'one';
+		$('.szp-sms-one').prop('disabled', !one);
+	});
+
+	// ---- گروه‌ها: ارسال پیامک به اعضا ----
+	$(document).on('click', '.szp-group-sms-send', function () {
+		var btn = $(this);
+		var out = $('.szp-group-sms-msg');
+		var mode = $('input[name="szp_sms_mode"]:checked').val() || 'all';
+		var message = $('#szp-sms-text').val();
+		var user = $('.szp-sms-one').val();
+		if (!message || !message.trim()) { out.css('color', '#dc2626').text('متن پیامک را وارد کنید'); return; }
+		if (mode === 'all' && !window.confirm('پیامک به همه‌ی اعضای گروه ارسال شود؟')) { return; }
+		out.css('color', '#555').text('در حال ارسال…');
+		btn.prop('disabled', true);
+		$.post(SZP_ADMIN.ajax, {
+			action: 'szp_group_sms',
+			nonce: btn.data('nonce') || SZP_ADMIN.nonce,
+			group_id: btn.data('group'),
+			mode: mode,
+			user_id: user,
+			message: message
+		}, function (r) {
+			btn.prop('disabled', false);
+			if (r && r.success) { out.css('color', '#16a34a').text((r.data && r.data.msg) || 'ارسال شد'); }
+			else { out.css('color', '#dc2626').text((r && r.data && r.data.msg) || 'خطا در ارسال'); }
+		}).fail(function () { btn.prop('disabled', false); out.css('color', '#dc2626').text('خطای ارتباط'); });
+	});
+
 	/* ============ Jalali date + time picker ============ */
 	function faDigits(s) {
 		return String(s).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; });

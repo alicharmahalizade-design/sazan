@@ -15,6 +15,7 @@ class SZP_Metaboxes {
 		add_meta_box( 'szp_course_board', 'تابلو اعلانات', array( __CLASS__, 'course_board' ), 'szp_course', 'normal', 'default' );
 		add_meta_box( 'szp_course_files', 'فولدر فایل‌ها و منابع', array( __CLASS__, 'course_files' ), 'szp_course', 'normal', 'default' );
 		add_meta_box( 'szp_course_survey', 'سوالات نظرسنجی دوره', array( __CLASS__, 'course_survey' ), 'szp_course', 'normal', 'default' );
+		add_meta_box( 'szp_course_sessions', 'جلسات این دوره', array( __CLASS__, 'course_sessions' ), 'szp_course', 'side', 'high' );
 		add_meta_box( 'szp_course_access', 'دسترسی (کاربران و گروه‌ها)', array( __CLASS__, 'course_access' ), 'szp_course', 'side', 'default' );
 		add_meta_box( 'szp_course_woo', 'اتصال محصول ووکامرس', array( __CLASS__, 'course_woo' ), 'szp_course', 'side', 'default' );
 
@@ -242,9 +243,44 @@ class SZP_Metaboxes {
 
 	/* ---------------- session boxes ---------------- */
 
+	/** فهرست جلسات یک دوره + دکمه‌ی افزودن جلسه با دوره‌ی از پیش انتخاب‌شده. */
+	public static function course_sessions( $post ) {
+		$sessions = get_posts( array(
+			'post_type'   => 'szp_session',
+			'post_status' => 'any',
+			'numberposts' => -1,
+			'meta_key'    => '_szp_datetime',
+			'orderby'     => 'meta_value',
+			'order'       => 'ASC',
+			'meta_query'  => array( array( 'key' => '_szp_course_id', 'value' => (int) $post->ID ) ),
+		) );
+		if ( $sessions ) {
+			echo '<ol style="margin:0 0 12px;padding-inline-start:20px">';
+			foreach ( $sessions as $s ) {
+				$ts    = szp_ts_from_datetime( get_post_meta( $s->ID, '_szp_datetime', true ) );
+				$title = $s->post_title !== '' ? $s->post_title : '(بدون عنوان)';
+				printf(
+					'<li style="margin:5px 0"><a href="%s">%s</a>%s</li>',
+					esc_url( (string) get_edit_post_link( $s->ID ) ),
+					esc_html( $title ),
+					$ts ? ' <span style="color:#787c82;font-size:11px">' . esc_html( szp_format_datetime( $ts ) ) . '</span>' : ''
+				);
+			}
+			echo '</ol>';
+		} else {
+			echo '<p>هنوز جلسه‌ای برای این دوره ثبت نشده است.</p>';
+		}
+		$add = admin_url( 'post-new.php?post_type=szp_session&szp_course=' . (int) $post->ID );
+		printf( '<a href="%s" class="button button-primary">＋ افزودن جلسه به این دوره</a>', esc_url( $add ) );
+	}
+
 	public static function session_info( $post ) {
 		self::nonce( 'szp_session' );
-		$cid     = (int) get_post_meta( $post->ID, '_szp_course_id', true );
+		$cid = (int) get_post_meta( $post->ID, '_szp_course_id', true );
+		// افزودن جلسه از صفحه‌ی یک دوره: دوره از پیش انتخاب شود.
+		if ( ! $cid && isset( $_GET['szp_course'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$cid = absint( $_GET['szp_course'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		}
 		$courses = get_posts( array( 'post_type' => 'szp_course', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
 		echo '<p class="szp-f"><label>دوره مرتبط</label><select name="_szp_course_id" class="widefat"><option value="">— انتخاب دوره —</option>';
 		foreach ( $courses as $c ) {

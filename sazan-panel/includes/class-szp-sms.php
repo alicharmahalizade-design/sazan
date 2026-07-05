@@ -2,74 +2,91 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * ارسال پیامک از طریق فراز اس‌ام‌اس / آی‌پی‌پنل (REST API).
- * endpoint و کلید و خط ارسال از تنظیمات «ارزیابی» خوانده می‌شود.
- * دو حالت: pattern (پیامک خدماتی با کد پترن) و text (متن آزاد).
+ * ارسال پیامک از طریق «ایران‌پیامک / فراز اس‌ام‌اس» (REST API نسخه ws/v1).
+ * مستندات: https://docs.iranpayamak.com
  *
- * مرجع: https://docs.farazsms.com/  — چون نسخه‌های API متفاوت‌اند،
- * آدرس پایه و کلید قابل‌تنظیم است و در صورت نیاز فقط همان‌ها را عوض کنید.
+ * احراز هویت: هدر «Api-Key».
+ * ارسال ساده: POST /ws/v1/sms/simple با { text, line_number, recipients[], number_format, schedule }.
+ * آدرس پایه، کلید و خط ارسال از تنظیمات «ارزیابی» خوانده می‌شوند.
  */
 class SZP_SMS {
 
 	/** آیا سرویس پیامک فعال و حداقل تنظیمات لازم موجود است؟ */
 	public static function enabled() {
 		$s = SZP_Eval::settings();
-		return ! empty( $s['sms_enabled'] ) && $s['sms_apikey'] !== '' && $s['sms_originator'] !== '';
+		return ! empty( $s['sms_enabled'] )
+			&& trim( (string) $s['sms_apikey'] ) !== ''
+			&& trim( (string) $s['sms_originator'] ) !== '';
 	}
 
 	protected static function base() {
 		$b = rtrim( (string) SZP_Eval::opt( 'sms_base' ), '/' );
-		return $b !== '' ? $b : 'https://rest.ippanel.com/v1';
+		// نصب‌های قدیمی که هنوز آدرس ippanel ذخیره دارند، خودکار به ایران‌پیامک منتقل شوند.
+		if ( $b === '' || strpos( $b, 'ippanel' ) !== false ) {
+			return 'https://api.iranpayamak.com';
+		}
+		return $b;
 	}
 
 	protected static function headers() {
 		return array(
-			'apikey'       => (string) SZP_Eval::opt( 'sms_apikey' ),
+			'Api-Key'      => trim( (string) SZP_Eval::opt( 'sms_apikey' ) ),
 			'Content-Type' => 'application/json',
 			'Accept'       => 'application/json',
 		);
 	}
 
+	/** خط ارسال (line_number) — ارقام فارسی به انگلیسی و حذف فاصله‌ها. */
+	protected static function line() {
+		$l = szp_latin_digits( (string) SZP_Eval::opt( 'sms_originator' ) );
+		return trim( preg_replace( '/\s+/', '', $l ) );
+	}
+
 	/** ارسال متن آزاد به یک گیرنده. خروجی: array( ok, msg ). */
 	public static function send_text( $to, $message ) {
-		$to = szp_normalize_mobile( $to );
-		if ( $to === '' || trim( (string) $message ) === '' ) {
-			return array( 'ok' => false, 'msg' => 'گیرنده یا متن نامعتبر است.' );
-		}
-		$body = array(
-			'originator' => (string) SZP_Eval::opt( 'sms_originator' ),
-			'recipients' => array( $to ),
-			'message'    => (string) $message,
-		);
-		return self::post( '/messages', $body );
+		return self::send_text_bulk( array( $to ), $message );
 	}
 
-	/** ارسال پیامک پترن (خدماتی). $values نگاشت متغیرهای پترن. */
-	public static function send_pattern( $to, $pattern_code, $values ) {
-		$to = szp_normalize_mobile( $to );
-		if ( $to === '' || trim( (string) $pattern_code ) === '' ) {
-			return array( 'ok' => false, 'msg' => 'گیرنده یا کد پترن نامعتبر است.' );
+	/** ارسال متن آزاد یکسان به چند گیرنده در یک درخواست. خروجی: array( ok, msg, count ). */
+	public static function send_text_bulk( $recipients, $message ) {
+		$nums = array();
+		foreach ( (array) $recipients as $r ) {
+			$n = szp_normalize_mobile( $r );
+			if ( $n !== '' ) {
+				$nums[] = $n;
+			}
+		}
+		$nums = array_values( array_unique( $nums ) );
+		if ( ! $nums || trim( (string) $message ) === '' ) {
+			return array( 'ok' => false, 'msg' => 'گیرنده یا متن نامعتبر است.', 'count' => 0 );
 		}
 		$body = array(
-			'pattern_code' => (string) $pattern_code,
-			'originator'   => (string) SZP_Eval::opt( 'sms_originator' ),
-			'recipient'    => $to,
-			'values'       => (array) $values,
+			'text'          => (string) $message,
+			'line_number'   => self::line(),
+			'recipients'    => $nums,
+			'number_format' => 'english',
+			'schedule'      => null,
 		);
-		return self::post( '/messages/patterns/send', $body );
+		$res          = self::post( '/ws/v1/sms/simple', $body );
+		$res['count'] = count( $nums );
+		return $res;
 	}
 
-	/** ارسال یادآوری بر اساس حالت تنظیم‌شده. $kind: target | result. */
+	/** ارسال «نمونه» به صاحب حساب (تست بدون نیاز به گیرنده). */
+	public static function send_sample( $message ) {
+		$body = array(
+			'text'          => (string) $message,
+			'line_number'   => self::line(),
+			'number_format' => 'english',
+			'schedule'      => null,
+		);
+		return self::post( '/ws/v1/sms/sample', $body );
+	}
+
+	/** ارسال یادآوری بر اساس متن قالب. $kind: target | result. */
 	public static function send_reminder( $to, $kind, $name ) {
 		$s   = SZP_Eval::settings();
 		$var = $s['sms_var'] !== '' ? $s['sms_var'] : 'name';
-		if ( $s['sms_mode'] === 'pattern' ) {
-			$code = ( $kind === 'result' ) ? $s['sms_pattern_result'] : $s['sms_pattern_target'];
-			if ( trim( (string) $code ) === '' ) {
-				return array( 'ok' => false, 'msg' => 'کد پترن تنظیم نشده است.' );
-			}
-			return self::send_pattern( $to, $code, array( $var => $name ) );
-		}
 		$tpl = ( $kind === 'result' ) ? $s['sms_text_result'] : $s['sms_text_target'];
 		$msg = str_replace( array( '%name%', '%' . $var . '%' ), $name, (string) $tpl );
 		return self::send_text( $to, $msg );
@@ -84,10 +101,26 @@ class SZP_SMS {
 		if ( is_wp_error( $res ) ) {
 			return array( 'ok' => false, 'msg' => $res->get_error_message() );
 		}
-		$code = (int) wp_remote_retrieve_response_code( $res );
-		$raw  = wp_remote_retrieve_body( $res );
-		$ok   = ( $code >= 200 && $code < 300 );
-		return array( 'ok' => $ok, 'msg' => $ok ? 'ارسال شد.' : ( 'خطای سرویس پیامک (' . $code . '): ' . wp_strip_all_tags( (string) $raw ) ), 'code' => $code );
+		$code   = (int) wp_remote_retrieve_response_code( $res );
+		$raw    = wp_remote_retrieve_body( $res );
+		$json   = json_decode( $raw, true );
+		$status = ( is_array( $json ) && isset( $json['status'] ) ) ? $json['status'] : '';
+		$ok     = ( $code >= 200 && $code < 300 ) && ( $status === '' || $status === 'success' );
+
+		if ( $ok ) {
+			return array( 'ok' => true, 'msg' => 'ارسال شد.', 'code' => $code );
+		}
+		// پیام خطای خواناتر از فیلد messages در صورت وجود.
+		$err = '';
+		if ( is_array( $json ) && isset( $json['messages'] ) && $json['messages'] !== null ) {
+			$err = is_scalar( $json['messages'] )
+				? (string) $json['messages']
+				: wp_json_encode( $json['messages'], JSON_UNESCAPED_UNICODE );
+		}
+		if ( $err === '' ) {
+			$err = wp_strip_all_tags( (string) $raw );
+		}
+		return array( 'ok' => false, 'msg' => 'خطای سرویس پیامک (' . $code . '): ' . $err, 'code' => $code );
 	}
 
 	/* ==================== یادآور روزانه (Cron) ==================== */

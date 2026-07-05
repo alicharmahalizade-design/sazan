@@ -9,6 +9,59 @@ class SZP_Groups_Page {
 		add_action( 'admin_post_szp_delete_group', array( __CLASS__, 'handle_delete' ) );
 		add_action( 'admin_post_szp_group_add_all', array( __CLASS__, 'handle_add_all' ) );
 		add_action( 'admin_post_szp_group_add_people', array( __CLASS__, 'handle_add_people' ) );
+		add_action( 'wp_ajax_szp_group_sms', array( __CLASS__, 'ajax_group_sms' ) );
+	}
+
+	/** ارسال پیامک به همه‌ی اعضای گروه یا یک عضو خاص (متن آزاد). */
+	public static function ajax_group_sms() {
+		check_ajax_referer( 'szp_admin', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'msg' => 'دسترسی غیرمجاز' ) );
+		}
+		if ( ! SZP_SMS::enabled() ) {
+			wp_send_json_error( array( 'msg' => 'سرویس پیامک فعال نیست. ابتدا در «تنظیمات ارزیابی» کلید و خط ارسال را وارد و ذخیره کنید.' ) );
+		}
+		$gid  = absint( $_POST['group_id'] ?? 0 );
+		$mode = ( ( $_POST['mode'] ?? 'all' ) === 'one' ) ? 'one' : 'all';
+		$msg  = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
+		if ( trim( $msg ) === '' ) {
+			wp_send_json_error( array( 'msg' => 'متن پیامک را وارد کنید.' ) );
+		}
+		$members = SZP_Groups::members( $gid );
+		if ( ! $members ) {
+			wp_send_json_error( array( 'msg' => 'این گروه عضوی ندارد.' ) );
+		}
+		if ( $mode === 'one' ) {
+			$uid = absint( $_POST['user_id'] ?? 0 );
+			if ( ! $uid || ! in_array( $uid, $members, true ) ) {
+				wp_send_json_error( array( 'msg' => 'گیرنده‌ی معتبری انتخاب نشده است.' ) );
+			}
+			$members = array( $uid );
+		}
+
+		$nums     = array();
+		$nomobile = 0;
+		foreach ( $members as $uid ) {
+			$m = SZP_Groups::user_mobile( $uid );
+			if ( szp_normalize_mobile( $m ) !== '' ) {
+				$nums[] = $m;
+			} else {
+				$nomobile++;
+			}
+		}
+		if ( ! $nums ) {
+			wp_send_json_error( array( 'msg' => 'هیچ گیرنده‌ای شماره موبایل معتبر ندارد.' ) );
+		}
+
+		$res = SZP_SMS::send_text_bulk( $nums, $msg );
+		if ( empty( $res['ok'] ) ) {
+			wp_send_json_error( array( 'msg' => $res['msg'] ?? 'ارسال ناموفق بود.' ) );
+		}
+		$txt = sprintf( 'پیامک به %s گیرنده ارسال شد ✓', szp_fa_digits( $res['count'] ) );
+		if ( $nomobile ) {
+			$txt .= sprintf( ' (%s نفر بدون موبایل نادیده گرفته شدند)', szp_fa_digits( $nomobile ) );
+		}
+		wp_send_json_success( array( 'msg' => $txt ) );
 	}
 
 	public static function menu() {
@@ -178,6 +231,47 @@ class SZP_Groups_Page {
 					<p><button class="button button-primary">ثبت گروهی و افزودن به گروه</button></p>
 				</form>
 			</details>
+		</div>
+
+		<hr>
+		<div class="szp-group-sms">
+			<h3>ارسال پیامک به اعضای گروه</h3>
+			<?php if ( ! SZP_SMS::enabled() ) : ?>
+				<p class="description" style="color:#b32d2e">سرویس پیامک فعال نیست. ابتدا در «<a href="<?php echo esc_url( add_query_arg( 'page', 'szp-eval-settings', admin_url( 'admin.php' ) ) ); ?>">تنظیمات ارزیابی</a>» کلید API و خط ارسال را وارد و ذخیره کنید.</p>
+			<?php endif; ?>
+			<p class="description">پیامک متن آزاد به همه‌ی اعضا یا یک عضو خاص ارسال می‌شود. (نیازمند خط ارسالِ پشتیبانِ متن آزاد.)</p>
+
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row">گیرندگان</th>
+					<td>
+						<label style="margin-inline-end:14px"><input type="radio" name="szp_sms_mode" value="all" checked> همه‌ی اعضا (<?php echo esc_html( szp_fa_digits( count( $members ) ) ); ?> نفر)</label>
+						<label><input type="radio" name="szp_sms_mode" value="one"> فقط یک عضو:</label>
+						<select class="szp-sms-one" disabled style="min-width:240px;margin-inline-start:6px">
+							<?php
+							foreach ( $members as $uid ) {
+								$info = SZP_Groups::user_info( $uid );
+								if ( ! $info ) { continue; }
+								$label = $info['name'];
+								$label .= $info['mobile'] !== '' ? ' — ' . szp_fa_digits( $info['mobile'] ) : ' — بدون موبایل';
+								printf( '<option value="%d">%s</option>', (int) $uid, esc_html( $label ) );
+							}
+							?>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="szp-sms-text">متن پیامک</label></th>
+					<td><textarea id="szp-sms-text" rows="4" class="large-text" placeholder="متن پیامک..."></textarea></td>
+				</tr>
+			</table>
+			<p>
+				<button type="button" class="button button-primary szp-group-sms-send"
+					data-group="<?php echo (int) $id; ?>"
+					data-nonce="<?php echo esc_attr( wp_create_nonce( 'szp_admin' ) ); ?>"
+					<?php disabled( ! SZP_SMS::enabled() ); ?>>ارسال پیامک</button>
+				<span class="szp-group-sms-msg" style="margin-inline-start:8px;font-weight:600"></span>
+			</p>
 		</div>
 		<?php
 	}

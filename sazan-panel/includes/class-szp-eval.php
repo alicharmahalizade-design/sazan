@@ -36,8 +36,9 @@ class SZP_Eval {
 			'near'               => 85,   // درصد مرز «قابل بهبود»
 			'day_target'         => 2,    // سه‌شنبه
 			'day_result'         => 1,    // دوشنبه
+			'enforce_days'       => 1,    // اعمال قفل روزِ ثبت (۰ = آزاد در هر روز)
 			'sms_enabled'        => 0,
-			'sms_base'           => 'https://rest.ippanel.com/v1',
+			'sms_base'           => 'https://api.iranpayamak.com',
 			'sms_apikey'         => '',
 			'sms_originator'     => '',
 			'sms_mode'           => 'pattern', // pattern | text
@@ -251,10 +252,14 @@ class SZP_Eval {
 		if ( current_user_can( 'manage_options' ) ) {
 			return false;
 		}
+		// قفل روز با گزینه‌ی تنظیمات قابل خاموش‌کردن است.
+		if ( empty( self::opt( 'enforce_days' ) ) ) {
+			return false;
+		}
 		if ( ! apply_filters( 'szp_eval_enforce_days', true ) ) {
 			return false;
 		}
-		$need = ( $which === 'target' ) ? self::day_target() : self::day_result();
+		$need = ( $which === 'result' ) ? self::day_result() : self::day_target();
 		return (int) wp_date( 'N' ) !== $need;
 	}
 

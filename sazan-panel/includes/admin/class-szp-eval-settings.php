@@ -52,6 +52,11 @@ class SZP_Eval_Settings {
 							<p class="description">اگر تحقق از این درصد بیشتر (ولی زیر ۱۰۰٪) باشد «قابل بهبود»، در غیر این صورت «در مسیر». پیش‌فرض ۸۵.</p></td>
 					</tr>
 					<tr>
+						<th scope="row">قفل روزِ ثبت</th>
+						<td><label><input type="checkbox" name="enforce_days" value="1" <?php checked( ! empty( $s['enforce_days'] ) ); ?>> فعال باشد (ثبت تارگت/نتیجه فقط در روزهای تعیین‌شده مجاز است)</label>
+							<p class="description">اگر تیک را بردارید، کاربران در <strong>هر روز</strong> می‌توانند تارگت و نتیجه ثبت کنند. (مدیران همیشه آزادند.)</p></td>
+					</tr>
+					<tr>
 						<th scope="row"><label>روز ثبت تارگت</label></th>
 						<td><?php self::day_select( 'day_target', $s['day_target'] ); ?></td>
 					</tr>
@@ -59,9 +64,15 @@ class SZP_Eval_Settings {
 						<th scope="row"><label>روز ثبت نتیجه</label></th>
 						<td><?php self::day_select( 'day_result', $s['day_result'] ); ?></td>
 					</tr>
+					<tr>
+						<th scope="row">امروز از نظر سایت</th>
+						<td><strong><?php echo esc_html( SZP_Eval::day_name( (int) wp_date( 'N' ) ) ); ?></strong>
+							— <?php echo esc_html( szp_fa_digits( wp_date( 'Y-m-d H:i' ) ) ); ?>
+							<p class="description">اگر این با روز واقعی فرق دارد، «منطقه زمانی» وردپرس (تنظیمات ← همگانی) را روی «تهران» بگذارید؛ قفلِ روز بر همین مبنا کار می‌کند.</p></td>
+					</tr>
 				</table>
 
-				<h2>پیامک یادآوری (فراز اس‌ام‌اس)</h2>
+				<h2>پیامک یادآوری (ایران‌پیامک / فراز اس‌ام‌اس)</h2>
 				<table class="form-table" role="presentation">
 					<tr>
 						<th scope="row">فعال‌سازی</th>
@@ -70,49 +81,30 @@ class SZP_Eval_Settings {
 					<tr>
 						<th scope="row"><label>آدرس پایه API</label></th>
 						<td><input type="text" name="sms_base" value="<?php echo esc_attr( $s['sms_base'] ); ?>" class="regular-text" dir="ltr">
-							<p class="description">پیش‌فرض فراز/آی‌پی‌پنل: <code>https://rest.ippanel.com/v1</code></p></td>
+							<p class="description">پیش‌فرض ایران‌پیامک: <code>https://api.iranpayamak.com</code></p></td>
 					</tr>
 					<tr>
-						<th scope="row"><label>کلید API</label></th>
-						<td><input type="text" name="sms_apikey" value="<?php echo esc_attr( $s['sms_apikey'] ); ?>" class="regular-text" dir="ltr" autocomplete="off"></td>
+						<th scope="row"><label>کلید API (Api-Key)</label></th>
+						<td><input type="text" name="sms_apikey" value="<?php echo esc_attr( $s['sms_apikey'] ); ?>" class="regular-text" dir="ltr" autocomplete="off">
+							<p class="description">از پنل ایران‌پیامک، بخش «کلید وب‌سرویس / Api-Key».</p></td>
 					</tr>
 					<tr>
-						<th scope="row"><label>خط ارسال (Originator)</label></th>
-						<td><input type="text" name="sms_originator" value="<?php echo esc_attr( $s['sms_originator'] ); ?>" class="regular-text" dir="ltr" placeholder="+983000..."></td>
+						<th scope="row"><label>خط ارسال (line_number)</label></th>
+						<td><input type="text" name="sms_originator" value="<?php echo esc_attr( $s['sms_originator'] ); ?>" class="regular-text" dir="ltr" placeholder="2000... / 50002...">
+							<p class="description">شماره خطی که در پنل ایران‌پیامک به شما اختصاص داده شده است.</p></td>
 					</tr>
 					<tr>
-						<th scope="row"><label>حالت ارسال</label></th>
-						<td>
-							<select name="sms_mode">
-								<option value="pattern" <?php selected( $s['sms_mode'], 'pattern' ); ?>>پترن (پیامک خدماتی)</option>
-								<option value="text" <?php selected( $s['sms_mode'], 'text' ); ?>>متن آزاد</option>
-							</select>
-							<p class="description">برای پیامک خدماتی در ایران معمولاً باید از «پترن» با کد مصوب استفاده کنید.</p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label>نام متغیر پترن</label></th>
-						<td><input type="text" name="sms_var" value="<?php echo esc_attr( $s['sms_var'] ); ?>" class="regular-text" dir="ltr" placeholder="name">
-							<p class="description">نام متغیری که در پترن برای «نام کاربر» تعریف کرده‌اید.</p></td>
-					</tr>
-					<tr>
-						<th scope="row"><label>کد پترن روز تارگت</label></th>
-						<td><input type="text" name="sms_pattern_target" value="<?php echo esc_attr( $s['sms_pattern_target'] ); ?>" class="regular-text" dir="ltr"></td>
-					</tr>
-					<tr>
-						<th scope="row"><label>کد پترن روز نتیجه</label></th>
-						<td><input type="text" name="sms_pattern_result" value="<?php echo esc_attr( $s['sms_pattern_result'] ); ?>" class="regular-text" dir="ltr"></td>
-					</tr>
-					<tr>
-						<th scope="row"><label>متن یادآوری تارگت (حالت متن)</label></th>
+						<th scope="row"><label>متن یادآوری تارگت</label></th>
 						<td><textarea name="sms_text_target" rows="2" class="large-text"><?php echo esc_textarea( $s['sms_text_target'] ); ?></textarea>
 							<p class="description"><code>%name%</code> با نام کاربر جایگزین می‌شود.</p></td>
 					</tr>
 					<tr>
-						<th scope="row"><label>متن یادآوری نتیجه (حالت متن)</label></th>
+						<th scope="row"><label>متن یادآوری نتیجه</label></th>
 						<td><textarea name="sms_text_result" rows="2" class="large-text"><?php echo esc_textarea( $s['sms_text_result'] ); ?></textarea></td>
 					</tr>
 				</table>
+				<input type="hidden" name="sms_mode" value="text">
+				<input type="hidden" name="sms_var" value="<?php echo esc_attr( $s['sms_var'] ); ?>">
 
 				<p><button class="button button-primary">ذخیره تنظیمات</button></p>
 			</form>
@@ -141,14 +133,13 @@ class SZP_Eval_Settings {
 			'near'               => min( 99, max( 1, absint( $p['near'] ?? 85 ) ) ),
 			'day_target'         => min( 7, max( 1, absint( $p['day_target'] ?? 2 ) ) ),
 			'day_result'         => min( 7, max( 1, absint( $p['day_result'] ?? 1 ) ) ),
+			'enforce_days'       => empty( $p['enforce_days'] ) ? 0 : 1,
 			'sms_enabled'        => empty( $p['sms_enabled'] ) ? 0 : 1,
 			'sms_base'           => esc_url_raw( $p['sms_base'] ?? '' ),
 			'sms_apikey'         => sanitize_text_field( $p['sms_apikey'] ?? '' ),
 			'sms_originator'     => sanitize_text_field( $p['sms_originator'] ?? '' ),
-			'sms_mode'           => ( ( $p['sms_mode'] ?? 'pattern' ) === 'text' ) ? 'text' : 'pattern',
+			'sms_mode'           => 'text',
 			'sms_var'            => sanitize_key( $p['sms_var'] ?? 'name' ),
-			'sms_pattern_target' => sanitize_text_field( $p['sms_pattern_target'] ?? '' ),
-			'sms_pattern_result' => sanitize_text_field( $p['sms_pattern_result'] ?? '' ),
 			'sms_text_target'    => sanitize_textarea_field( $p['sms_text_target'] ?? '' ),
 			'sms_text_result'    => sanitize_textarea_field( $p['sms_text_result'] ?? '' ),
 		);
