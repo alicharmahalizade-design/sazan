@@ -100,7 +100,17 @@ class Hero extends Widget_Base {
 		$rep->add_control( 'person_role', array( 'label' => esc_html__( 'عنوان زیر نام', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'پژوهشگر اقتصاد رفتاری و کارآفرینی', 'sazan-core' ) ) );
 		$rep->add_control( 'badge_image', array( 'label' => esc_html__( 'نشان دوره (لوگو/بلوک کنار متن)', 'sazan-core' ), 'type' => Controls_Manager::MEDIA ) );
 		$rep->add_control( 'b1_text', array( 'label' => esc_html__( 'دکمه اصلی — متن', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'ثبت‌نام دوره', 'sazan-core' ) ) );
-		$rep->add_control( 'b1_link', array( 'label' => esc_html__( 'دکمه اصلی — لینک', 'sazan-core' ), 'type' => Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
+		$rep->add_control( 'b1_action', array(
+			'label' => esc_html__( 'دکمه اصلی — نوع اقدام', 'sazan-core' ), 'type' => Controls_Manager::SELECT, 'default' => 'link',
+			'options' => array(
+				'link'  => esc_html__( 'لینک معمولی', 'sazan-core' ),
+				'form'  => esc_html__( 'باز کردن فرم سازان (پاپ‌آپ)', 'sazan-core' ),
+				'popup' => esc_html__( 'پاپ‌آپ شورت‌کد (کوئیز و …)', 'sazan-core' ),
+			),
+		) );
+		$rep->add_control( 'b1_link', array( 'label' => esc_html__( 'دکمه اصلی — لینک', 'sazan-core' ), 'type' => Controls_Manager::URL, 'default' => array( 'url' => '#' ), 'condition' => array( 'b1_action' => 'link' ) ) );
+		$rep->add_control( 'b1_form_id', array( 'label' => esc_html__( 'شناسه فرم (ID)', 'sazan-core' ), 'type' => Controls_Manager::NUMBER, 'condition' => array( 'b1_action' => 'form' ), 'description' => esc_html__( 'از «فرم‌ساز سازان» شناسه‌ی فرم را بردار.', 'sazan-core' ) ) );
+		$rep->add_control( 'b1_popup_sc', array( 'label' => esc_html__( 'شورت‌کد پاپ‌آپ', 'sazan-core' ), 'type' => Controls_Manager::TEXTAREA, 'rows' => 2, 'condition' => array( 'b1_action' => 'popup' ), 'placeholder' => '[sazan_quiz id="5"]', 'description' => esc_html__( 'مثلاً کوئیز سازان؛ داخل پاپ‌آپ نمایش داده می‌شود.', 'sazan-core' ) ) );
 		$rep->add_control( 'b2_text', array( 'label' => esc_html__( 'دکمه دوم — متن', 'sazan-core' ), 'type' => Controls_Manager::TEXT ) );
 		$rep->add_control( 'b2_link', array( 'label' => esc_html__( 'دکمه دوم — لینک', 'sazan-core' ), 'type' => Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
 
@@ -191,6 +201,20 @@ class Hero extends Widget_Base {
 		$this->add_control( 'show_dots', array( 'label' => esc_html__( 'نمایش نقطه‌ها', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
 		$this->end_controls_section();
 
+		/* ---------------- جلوه‌های حرکتی ---------------- */
+		$this->start_controls_section( 'sec_fx', array( 'label' => esc_html__( 'جلوه‌های حرکتی', 'sazan-core' ) ) );
+		$this->add_control( 'ken_burns', array( 'label' => esc_html__( 'زوم آرام تصویر (Ken Burns)', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes', 'description' => esc_html__( 'زوم/حرکت بسیار آرام روی تصاویر؛ حس سینمایی.', 'sazan-core' ) ) );
+		$this->add_control( 'parallax', array( 'label' => esc_html__( 'پارالاکس با حرکت موس', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes', 'description' => esc_html__( 'فقط دسکتاپ؛ روی موبایل و حالت کاهش حرکت غیرفعال می‌شود.', 'sazan-core' ) ) );
+		$this->end_controls_section();
+
+		/* ---------------- شمارش معکوس ---------------- */
+		$this->start_controls_section( 'sec_countdown', array( 'label' => esc_html__( 'شمارش معکوس', 'sazan-core' ) ) );
+		$this->add_control( 'show_countdown', array( 'label' => esc_html__( 'نمایش شمارش معکوس', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => '' ) );
+		$this->add_control( 'cd_label', array( 'label' => esc_html__( 'برچسب', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'تا پایان مهلت ثبت‌نام', 'sazan-core' ), 'condition' => array( 'show_countdown' => 'yes' ) ) );
+		$this->add_control( 'cd_date', array( 'label' => esc_html__( 'تاریخ و ساعت پایان', 'sazan-core' ), 'type' => Controls_Manager::DATE_TIME, 'condition' => array( 'show_countdown' => 'yes' ), 'description' => esc_html__( 'مطابق منطقه‌ی زمانی سایت.', 'sazan-core' ) ) );
+		$this->add_control( 'cd_expired', array( 'label' => esc_html__( 'متن پس از پایان', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'مهلت ثبت‌نام به پایان رسید', 'sazan-core' ), 'condition' => array( 'show_countdown' => 'yes' ) ) );
+		$this->end_controls_section();
+
 		/* پالت رنگ مشترک سازان */
 		$this->add_palette_controls();
 	}
@@ -258,11 +282,15 @@ class Hero extends Widget_Base {
 		$isMinimal = ( 'minimal' === $skin );
 		$isZen     = ( 'zen' === $skin );
 		$autoCls   = ( 'yes' === $s['autoplay'] ) ? ' is-auto' : '';
+		$fxCls     = ( 'yes' === $s['ken_burns'] ) ? ' kb' : '';
+		$fxCls    .= ( 'yes' === $s['parallax'] ) ? ' parallax' : '';
+
+		$modals = array(); // پاپ‌آپ‌های شورت‌کد که بعد از هیرو (بیرون overflow) چاپ می‌شوند.
 
 		// در طرح ۲ اگر پیک روشن باشد آن را خاموش می‌کنیم (تصویر ثابت است).
 		if ( $isAcademy ) { $peek = ''; }
 
-		echo '<div class="sazan-sec sazan-hero skin-' . esc_attr( $skin ) . esc_attr( $side . $eff . $peek . $autoCls ) . '"'
+		echo '<div class="sazan-sec sazan-hero skin-' . esc_attr( $skin ) . esc_attr( $side . $eff . $peek . $autoCls . $fxCls ) . '"'
 			. ' data-autoplay="' . esc_attr( $auto ) . '" data-speed="' . esc_attr( (int) $ms ) . '"'
 			. ' data-effect="' . esc_attr( $fade ? 'fade' : 'slide' ) . '"'
 			. ' data-peek="' . esc_attr( '' !== $peek ? '1' : '0' ) . '">';
@@ -343,7 +371,12 @@ class Hero extends Widget_Base {
 
 			if ( ! $isMinimal && ! $isZen ) { $this->render_chips( $s ); }
 
-			$b1 = $this->btn( $sl['b1_text'] ?? '', $sl['b1_link'] ?? array(), 'sazan-btn-orange' );
+			/* شمارش معکوس (مشترک بین اسلایدها) */
+			if ( 'yes' === $s['show_countdown'] && ! empty( $s['cd_date'] ) ) {
+				echo $this->render_countdown( $s );
+			}
+
+			$b1 = $this->btn_main( $sl, $i, $modals );
 			$b2 = $this->btn( $sl['b2_text'] ?? '', $sl['b2_link'] ?? array(), 'sz-hero-ghost' );
 			if ( $b1 || $b2 ) {
 				echo '<div class="sz-hero-actions">' . $b1 . $b2 . '</div>';
@@ -401,5 +434,76 @@ class Hero extends Widget_Base {
 		}
 
 		echo '</div>'; // sazan-hero
+
+		/* پاپ‌آپ‌های شورت‌کد بیرون از هیرو (تا از overflow/transform خارج بمانند) */
+		foreach ( $modals as $m ) {
+			echo $m; // قبلاً ساخته و امن‌سازی شده
+		}
+	}
+
+	/**
+	 * دکمه‌ی اصلی بر اساس نوع اقدام: لینک / پاپ‌آپ فرم سازان / پاپ‌آپ شورت‌کد.
+	 *
+	 * @param array $sl      تنظیمات اسلاید.
+	 * @param int   $i       اندیس اسلاید.
+	 * @param array $modals  آرایه‌ی مرجع برای انباشت مودال‌های شورت‌کد.
+	 */
+	private function btn_main( $sl, $i, &$modals ) {
+		$text = trim( (string) ( $sl['b1_text'] ?? '' ) );
+		if ( '' === $text ) { return ''; }
+		$action = $sl['b1_action'] ?? 'link';
+
+		// باز کردن فرم سازان با مکانیزم داخلی (data-sz-form).
+		if ( 'form' === $action && ! empty( $sl['b1_form_id'] ) ) {
+			$fid = (int) $sl['b1_form_id'];
+			if ( class_exists( '\Sazan\Form_Engine' ) ) {
+				\Sazan\Form_Engine::instance()->queue_modal( $fid );
+			}
+			return sprintf(
+				'<button type="button" class="sazan-btn sazan-btn-orange szf-trigger" data-sz-form="%1$d">%2$s</button>',
+				$fid, esc_html( $text )
+			);
+		}
+
+		// پاپ‌آپ شورت‌کد دلخواه (کوئیز و …) در مودال اختصاصی هیرو.
+		if ( 'popup' === $action && ! empty( $sl['b1_popup_sc'] ) ) {
+			$mid = 'szhm-' . $this->get_id() . '-' . (int) $i;
+			$modals[] = sprintf(
+				'<div class="sz-hero-modal" id="%1$s" hidden><div class="sz-hero-modal-ov"></div>'
+				. '<div class="sz-hero-modal-box"><button type="button" class="sz-hero-modal-x" aria-label="%2$s">&times;</button>'
+				. '<div class="sz-hero-modal-body">%3$s</div></div></div>',
+				esc_attr( $mid ),
+				esc_attr__( 'بستن', 'sazan-core' ),
+				do_shortcode( (string) $sl['b1_popup_sc'] )
+			);
+			return sprintf(
+				'<button type="button" class="sazan-btn sazan-btn-orange sz-hero-open" data-sz-target="%1$s">%2$s</button>',
+				esc_attr( $mid ), esc_html( $text )
+			);
+		}
+
+		// پیش‌فرض: لینک معمولی.
+		return $this->btn( $text, $sl['b1_link'] ?? array(), 'sazan-btn-orange' );
+	}
+
+	/** بلوک شمارش معکوس (مقدار اولیه صفر؛ جاوااسکریپت هر ثانیه به‌روزرسانی می‌کند). */
+	private function render_countdown( $s ) {
+		$deadline = str_replace( ' ', 'T', (string) $s['cd_date'] );
+		$units = array(
+			'd' => esc_html__( 'روز', 'sazan-core' ),
+			'h' => esc_html__( 'ساعت', 'sazan-core' ),
+			'm' => esc_html__( 'دقیقه', 'sazan-core' ),
+			's' => esc_html__( 'ثانیه', 'sazan-core' ),
+		);
+		$out  = '<div class="sz-hero-countdown" data-deadline="' . esc_attr( $deadline ) . '" data-expired="' . esc_attr( $s['cd_expired'] ?? '' ) . '">';
+		if ( ! empty( $s['cd_label'] ) ) {
+			$out .= '<span class="cd-lbl">' . esc_html( $s['cd_label'] ) . '</span>';
+		}
+		$out .= '<div class="cd-boxes">';
+		foreach ( $units as $u => $lbl ) {
+			$out .= '<div class="cd-box"><b data-u="' . esc_attr( $u ) . '">۰۰</b><i>' . esc_html( $lbl ) . '</i></div>';
+		}
+		$out .= '</div></div>';
+		return $out;
 	}
 }

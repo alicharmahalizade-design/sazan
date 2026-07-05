@@ -1211,13 +1211,13 @@
 .sz-hero-photo{ position:relative; z-index:2; }
 .sz-hero-photo img{ max-width:100%; height:auto; display:block; }
 .sz-hero-glow{
-	position:absolute; z-index:1; width:78%; aspect-ratio:1; border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%);
+	position:absolute; z-index:1; inset:0; margin:auto; width:78%; aspect-ratio:1; border-radius:50%;
 	background:radial-gradient(circle at 50% 40%, rgba(0,182,241,.42), rgba(247,148,29,.18) 55%, transparent 72%);
 	filter:blur(6px);
 }
 /* حلقه‌های رادار پشت پرتره */
 .sz-hero-radar{
-	position:absolute; z-index:0; width:min(120%,640px); aspect-ratio:1; left:50%; top:50%; transform:translate(-50%,-50%);
+	position:absolute; z-index:0; inset:0; margin:auto; width:min(120%,640px); aspect-ratio:1;
 	border-radius:50%;
 	background:repeating-radial-gradient(circle at center, rgba(0,182,241,.16) 0 1px, transparent 1px 42px);
 	-webkit-mask-image:radial-gradient(circle at center, #000 55%, transparent 74%);
@@ -1407,3 +1407,52 @@
 .sz-hero-counter{ display:flex; align-items:center; justify-content:center; gap:14px; margin-top:36px; font-family:ui-monospace,monospace; font-size:14px; letter-spacing:1px; color:var(--sz-muted); }
 .sz-hero-counter .cur{ color:var(--sz-text); font-weight:800; }
 .sz-hero-counter .sep{ width:40px; height:1px; background:var(--sz-border); }
+
+/* ============================================================
+   جلوه‌ها: Ken Burns + پارالاکس موس  |  شمارش معکوس  |  پاپ‌آپ شورت‌کد
+   ============================================================ */
+/* Ken Burns: زوم آرام روی تصویر/پس‌زمینه (نه روی تصویر ثابت طرح ۲) */
+@media (prefers-reduced-motion:no-preference){
+	.sazan-hero.kb .sz-hero-photo img,
+	.sazan-hero.kb .sz-hero-bg{ animation:sz-kenburns 22s ease-in-out infinite alternate; transform-origin:center; will-change:transform; }
+}
+@keyframes sz-kenburns{ from{ transform:scale(1); } to{ transform:scale(1.09) translate(1.4%,-1.4%); } }
+
+/* پارالاکس موس: عمق‌های متفاوت روی پرتره/هاله/رادار */
+.sazan-hero.parallax .sz-hero-photo{ transform:translate(calc(var(--sz-px,0)*14px),calc(var(--sz-py,0)*14px)); transition:transform .25s ease-out; }
+.sazan-hero.parallax .sz-hero-glow{ transform:translate(calc(var(--sz-px,0)*10px),calc(var(--sz-py,0)*10px)); transition:transform .3s ease-out; }
+.sazan-hero.parallax .sz-hero-radar{ transform:translate(calc(var(--sz-px,0)*-18px),calc(var(--sz-py,0)*-18px)); transition:transform .35s ease-out; }
+@media (prefers-reduced-motion:reduce){
+	.sazan-hero.parallax .sz-hero-photo,.sazan-hero.parallax .sz-hero-glow,.sazan-hero.parallax .sz-hero-radar{ transform:none !important; }
+}
+
+/* --- شمارش معکوس --- */
+.sz-hero-countdown{ margin:0 0 24px; }
+.sz-hero-countdown .cd-lbl{ display:block; margin-bottom:10px; font-size:13px; font-weight:700; color:var(--sz-text2); }
+.sz-hero-countdown .cd-lbl.cd-done{ color:var(--sz-accent); font-size:15px; }
+.sz-hero-countdown .cd-boxes{ display:inline-flex; gap:10px; direction:ltr; }
+.sz-hero-countdown .cd-box{
+	min-width:62px; padding:10px 6px; text-align:center; border-radius:12px;
+	background:rgba(255,255,255,.04); border:1px solid var(--sz-border);
+}
+.sz-hero-countdown .cd-box b{ display:block; font-size:24px; font-weight:900; color:var(--sz-text); font-variant-numeric:tabular-nums; line-height:1.1; }
+.sz-hero-countdown .cd-box i{ display:block; margin-top:3px; font-size:11px; font-style:normal; color:var(--sz-muted); }
+.sazan-hero.skin-academy .sz-hero-countdown .cd-boxes,
+.sazan-hero.skin-zen .sz-hero-countdown .cd-boxes{ justify-content:center; }
+.sazan-hero.skin-zen .sz-hero-countdown{ text-align:center; }
+
+/* --- پاپ‌آپ شورت‌کد هیرو (کوئیز و …) --- */
+body.sz-hero-modal-open{ overflow:hidden; }
+.sz-hero-modal{ position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px; direction:rtl; }
+.sz-hero-modal[hidden]{ display:none; }
+.sz-hero-modal-ov{ position:absolute; inset:0; background:rgba(4,12,18,.72); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+.sz-hero-modal-box{
+	position:relative; z-index:1; width:min(680px,100%); max-height:88vh; overflow:auto;
+	background:var(--sz-card,#13242f); border:1px solid var(--sz-border,#1d3744); border-radius:18px;
+	padding:26px clamp(16px,3vw,32px); box-shadow:0 40px 90px -30px rgba(0,0,0,.8);
+}
+.sz-hero-modal-x{
+	position:absolute; top:12px; inset-inline-start:12px; width:38px; height:38px; border-radius:50%; cursor:pointer;
+	border:1px solid var(--sz-border,#1d3744); background:rgba(255,255,255,.05); color:var(--sz-text,#e8f0f4); font-size:22px; line-height:1;
+}
+.sz-hero-modal-x:hover{ background:var(--sz-accent,#f7941d); border-color:transparent; color:#fff; }

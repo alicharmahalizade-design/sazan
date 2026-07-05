@@ -363,7 +363,33 @@
 		} );
 	}
 
-	/* ===== اسلایدر هیرو سازان (سه طرح) ===== */
+	/* ===== پاپ‌آپ شورت‌کد هیرو (کوئیز و …) — اتصال یک‌باره روی document ===== */
+	var heroModalsBound = false;
+	function bindHeroModals() {
+		if ( heroModalsBound ) { return; }
+		heroModalsBound = true;
+		function close( m ) { if ( m ) { m.hidden = true; document.body.classList.remove( 'sz-hero-modal-open' ); } }
+		document.addEventListener( 'click', function( e ) {
+			var op = e.target.closest ? e.target.closest( '.sz-hero-open' ) : null;
+			if ( op ) {
+				e.preventDefault();
+				var m = document.getElementById( op.getAttribute( 'data-sz-target' ) );
+				if ( m ) { m.hidden = false; document.body.classList.add( 'sz-hero-modal-open' ); }
+				return;
+			}
+			var box = e.target.closest ? e.target.closest( '.sz-hero-modal' ) : null;
+			if ( box && ( e.target.classList.contains( 'sz-hero-modal-ov' ) || ( e.target.closest && e.target.closest( '.sz-hero-modal-x' ) ) ) ) {
+				close( box );
+			}
+		} );
+		document.addEventListener( 'keydown', function( e ) {
+			if ( e.key === 'Escape' ) {
+				[].forEach.call( document.querySelectorAll( '.sz-hero-modal:not([hidden])' ), close );
+			}
+		} );
+	}
+
+	/* ===== اسلایدر هیرو سازان (چند طرح) ===== */
 	function initHero( el ) {
 		var hero = null;
 		if ( el && el.classList && el.classList.contains( 'sazan-hero' ) ) { hero = el; }
@@ -433,6 +459,56 @@
 		}, { passive: true } );
 
 		if ( isFade ) { hero.classList.add( 'fx-fade' ); }
+
+		/* پارالاکس موس (فقط دسکتاپ، با احترام به کاهش حرکت) */
+		var mm = window.matchMedia;
+		var reduce = mm && mm( '(prefers-reduced-motion: reduce)' ).matches;
+		var coarse = mm && mm( '(pointer: coarse)' ).matches;
+		if ( hero.classList.contains( 'parallax' ) && ! reduce && ! coarse ) {
+			var praf = null;
+			hero.addEventListener( 'mousemove', function( e ) {
+				if ( praf ) { return; }
+				praf = requestAnimationFrame( function() {
+					var r = hero.getBoundingClientRect();
+					hero.style.setProperty( '--sz-px', ( ( e.clientX - r.left ) / r.width - 0.5 ).toFixed( 3 ) );
+					hero.style.setProperty( '--sz-py', ( ( e.clientY - r.top ) / r.height - 0.5 ).toFixed( 3 ) );
+					praf = null;
+				} );
+			} );
+			hero.addEventListener( 'mouseleave', function() {
+				hero.style.setProperty( '--sz-px', 0 ); hero.style.setProperty( '--sz-py', 0 );
+			} );
+		}
+
+		/* شمارش معکوس */
+		[].forEach.call( hero.querySelectorAll( '.sz-hero-countdown' ), function( cd ) {
+			if ( cd.dataset.szCd === '1' ) { return; }
+			cd.dataset.szCd = '1';
+			var dl = new Date( cd.getAttribute( 'data-deadline' ) ).getTime();
+			if ( isNaN( dl ) ) { return; }
+			var bx = { d: cd.querySelector( '[data-u="d"]' ), h: cd.querySelector( '[data-u="h"]' ), m: cd.querySelector( '[data-u="m"]' ), s: cd.querySelector( '[data-u="s"]' ) };
+			function pad2( x ) { return ( x < 10 ? '0' : '' ) + x; }
+			var t = setInterval( tick, 1000 );
+			function tick() {
+				var diff = dl - Date.now();
+				if ( diff <= 0 ) {
+					clearInterval( t );
+					cd.innerHTML = '<span class="cd-lbl cd-done">' + ( cd.getAttribute( 'data-expired' ) || '' ) + '</span>';
+					return;
+				}
+				var sec = Math.floor( diff / 1000 );
+				var d = Math.floor( sec / 86400 ); sec -= d * 86400;
+				var h = Math.floor( sec / 3600 ); sec -= h * 3600;
+				var m = Math.floor( sec / 60 ); sec -= m * 60;
+				if ( bx.d ) { bx.d.textContent = toFa( pad2( d ) ); }
+				if ( bx.h ) { bx.h.textContent = toFa( pad2( h ) ); }
+				if ( bx.m ) { bx.m.textContent = toFa( pad2( m ) ); }
+				if ( bx.s ) { bx.s.textContent = toFa( pad2( sec ) ); }
+			}
+			tick();
+		} );
+
+		bindHeroModals();
 
 		// در حالت پیک با تغییر اندازه باید مرکز دوباره محاسبه شود
 		if ( isPeek && ! isFade ) {
