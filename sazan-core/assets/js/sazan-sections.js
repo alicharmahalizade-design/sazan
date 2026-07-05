@@ -379,6 +379,7 @@
 		if ( ! track || slides.length === 0 ) { return; }
 
 		var vp     = hero.querySelector( '.sz-hero-viewport' );
+		var counter = hero.querySelector( '.sz-hero-counter .cur' );
 		var isFade = hero.getAttribute( 'data-effect' ) === 'fade';
 		var isPeek = hero.getAttribute( 'data-peek' ) === '1';
 		var auto   = hero.getAttribute( 'data-autoplay' ) === '1';
@@ -405,6 +406,7 @@
 			}
 			dots.forEach( function( d, i ) { d.classList.toggle( 'active', i === idx ); } );
 			slides.forEach( function( s, i ) { s.classList.toggle( 'is-current', i === idx ); } );
+			if ( counter ) { counter.textContent = toFa( ( idx + 1 < 10 ? '0' : '' ) + ( idx + 1 ) ); }
 		}
 		function go( i ) { idx = ( i % n + n ) % n; paint(); }
 		function nextSlide() { go( idx + 1 ); }

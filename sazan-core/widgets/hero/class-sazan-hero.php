@@ -44,6 +44,7 @@ class Hero extends Widget_Base {
 				'academy'  => esc_html__( 'طرح ۲ — آکادمی / دوره 🎓', 'sazan-core' ),
 				'fusion'   => esc_html__( 'طرح ۳ — تلفیقی 💎', 'sazan-core' ),
 				'minimal'  => esc_html__( 'طرح ۴ — مینیمال / خلوت 🕊️', 'sazan-core' ),
+				'zen'      => esc_html__( 'طرح ۵ — خیلی مینیمال / وسط‌چین 🤍', 'sazan-core' ),
 			),
 			'description' => esc_html__( 'هر سه طرح از یک محتوا استفاده می‌کنند؛ فقط چیدمان و ظاهر تغییر می‌کند.', 'sazan-core' ),
 		) );
@@ -240,7 +241,7 @@ class Hero extends Widget_Base {
 
 	protected function render() {
 		$s    = $this->get_settings_for_display();
-		$skin = in_array( $s['skin'], array( 'personal', 'academy', 'fusion', 'minimal' ), true ) ? $s['skin'] : 'personal';
+		$skin = in_array( $s['skin'], array( 'personal', 'academy', 'fusion', 'minimal', 'zen' ), true ) ? $s['skin'] : 'personal';
 		$side = ( 'right' === $s['media_side'] ) ? ' media-right' : '';
 		$fade = ( 'fade' === $s['effect'] );
 		$peek = ( ! $fade && 'yes' === $s['peek'] ) ? ' is-peek' : '';
@@ -255,6 +256,7 @@ class Hero extends Widget_Base {
 		$multi     = count( $slides ) > 1;
 		$isAcademy = ( 'academy' === $skin );
 		$isMinimal = ( 'minimal' === $skin );
+		$isZen     = ( 'zen' === $skin );
 		$autoCls   = ( 'yes' === $s['autoplay'] ) ? ' is-auto' : '';
 
 		// در طرح ۲ اگر پیک روشن باشد آن را خاموش می‌کنیم (تصویر ثابت است).
@@ -283,10 +285,17 @@ class Hero extends Widget_Base {
 		echo '<div class="sz-hero-viewport"><div class="sz-hero-track">';
 
 		foreach ( $slides as $i => $sl ) {
-			echo '<div class="sz-hero-slide"><div class="sz-hero-inner">';
+			echo '<div class="sz-hero-slide">';
+
+			/* طرح ۵: تصویر به‌صورت پس‌زمینه‌ی محو پشت متن */
+			if ( $isZen && ! empty( $sl['image']['url'] ) ) {
+				echo '<div class="sz-hero-bg" style="background-image:url(' . esc_url( $sl['image']['url'] ) . ')"></div>';
+			}
+
+			echo '<div class="sz-hero-inner">';
 
 			/* رسانه‌ی داخل اسلاید (طرح ۱ و ۳): پرتره + رادار + نام روی عکس */
-			if ( ! $isAcademy && ! empty( $sl['image']['url'] ) ) {
+			if ( ! $isAcademy && ! $isZen && ! empty( $sl['image']['url'] ) ) {
 				echo '<div class="sz-hero-media">';
 				echo '<span class="sz-hero-radar" aria-hidden="true"></span>';
 				echo '<span class="sz-hero-glow" aria-hidden="true"></span>';
@@ -308,7 +317,7 @@ class Hero extends Widget_Base {
 				echo '<span class="sz-hero-index" aria-hidden="true">' . esc_html( $this->fa_index( $i + 1 ) ) . '</span>';
 			}
 
-			if ( ! $isMinimal && ! empty( $sl['badge_image']['url'] ) ) {
+			if ( ! $isMinimal && ! $isZen && ! empty( $sl['badge_image']['url'] ) ) {
 				echo '<div class="sz-hero-badgeimg"><img src="' . esc_url( $sl['badge_image']['url'] ) . '" alt="" loading="lazy"></div>';
 			}
 
@@ -332,7 +341,7 @@ class Hero extends Widget_Base {
 				echo '<p class="sz-hero-sub">' . esc_html( $sl['subtitle'] ) . '</p>';
 			}
 
-			if ( ! $isMinimal ) { $this->render_chips( $s ); }
+			if ( ! $isMinimal && ! $isZen ) { $this->render_chips( $s ); }
 
 			$b1 = $this->btn( $sl['b1_text'] ?? '', $sl['b1_link'] ?? array(), 'sazan-btn-orange' );
 			$b2 = $this->btn( $sl['b2_text'] ?? '', $sl['b2_link'] ?? array(), 'sz-hero-ghost' );
@@ -340,7 +349,7 @@ class Hero extends Widget_Base {
 				echo '<div class="sz-hero-actions">' . $b1 . $b2 . '</div>';
 			}
 
-			if ( 'yes' === $s['show_rating'] ) {
+			if ( 'yes' === $s['show_rating'] && ! $isZen ) {
 				echo '<div class="sz-hero-rating"><span class="sz-stars">' . $this->render_stars( $s['rating_stars'] ) . '</span>';
 				if ( ! empty( $s['rating_text'] ) ) {
 					echo '<span class="sz-rating-text">' . esc_html( $s['rating_text'] ) . '</span>';
@@ -364,17 +373,23 @@ class Hero extends Widget_Base {
 
 		echo '</div>'; // stage
 
-		/* نقطه‌ها */
+		/* نقطه‌ها یا شمارنده (طرح ۵) */
 		if ( 'yes' === $s['show_dots'] && $multi ) {
-			echo '<div class="sz-hero-dots">';
-			foreach ( $slides as $i => $sl ) {
-				echo '<button type="button" class="sz-hero-dot' . ( 0 === $i ? ' active' : '' ) . '" aria-label="' . esc_attr( $i + 1 ) . '"></button>';
+			if ( $isZen ) {
+				echo '<div class="sz-hero-counter"><span class="cur">' . esc_html( $this->fa_index( 1 ) ) . '</span>'
+					. '<i class="sep" aria-hidden="true"></i>'
+					. '<span class="tot">' . esc_html( $this->fa_index( count( $slides ) ) ) . '</span></div>';
+			} else {
+				echo '<div class="sz-hero-dots">';
+				foreach ( $slides as $i => $sl ) {
+					echo '<button type="button" class="sz-hero-dot' . ( 0 === $i ? ' active' : '' ) . '" aria-label="' . esc_attr( $i + 1 ) . '"></button>';
+				}
+				echo '</div>';
 			}
-			echo '</div>';
 		}
 
 		/* نوار آمار */
-		if ( 'yes' === $s['show_stats'] && ! empty( $s['stats'] ) ) {
+		if ( 'yes' === $s['show_stats'] && ! empty( $s['stats'] ) && ! $isZen ) {
 			echo '<div class="sz-hero-stats">';
 			foreach ( (array) $s['stats'] as $st ) {
 				printf(
