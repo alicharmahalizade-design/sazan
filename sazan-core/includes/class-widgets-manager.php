@@ -30,6 +30,7 @@ final class Widgets_Manager {
 	 */
 	private $widgets = array(
 		'header/class-sazan-header.php'     => '\Sazan\Widgets\Header',
+		'hero/class-sazan-hero.php'         => '\Sazan\Widgets\Hero',
 		'sticky-bar/class-sazan-sticky-bar.php' => '\Sazan\Widgets\Sticky_Bar',
 		'mobile-bar/class-sazan-mobile-bar.php' => '\Sazan\Widgets\Mobile_Bar',
 		'mobile-header/class-sazan-mobile-header.php' => '\Sazan\Widgets\Mobile_Header',

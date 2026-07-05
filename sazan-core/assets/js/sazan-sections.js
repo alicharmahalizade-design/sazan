@@ -363,11 +363,93 @@
 		} );
 	}
 
+	/* ===== اسلایدر هیرو سازان (سه طرح) ===== */
+	function initHero( el ) {
+		var hero = null;
+		if ( el && el.classList && el.classList.contains( 'sazan-hero' ) ) { hero = el; }
+		else if ( el && el.querySelector ) { hero = el.querySelector( '.sazan-hero' ); }
+		if ( ! hero || hero.dataset.szHero === '1' ) { return; }
+		hero.dataset.szHero = '1';
+
+		var track  = hero.querySelector( '.sz-hero-track' );
+		var slides = Array.prototype.slice.call( hero.querySelectorAll( '.sz-hero-slide' ) );
+		var dots   = Array.prototype.slice.call( hero.querySelectorAll( '.sz-hero-dot' ) );
+		var prev   = hero.querySelector( '.sz-hero-arrow.prev' );
+		var next   = hero.querySelector( '.sz-hero-arrow.next' );
+		if ( ! track || slides.length === 0 ) { return; }
+
+		var vp     = hero.querySelector( '.sz-hero-viewport' );
+		var isFade = hero.getAttribute( 'data-effect' ) === 'fade';
+		var isPeek = hero.getAttribute( 'data-peek' ) === '1';
+		var auto   = hero.getAttribute( 'data-autoplay' ) === '1';
+		var speed  = parseInt( hero.getAttribute( 'data-speed' ), 10 ) || 6000;
+		var idx = 0, timer = null, n = slides.length;
+
+		function paint() {
+			if ( isFade ) {
+				slides.forEach( function( s, i ) { s.classList.toggle( 'is-active', i === idx ); } );
+			} else if ( isPeek ) {
+				// مرکز‌چین با پیک: با محاسبهٔ پیکسلی، اسلاید فعال وسط ویوپورت قرار می‌گیرد
+				var vpW = vp.clientWidth;
+				var sw  = slides[0].getBoundingClientRect().width;
+				var cs  = getComputedStyle( track );
+				var gap = parseFloat( cs.columnGap || cs.gap || 0 ) || 0;
+				var off = ( vpW / 2 ) - ( idx * ( sw + gap ) + sw / 2 );
+				track.style.transform = 'translateX(' + off + 'px)';
+			} else {
+				// چیدمان داخلی مسیر LTR است؛ پس ترنسلیت منفی همیشه درست کار می‌کند
+				track.style.transform = 'translateX(' + ( -idx * 100 ) + '%)';
+			}
+			dots.forEach( function( d, i ) { d.classList.toggle( 'active', i === idx ); } );
+			slides.forEach( function( s, i ) { s.classList.toggle( 'is-current', i === idx ); } );
+		}
+		function go( i ) { idx = ( i % n + n ) % n; paint(); }
+		function nextSlide() { go( idx + 1 ); }
+		function prevSlide() { go( idx - 1 ); }
+
+		function stop() { if ( timer ) { clearInterval( timer ); timer = null; } }
+		function start() { if ( auto && n > 1 ) { stop(); timer = setInterval( nextSlide, speed ); } }
+
+		if ( next ) { next.addEventListener( 'click', function() { nextSlide(); start(); } ); }
+		if ( prev ) { prev.addEventListener( 'click', function() { prevSlide(); start(); } ); }
+		dots.forEach( function( d, i ) { d.addEventListener( 'click', function() { go( i ); start(); } ); } );
+
+		hero.addEventListener( 'mouseenter', stop );
+		hero.addEventListener( 'mouseleave', start );
+
+		// سوایپ لمسی
+		var x0 = null;
+		hero.addEventListener( 'touchstart', function( e ) { x0 = e.touches[0].clientX; stop(); }, { passive: true } );
+		hero.addEventListener( 'touchend', function( e ) {
+			if ( x0 === null ) { return; }
+			var dx = e.changedTouches[0].clientX - x0;
+			if ( Math.abs( dx ) > 40 ) { ( dx < 0 ? nextSlide : prevSlide )(); } // RTL: کشیدن به چپ = بعدی
+			x0 = null; start();
+		}, { passive: true } );
+
+		if ( isFade ) { hero.classList.add( 'fx-fade' ); }
+
+		// در حالت پیک با تغییر اندازه باید مرکز دوباره محاسبه شود
+		if ( isPeek && ! isFade ) {
+			var rt;
+			window.addEventListener( 'resize', function() { clearTimeout( rt ); rt = setTimeout( paint, 120 ); } );
+			if ( 'undefined' !== typeof window.ResizeObserver ) {
+				new ResizeObserver( function() { paint(); } ).observe( hero );
+			}
+		}
+
+		paint();
+		// یک بار بعد از چیدمان اولیه برای اطمینان از محاسبهٔ درست عرض‌ها
+		requestAnimationFrame( paint );
+		start();
+	}
+
 	function initAll( root ) {
 		var r = root || document;
 		r.querySelectorAll( '.sazan-courses' ).forEach( initCourses );
 		r.querySelectorAll( '.sazan-courses.skin-lux' ).forEach( initCarousel );
 		r.querySelectorAll( '.sazan-podcast' ).forEach( initPodcast );
+		r.querySelectorAll( '.sazan-hero' ).forEach( initHero );
 		initBlog( r );
 		initMarquee( r );
 		initShopBuy( r );
@@ -384,6 +466,7 @@
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-podcast.default', function( $s ) { initPodcast( $s[0] ); } );
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-blog.default', function( $s ) { initBlog( $s[0] ); } );
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-marquee.default', function( $s ) { initMarquee( $s[0] ); } );
+				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-hero.default', function( $s ) { initHero( $s[0] ); } );
 			}
 		} );
 	}
