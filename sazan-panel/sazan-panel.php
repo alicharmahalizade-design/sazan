@@ -31,6 +31,7 @@ require_once SZP_DIR . 'includes/class-szp-chat.php';
 require_once SZP_DIR . 'includes/class-szp-ai.php';
 require_once SZP_DIR . 'includes/class-szp-canvas.php';
 require_once SZP_DIR . 'includes/class-szp-eval.php';
+require_once SZP_DIR . 'includes/class-szp-courses-slider.php';
 require_once SZP_DIR . 'includes/class-szp-sms.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-frontend.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-front-ajax.php';

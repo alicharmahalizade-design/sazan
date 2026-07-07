@@ -13,6 +13,7 @@ class SZP_Frontend {
 		add_shortcode( 'sazan_canvas_gallery', array( __CLASS__, 'sc_canvas_gallery' ) );
 		add_shortcode( 'sazan_my_eval', array( __CLASS__, 'sc_eval' ) );
 		add_shortcode( 'sazan_eval_board', array( __CLASS__, 'sc_eval_board' ) );
+		add_shortcode( 'sazan_courses_slider', array( __CLASS__, 'sc_courses_slider' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
 
@@ -50,6 +51,11 @@ class SZP_Frontend {
 		$evjs  = SZP_DIR . 'assets/js/sazan-eval.js';
 		wp_register_style( 'szp-eval', SZP_URL . 'assets/css/sazan-eval.css', array( 'szp-front' ), file_exists( $evcss ) ? filemtime( $evcss ) : SZP_VERSION );
 		wp_register_script( 'szp-eval', SZP_URL . 'assets/js/sazan-eval.js', array( 'szp-front' ), file_exists( $evjs ) ? filemtime( $evjs ) : SZP_VERSION, true );
+
+		$cscss = SZP_DIR . 'assets/css/sazan-courses-slider.css';
+		$csjs  = SZP_DIR . 'assets/js/sazan-courses-slider.js';
+		wp_register_style( 'szp-courses-slider', SZP_URL . 'assets/css/sazan-courses-slider.css', array(), file_exists( $cscss ) ? filemtime( $cscss ) : SZP_VERSION );
+		wp_register_script( 'szp-courses-slider', SZP_URL . 'assets/js/sazan-courses-slider.js', array(), file_exists( $csjs ) ? filemtime( $csjs ) : SZP_VERSION, true );
 	}
 
 	/* ---------------- «ارزیابی من» shortcode ---------------- */
@@ -71,6 +77,34 @@ class SZP_Frontend {
 		wp_enqueue_style( 'szp-front' );
 		wp_enqueue_style( 'szp-eval' );
 		return SZP_Eval::board( $a );
+	}
+
+	/** اسلایدر دوره‌ها. مثال: [sazan_courses_slider design="6a" source="auto" count="6"] */
+	public static function sc_courses_slider( $atts ) {
+		$a = shortcode_atts( array(
+			'design'   => '',
+			'source'   => 'auto',
+			'count'    => '0',
+			'autoplay' => '1',
+			'interval' => '5',
+			'archer'   => '1',
+			'title'    => '',
+			'switcher' => '0',
+			'designs'  => '',
+		), $atts, 'sazan_courses_slider' );
+		wp_enqueue_style( 'szp-courses-slider' );
+		wp_enqueue_script( 'szp-courses-slider' );
+		return SZP_Courses_Slider::render( array(
+			'design'        => $a['design'],
+			'source'        => $a['source'],
+			'count'         => (int) $a['count'],
+			'autoplay'      => ( $a['autoplay'] !== '0' && $a['autoplay'] !== 'no' ),
+			'interval'      => (int) $a['interval'],
+			'archer'        => ( $a['archer'] !== '0' && $a['archer'] !== 'no' ),
+			'title'         => $a['title'],
+			'show_switcher' => ( $a['switcher'] === '1' || $a['switcher'] === 'yes' ),
+			'designs'       => array_filter( array_map( 'trim', explode( ',', $a['designs'] ) ) ),
+		) );
 	}
 
 	/* ---------------- service canvas shortcode ---------------- */
