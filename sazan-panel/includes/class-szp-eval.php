@@ -132,6 +132,11 @@ class SZP_Eval {
 		return (bool) apply_filters( 'szp_eval_allow_edit_target', true );
 	}
 
+	/** آیا کاربر اجازه‌ی ویرایش نتیجه‌ی هفته‌های خودش را دارد؟ (قابل کنترل با فیلتر) */
+	public static function can_edit_result() {
+		return (bool) apply_filters( 'szp_eval_allow_edit_result', true );
+	}
+
 	/**
 	 * ویرایش تارگت یک هفته‌ی موجودِ متعلق به همین کاربر (تصحیح تارگت ثبت‌شده).
 	 * خروجی: array( ok, week?, target?, status?, pct? )
@@ -155,6 +160,37 @@ class SZP_Eval {
 			'target' => $amount,
 			'status' => self::compute_status( $amount, $row->result, (bool) $row->has_result ),
 			'pct'    => $row->has_result ? self::pct( $amount, $row->result ) : 0,
+		);
+	}
+
+	/**
+	 * ویرایش نتیجه‌ی یک هفته‌ی موجودِ متعلق به همین کاربر. اگر هفته هنوز نتیجه نداشته باشد،
+	 * با این کار نتیجه‌دار می‌شود. خروجی: array( ok, week?, result?, status?, pct? )
+	 */
+	public static function edit_result( $user_id, $week_no, $amount ) {
+		global $wpdb;
+		$user_id = (int) $user_id;
+		$week_no = (int) $week_no;
+		$amount  = max( 0, (float) $amount );
+		$row     = self::get_week( $user_id, $week_no );
+		if ( ! $row ) {
+			return array( 'ok' => false );
+		}
+		$now = current_time( 'mysql' );
+		$wpdb->update( self::table(),
+			array(
+				'result'        => $amount,
+				'has_result'    => 1,
+				'result_set_at' => $row->result_set_at ?: $now,
+				'updated_at'    => $now,
+			),
+			array( 'id' => (int) $row->id ), array( '%f', '%d', '%s', '%s' ), array( '%d' ) );
+		return array(
+			'ok'     => true,
+			'week'   => $week_no,
+			'result' => $amount,
+			'status' => self::compute_status( $row->target, $amount, true ),
+			'pct'    => self::pct( $row->target, $amount ),
 		);
 	}
 
@@ -330,7 +366,8 @@ class SZP_Eval {
 				data-near="<?php echo esc_attr( self::near() ); ?>"
 				data-can-target="<?php echo self::day_locked( 'target' ) ? '0' : '1'; ?>"
 				data-can-result="<?php echo self::day_locked( 'result' ) ? '0' : '1'; ?>"
-				data-can-edit="<?php echo self::can_edit_target() ? '1' : '0'; ?>">
+				data-can-edit="<?php echo self::can_edit_target() ? '1' : '0'; ?>"
+				data-can-edit-result="<?php echo self::can_edit_result() ? '1' : '0'; ?>">
 
 				<div class="szp-eval-head">
 					<h3 class="szp-eval-title"><?php echo esc_html( $title ); ?></h3>
@@ -572,8 +609,9 @@ class SZP_Eval {
 		if ( ! $weeks ) {
 			return '<div class="szp-eval-history"><h4 class="szp-ev-sec-title">هفته‌های قبل</h4><p class="szp-empty">هنوز هفته‌ای ثبت نشده است.</p></div>';
 		}
-		$list      = array_reverse( $weeks ); // جدیدترین بالا
-		$can_edit  = self::can_edit_target();
+		$list       = array_reverse( $weeks ); // جدیدترین بالا
+		$can_edit   = self::can_edit_target();
+		$can_edit_r = self::can_edit_result();
 
 		ob_start(); ?>
 		<div class="szp-eval-history">
@@ -598,7 +636,12 @@ class SZP_Eval {
 									<button type="button" class="szp-ev-edit-target" data-week="<?php echo esc_attr( $w->week_no ); ?>" data-target="<?php echo esc_attr( $w->target ); ?>" title="ویرایش تارگت" aria-label="ویرایش تارگت هفته <?php echo esc_attr( szp_fa_digits( $w->week_no ) ); ?>">✏️</button>
 								<?php endif; ?>
 							</td>
-							<td data-th="نتیجه"><?php echo $w->has_result ? esc_html( szp_money( $w->result, $currency ) ) : '—'; ?></td>
+							<td data-th="نتیجه" class="szp-ev-resultcell">
+								<span class="szp-ev-result-val"><?php echo $w->has_result ? esc_html( szp_money( $w->result, $currency ) ) : '—'; ?></span>
+								<?php if ( $can_edit_r ) : ?>
+									<button type="button" class="szp-ev-edit-result" data-week="<?php echo esc_attr( $w->week_no ); ?>" data-result="<?php echo esc_attr( $w->has_result ? $w->result : '' ); ?>" title="ویرایش نتیجه" aria-label="ویرایش نتیجه هفته <?php echo esc_attr( szp_fa_digits( $w->week_no ) ); ?>">✏️</button>
+								<?php endif; ?>
+							</td>
 							<td data-th="تحقق"><?php echo $w->has_result ? esc_html( szp_fa_digits( $pct ) . '٪' ) : '—'; ?></td>
 							<td data-th="وضعیت">
 								<span class="szp-ev-badge" style="--c:<?php echo esc_attr( $meta['color'] ); ?>">

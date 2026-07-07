@@ -8,6 +8,7 @@ class SZP_Eval_Ajax {
 		add_action( 'wp_ajax_szp_eval_target', array( __CLASS__, 'set_target' ) );
 		add_action( 'wp_ajax_szp_eval_result', array( __CLASS__, 'set_result' ) );
 		add_action( 'wp_ajax_szp_eval_edit_target', array( __CLASS__, 'edit_target' ) );
+		add_action( 'wp_ajax_szp_eval_edit_result', array( __CLASS__, 'edit_result' ) );
 	}
 
 	protected static function guard() {
@@ -68,6 +69,31 @@ class SZP_Eval_Ajax {
 		}
 		wp_send_json_success( array(
 			'msg'  => 'تارگت هفته ' . szp_fa_digits( $week ) . ' ویرایش شد.',
+			'week' => $res['week'],
+		) );
+	}
+
+	/** ویرایش نتیجه‌ی یک هفته‌ی موجودِ همین کاربر. */
+	public static function edit_result() {
+		self::guard();
+		if ( ! SZP_Eval::can_edit_result() ) {
+			wp_send_json_error( array( 'msg' => 'ویرایش نتیجه غیرفعال است.' ) );
+		}
+		$week = isset( $_POST['week'] ) ? absint( $_POST['week'] ) : 0;
+		$raw  = isset( $_POST['amount'] ) ? trim( (string) wp_unslash( $_POST['amount'] ) ) : '';
+		if ( $week < 1 ) {
+			wp_send_json_error( array( 'msg' => 'هفته‌ی نامعتبر است.' ) );
+		}
+		if ( $raw === '' ) {
+			wp_send_json_error( array( 'msg' => 'لطفاً یک عدد برای نتیجه وارد کنید.' ) );
+		}
+		$amount = szp_parse_amount( $raw );
+		$res    = SZP_Eval::edit_result( get_current_user_id(), $week, $amount );
+		if ( empty( $res['ok'] ) ) {
+			wp_send_json_error( array( 'msg' => 'این هفته پیدا نشد.' ) );
+		}
+		wp_send_json_success( array(
+			'msg'  => 'نتیجه هفته ' . szp_fa_digits( $week ) . ' ویرایش شد.',
 			'week' => $res['week'],
 		) );
 	}
