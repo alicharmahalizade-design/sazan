@@ -133,6 +133,14 @@ body.dark .szp-eval,body.dark-mode .szp-eval,.dark .szp-eval,.dark-mode .szp-eva
 .szp-ev-pc-row b{color:var(--ev-text);font-weight:700}
 .szp-ev-pc-foot{display:flex;justify-content:space-between;gap:6px;margin-top:10px;padding-top:9px;border-top:1px solid var(--ev-line);font-size:12px;color:var(--ev-text2)}
 
+/* دفتر کامل ارزیابی (همه‌ی اشخاص + ریز هفته‌ها) */
+.szp-eval-ledger .szp-ev-person{background:var(--ev-bg2);border:1px solid var(--ev-line);border-radius:16px;padding:14px;margin-bottom:16px;box-shadow:var(--ev-shadow)}
+.szp-ev-person-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.szp-ev-person-head .szp-ev-pc-avatar img{border-radius:50%;display:block}
+.szp-ev-person-stats{margin-inline-start:auto;display:flex;gap:14px;font-size:12.5px;color:var(--ev-text2);font-weight:600}
+.szp-ev-person-stats span{white-space:nowrap}
+.szp-eval-ledger .szp-ev-table-wrap{background:var(--ev-bg)}
+
 /* ریسپانسیو */
 @media (max-width:560px){
 	.szp-ev-stat{padding:10px 6px}

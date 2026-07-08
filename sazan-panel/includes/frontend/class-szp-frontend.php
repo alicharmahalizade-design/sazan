@@ -13,6 +13,7 @@ class SZP_Frontend {
 		add_shortcode( 'sazan_canvas_gallery', array( __CLASS__, 'sc_canvas_gallery' ) );
 		add_shortcode( 'sazan_my_eval', array( __CLASS__, 'sc_eval' ) );
 		add_shortcode( 'sazan_eval_board', array( __CLASS__, 'sc_eval_board' ) );
+		add_shortcode( 'sazan_eval_ledger', array( __CLASS__, 'sc_eval_ledger' ) );
 		add_shortcode( 'sazan_courses_slider', array( __CLASS__, 'sc_courses_slider' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
@@ -77,6 +78,14 @@ class SZP_Frontend {
 		wp_enqueue_style( 'szp-front' );
 		wp_enqueue_style( 'szp-eval' );
 		return SZP_Eval::board( $a );
+	}
+
+	/** دفتر کامل ارزیابی: همه‌ی اشخاص + ریز همه‌ی هفته‌ها — مخصوص مدیر/مدرّب. */
+	public static function sc_eval_ledger( $atts ) {
+		$a = shortcode_atts( array( 'title' => '', 'currency' => '', 'group' => '0' ), $atts, 'sazan_eval_ledger' );
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_style( 'szp-eval' );
+		return SZP_Eval::board_full( $a );
 	}
 
 	/** اسلایدر دوره‌ها. مثال: [sazan_courses_slider design="6a" source="auto" count="6"] */

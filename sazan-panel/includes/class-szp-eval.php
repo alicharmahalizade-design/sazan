@@ -769,4 +769,116 @@ class SZP_Eval {
 		<?php
 		return ob_get_clean();
 	}
+
+	/**
+	 * دفتر کامل: همه‌ی اشخاصِ دارای تارگت، به‌همراه ریز تمام هفته‌ها (تارگت + نتیجه + وضعیت) یکجا.
+	 * $atts: title، currency، group (فیلتر گروه).
+	 */
+	public static function board_full( $atts = array() ) {
+		$cap = apply_filters( 'szp_eval_board_cap', 'manage_options' );
+		if ( ! current_user_can( $cap ) ) {
+			return '<div class="szp"><div class="szp-empty">شما به دفتر ارزیابی دسترسی ندارید.</div></div>';
+		}
+		$title    = ( isset( $atts['title'] ) && $atts['title'] !== '' ) ? $atts['title'] : 'دفتر ارزیابی — همه‌ی تارگت‌ها و نتایج';
+		$currency = ( isset( $atts['currency'] ) && $atts['currency'] !== '' ) ? (string) $atts['currency'] : self::currency();
+		$group    = isset( $atts['group'] ) ? absint( $atts['group'] ) : 0;
+
+		$ids = self::participants();
+		if ( $group && class_exists( 'SZP_Groups' ) ) {
+			$members = array_flip( SZP_Groups::members( $group ) );
+			$ids     = array_values( array_filter( $ids, function ( $id ) use ( $members ) {
+				return isset( $members[ $id ] );
+			} ) );
+		}
+
+		// جمع‌آوری + مرتب‌سازی بر اساس میانگین تحقق (نزولی).
+		$people    = array();
+		$tot_weeks = 0;
+		$tot_hit   = 0;
+		foreach ( $ids as $id ) {
+			$info = SZP_Groups::user_info( $id );
+			if ( ! $info ) {
+				continue;
+			}
+			$sum        = self::user_summary( $id );
+			$people[]   = array( 'info' => $info, 'weeks' => self::weeks( $id ), 'sum' => $sum );
+			$tot_weeks += $sum['weeks'];
+			$tot_hit   += $sum['hit'];
+		}
+		usort( $people, function ( $a, $b ) {
+			return $b['sum']['avg'] <=> $a['sum']['avg'];
+		} );
+
+		ob_start(); ?>
+		<div class="szp">
+			<div class="szp-eval szp-eval-ledger">
+				<div class="szp-eval-head">
+					<h3 class="szp-eval-title"><?php echo esc_html( $title ); ?></h3>
+					<div class="szp-eval-legend"><?php echo self::legend_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+				</div>
+
+				<?php if ( ! $people ) : ?>
+					<p class="szp-empty">هنوز هیچ کاربری تارگتی ثبت نکرده است.</p>
+				<?php else : ?>
+					<div class="szp-eval-summary">
+						<div class="szp-ev-stat"><span class="szp-ev-stat-n"><?php echo esc_html( szp_fa_digits( count( $people ) ) ); ?></span><span class="szp-ev-stat-l">شخص</span></div>
+						<div class="szp-ev-stat"><span class="szp-ev-stat-n"><?php echo esc_html( szp_fa_digits( $tot_weeks ) ); ?></span><span class="szp-ev-stat-l">هفته ثبت‌شده</span></div>
+						<div class="szp-ev-stat"><span class="szp-ev-stat-n"><?php echo esc_html( szp_fa_digits( $tot_hit ) ); ?></span><span class="szp-ev-stat-l">تارگت محقق‌شده</span></div>
+					</div>
+
+					<?php foreach ( $people as $p ) :
+						$info = $p['info'];
+						$sum  = $p['sum'];
+						$list = array_reverse( $p['weeks'] ); // جدیدترین بالا
+						?>
+						<div class="szp-ev-person">
+							<div class="szp-ev-person-head">
+								<span class="szp-ev-pc-avatar"><?php echo get_avatar( $info['id'], 40 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+								<span class="szp-ev-pc-id">
+									<span class="szp-ev-pc-name"><?php echo esc_html( $info['name'] ); ?></span>
+									<?php if ( $info['mobile'] !== '' ) : ?><span class="szp-ev-pc-mobile"><?php echo esc_html( szp_fa_digits( $info['mobile'] ) ); ?></span><?php endif; ?>
+								</span>
+								<span class="szp-ev-person-stats">
+									<span><?php echo esc_html( szp_fa_digits( $sum['weeks'] ) ); ?> هفته</span>
+									<span><?php echo esc_html( szp_fa_digits( $sum['hit'] ) ); ?> محقق</span>
+									<span>میانگین <?php echo esc_html( szp_fa_digits( $sum['avg'] ) ); ?>٪</span>
+								</span>
+							</div>
+							<?php if ( ! $list ) : ?>
+								<p class="szp-empty">بدون هفته‌ی ثبت‌شده.</p>
+							<?php else : ?>
+							<div class="szp-ev-table-wrap">
+								<table class="szp-ev-table">
+									<thead><tr>
+										<th>هفته</th><th>تارگت</th><th>نتیجه</th><th>تحقق</th><th>وضعیت</th><th>تاریخ ثبت</th><th>یادداشت</th>
+									</tr></thead>
+									<tbody>
+									<?php foreach ( $list as $w ) :
+										$st   = self::compute_status( $w->target, $w->result, $w->has_result );
+										$meta = self::status_meta( $st );
+										$pct  = $w->has_result ? self::pct( $w->target, $w->result ) : 0;
+										$date = $w->has_result ? self::jalali_or_dash( $w->result_set_at ) : self::jalali_or_dash( $w->target_set_at );
+										?>
+										<tr>
+											<td data-th="هفته"><span class="szp-ev-week-badge sm">هفته <?php echo esc_html( szp_fa_digits( $w->week_no ) ); ?></span></td>
+											<td data-th="تارگت"><?php echo esc_html( szp_money( $w->target, $currency ) ); ?></td>
+											<td data-th="نتیجه"><?php echo $w->has_result ? esc_html( szp_money( $w->result, $currency ) ) : '—'; ?></td>
+											<td data-th="تحقق"><?php echo $w->has_result ? esc_html( szp_fa_digits( $pct ) . '٪' ) : '—'; ?></td>
+											<td data-th="وضعیت"><span class="szp-ev-badge" style="--c:<?php echo esc_attr( $meta['color'] ); ?>"><?php echo esc_html( $meta['emoji'] . ' ' . $meta['label'] ); ?></span></td>
+											<td data-th="تاریخ ثبت" class="szp-ev-date"><?php echo esc_html( $date ); ?></td>
+											<td data-th="یادداشت" class="szp-ev-notecell"><?php echo ! empty( $w->note ) ? esc_html( $w->note ) : '—'; ?></td>
+										</tr>
+									<?php endforeach; ?>
+									</tbody>
+								</table>
+							</div>
+							<?php endif; ?>
+						</div>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</div>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
 }

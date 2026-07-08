@@ -465,6 +465,47 @@ class SZP_W_Eval_Board extends SZP_Widget_Base {
 	protected function output( $id, $uid ) { return ''; }
 }
 
+class SZP_W_Eval_Ledger extends SZP_Widget_Base {
+	protected $ctx = 'none';
+	public function get_name() { return 'szp_eval_ledger'; }
+	public function get_title() { return 'سازان: دفتر ارزیابی (همه تارگت‌ها و نتایج)'; }
+	public function get_icon() { return 'eicon-table-of-contents'; }
+	public function get_keywords() { return array( 'sazan', 'eval', 'ledger', 'ارزیابی', 'دفتر', 'تارگت', 'سازان' ); }
+
+	protected function register_controls() {
+		$this->start_controls_section( 'szp_evl', array( 'label' => 'تنظیمات' ) );
+		$this->add_control( 'title', array(
+			'label'   => 'عنوان',
+			'type'    => \Elementor\Controls_Manager::TEXT,
+			'default' => 'دفتر ارزیابی — همه‌ی تارگت‌ها و نتایج',
+		) );
+		$this->add_control( 'currency', array(
+			'label'   => 'واحد پول',
+			'type'    => \Elementor\Controls_Manager::TEXT,
+			'default' => 'تومان',
+		) );
+		$this->add_control( 'group', array(
+			'label'       => 'فقط یک گروه (شناسه گروه، اختیاری)',
+			'type'        => \Elementor\Controls_Manager::NUMBER,
+			'description' => 'برای محدود کردن به اعضای یک گروه؛ خالی = همه.',
+		) );
+		$this->end_controls_section();
+	}
+
+	public function render() {
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_style( 'szp-eval' );
+		$s = $this->get_settings_for_display();
+		echo SZP_Eval::board_full( array( // phpcs:ignore WordPress.Security.EscapeOutput
+			'title'    => $s['title'] ?? '',
+			'currency' => $s['currency'] ?? '',
+			'group'    => (int) ( $s['group'] ?? 0 ),
+		) );
+	}
+
+	protected function output( $id, $uid ) { return ''; }
+}
+
 class SZP_W_Canvas_Carousel extends SZP_W_Canvas_Gallery {
 	protected $view = 'carousel';
 	public function get_name() { return 'szp_canvas_carousel'; }
@@ -625,6 +666,7 @@ function szp_elementor_widget_list() {
 		'SZP_W_Coaching',
 		'SZP_W_My_Eval',
 		'SZP_W_Eval_Board',
+		'SZP_W_Eval_Ledger',
 		'SZP_W_Courses_Slider',
 		'SZP_W_Service_Canvas',
 		'SZP_W_Canvas_Carousel',
