@@ -74,7 +74,7 @@ class SZP_Frontend {
 
 	/** تابلوی ارزیابی همه‌ی اشخاص (شبکه‌ای) — مخصوص مدیر/مدرّب. */
 	public static function sc_eval_board( $atts ) {
-		$a = shortcode_atts( array( 'title' => '', 'currency' => '', 'group' => '0' ), $atts, 'sazan_eval_board' );
+		$a = shortcode_atts( array( 'title' => '', 'currency' => '', 'group' => '0', 'viewers' => '' ), $atts, 'sazan_eval_board' );
 		wp_enqueue_style( 'szp-front' );
 		wp_enqueue_style( 'szp-eval' );
 		return SZP_Eval::board( $a );
@@ -82,7 +82,7 @@ class SZP_Frontend {
 
 	/** دفتر کامل ارزیابی: همه‌ی اشخاص + ریز همه‌ی هفته‌ها — مخصوص مدیر/مدرّب. */
 	public static function sc_eval_ledger( $atts ) {
-		$a = shortcode_atts( array( 'title' => '', 'currency' => '', 'group' => '0' ), $atts, 'sazan_eval_ledger' );
+		$a = shortcode_atts( array( 'title' => '', 'currency' => '', 'group' => '0', 'viewers' => '' ), $atts, 'sazan_eval_ledger' );
 		wp_enqueue_style( 'szp-front' );
 		wp_enqueue_style( 'szp-eval' );
 		return SZP_Eval::board_full( $a );

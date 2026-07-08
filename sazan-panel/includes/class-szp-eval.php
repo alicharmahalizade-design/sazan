@@ -46,6 +46,7 @@ class SZP_Eval {
 			'sms_pattern_result' => '',
 			'sms_text_target'    => '%name% عزیز، امروز روز ثبت تارگت هفتگی شماست. لطفاً تارگت این هفته را در پنل ثبت کنید.',
 			'sms_text_result'    => '%name% عزیز، امروز آخرین مهلت ثبت نتیجه‌ی تارگت این هفته است. لطفاً نتیجه را در پنل وارد کنید.',
+			'board_viewers'      => '', // کاربران مجاز به مشاهده‌ی تابلو/دفتر ارزیابی (نام‌کاربری/ایمیل/شناسه)
 		);
 	}
 
@@ -335,6 +336,56 @@ class SZP_Eval {
 		$today = (int) wp_date( 'N' );
 		$diff  = ( (int) $target_dow - $today + 7 ) % 7;
 		return $diff;
+	}
+
+	/* ==================== دسترسی به تابلو/دفتر ==================== */
+
+	/** تبدیل رشته‌ی «نام‌کاربری/ایمیل/شناسه» (جداشده با کاما، فاصله یا خط جدید) به آرایه‌ی شناسه‌ها. */
+	protected static function parse_viewers( $str ) {
+		$ids = array();
+		foreach ( preg_split( '/[\s,،؛]+/u', (string) $str ) as $tok ) {
+			$tok = trim( $tok );
+			if ( $tok === '' ) {
+				continue;
+			}
+			if ( ctype_digit( $tok ) ) {
+				$ids[] = (int) $tok;
+				continue;
+			}
+			$u = is_email( $tok ) ? get_user_by( 'email', $tok ) : get_user_by( 'login', $tok );
+			if ( ! $u ) {
+				$u = get_user_by( 'slug', $tok );
+			}
+			if ( $u ) {
+				$ids[] = (int) $u->ID;
+			}
+		}
+		return $ids;
+	}
+
+	/** شناسه‌ی کاربران مجاز به مشاهده (از تنظیمات + رشته‌ی اضافیِ اختیاری). */
+	public static function board_viewer_ids( $extra = '' ) {
+		$ids = self::parse_viewers( (string) self::opt( 'board_viewers' ) );
+		if ( $extra !== '' ) {
+			$ids = array_merge( $ids, self::parse_viewers( $extra ) );
+		}
+		return array_values( array_unique( array_filter( $ids ) ) );
+	}
+
+	/**
+	 * آیا کاربر جاری اجازه‌ی دیدن تابلو/دفتر ارزیابی را دارد؟
+	 * مدیران (cap تابلو) همیشه؛ به‌علاوه کاربرانِ صریحاً مجازشده در تنظیمات یا در همان ویجت.
+	 */
+	public static function can_view_board( $extra = '' ) {
+		$cap = apply_filters( 'szp_eval_board_cap', 'manage_options' );
+		if ( current_user_can( $cap ) ) {
+			return true;
+		}
+		$uid = get_current_user_id();
+		if ( $uid && in_array( $uid, self::board_viewer_ids( $extra ), true ) ) {
+			return true;
+		}
+		return (bool) apply_filters( 'szp_eval_can_view_board', false, $uid, $extra );
 	}
 
 	/** شناسه‌ی همه‌ی کاربرانی که حداقل یک هفته‌ی ثبت‌شده دارند. */
@@ -692,8 +743,7 @@ class SZP_Eval {
 
 	/** $atts: title، currency، group (شناسه گروه برای فیلتر). نمایش شبکه‌ای همه‌ی اشخاص دارای تارگت. */
 	public static function board( $atts = array() ) {
-		$cap = apply_filters( 'szp_eval_board_cap', 'manage_options' );
-		if ( ! current_user_can( $cap ) ) {
+		if ( ! self::can_view_board( isset( $atts['viewers'] ) ? (string) $atts['viewers'] : '' ) ) {
 			return '<div class="szp"><div class="szp-empty">شما به تابلوی ارزیابی دسترسی ندارید.</div></div>';
 		}
 		$title    = ( isset( $atts['title'] ) && $atts['title'] !== '' ) ? $atts['title'] : 'تابلوی ارزیابی';
@@ -775,8 +825,7 @@ class SZP_Eval {
 	 * $atts: title، currency، group (فیلتر گروه).
 	 */
 	public static function board_full( $atts = array() ) {
-		$cap = apply_filters( 'szp_eval_board_cap', 'manage_options' );
-		if ( ! current_user_can( $cap ) ) {
+		if ( ! self::can_view_board( isset( $atts['viewers'] ) ? (string) $atts['viewers'] : '' ) ) {
 			return '<div class="szp"><div class="szp-empty">شما به دفتر ارزیابی دسترسی ندارید.</div></div>';
 		}
 		$title    = ( isset( $atts['title'] ) && $atts['title'] !== '' ) ? $atts['title'] : 'دفتر ارزیابی — همه‌ی تارگت‌ها و نتایج';

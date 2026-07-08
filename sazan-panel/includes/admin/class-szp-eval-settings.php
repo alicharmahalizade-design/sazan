@@ -61,6 +61,21 @@ class SZP_Eval_Settings {
 					</tr>
 				</table>
 
+				<h2>دسترسی مشاهده‌ی تابلو/دفتر ارزیابی</h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label>کاربران مجاز به مشاهده</label></th>
+						<td>
+							<textarea name="board_viewers" rows="3" class="large-text" dir="ltr" placeholder="username1, user@mail.com, 42"><?php echo esc_textarea( $s['board_viewers'] ?? '' ); ?></textarea>
+							<p class="description">
+								نام‌کاربری، ایمیل یا شناسه‌ی کاربران — جداشده با کاما، فاصله یا خط جدید.
+								فقط این افراد (به‌علاوه‌ی مدیران) می‌توانند «تابلوی ارزیابی» و «دفتر ارزیابی» را ببینند.
+								خالی گذاشتن یعنی فقط مدیران سایت.
+							</p>
+						</td>
+					</tr>
+				</table>
+
 				<h2>پیامک یادآوری (فراز اس‌ام‌اس)</h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -151,6 +166,7 @@ class SZP_Eval_Settings {
 			'sms_pattern_result' => sanitize_text_field( $p['sms_pattern_result'] ?? '' ),
 			'sms_text_target'    => sanitize_textarea_field( $p['sms_text_target'] ?? '' ),
 			'sms_text_result'    => sanitize_textarea_field( $p['sms_text_result'] ?? '' ),
+			'board_viewers'      => sanitize_textarea_field( $p['board_viewers'] ?? '' ),
 		);
 		update_option( SZP_Eval::OPTION, array_merge( $cur, $new ) );
 		wp_safe_redirect( add_query_arg( array( 'page' => 'szp-eval-settings', 'msg' => 1 ), admin_url( 'admin.php' ) ) );

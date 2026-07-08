@@ -448,6 +448,11 @@ class SZP_W_Eval_Board extends SZP_Widget_Base {
 			'type'        => \Elementor\Controls_Manager::NUMBER,
 			'description' => 'برای محدود کردن تابلو به اعضای یک گروه؛ خالی = همه.',
 		) );
+		$this->add_control( 'viewers', array(
+			'label'       => 'کاربران مجاز به مشاهده (اختیاری)',
+			'type'        => \Elementor\Controls_Manager::TEXTAREA,
+			'description' => 'نام‌کاربری/ایمیل/شناسه، جداشده با کاما. علاوه بر تنظیمات کلی. خالی = طبق تنظیمات ارزیابی.',
+		) );
 		$this->end_controls_section();
 	}
 
@@ -459,6 +464,7 @@ class SZP_W_Eval_Board extends SZP_Widget_Base {
 			'title'    => $s['title'] ?? '',
 			'currency' => $s['currency'] ?? '',
 			'group'    => (int) ( $s['group'] ?? 0 ),
+			'viewers'  => $s['viewers'] ?? '',
 		) );
 	}
 
@@ -489,6 +495,11 @@ class SZP_W_Eval_Ledger extends SZP_Widget_Base {
 			'type'        => \Elementor\Controls_Manager::NUMBER,
 			'description' => 'برای محدود کردن به اعضای یک گروه؛ خالی = همه.',
 		) );
+		$this->add_control( 'viewers', array(
+			'label'       => 'کاربران مجاز به مشاهده (اختیاری)',
+			'type'        => \Elementor\Controls_Manager::TEXTAREA,
+			'description' => 'نام‌کاربری/ایمیل/شناسه، جداشده با کاما. علاوه بر تنظیمات کلی. خالی = طبق تنظیمات ارزیابی.',
+		) );
 		$this->end_controls_section();
 	}
 
@@ -500,6 +511,7 @@ class SZP_W_Eval_Ledger extends SZP_Widget_Base {
 			'title'    => $s['title'] ?? '',
 			'currency' => $s['currency'] ?? '',
 			'group'    => (int) ( $s['group'] ?? 0 ),
+			'viewers'  => $s['viewers'] ?? '',
 		) );
 	}
 
