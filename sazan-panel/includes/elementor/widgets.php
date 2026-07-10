@@ -424,6 +424,39 @@ class SZP_W_My_Eval extends SZP_Widget_Base {
 	protected function output( $id, $uid ) { return ''; }
 }
 
+class SZP_W_Coach_Sessions extends SZP_Widget_Base {
+	protected $ctx = 'none';
+	public function get_name() { return 'szp_coach_sessions'; }
+	public function get_title() { return 'سازان: زمان‌بندی جلسات کوچینگ'; }
+	public function get_icon() { return 'eicon-calendar'; }
+	public function get_keywords() { return array( 'sazan', 'session', 'coach', 'schedule', 'جلسه', 'کوچ', 'زمان‌بندی', 'سازان' ); }
+
+	protected function register_controls() {
+		$this->start_controls_section( 'szp_cs', array( 'label' => 'تنظیمات' ) );
+		$this->add_control( 'title', array(
+			'label'   => 'عنوان',
+			'type'    => \Elementor\Controls_Manager::TEXT,
+			'default' => 'زمان‌بندی جلسات کوچینگ',
+		) );
+		$this->end_controls_section();
+	}
+
+	public function render() {
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_script( 'szp-front' );
+		wp_enqueue_style( 'szp-sessions' );
+		wp_enqueue_script( 'szp-sessions' );
+		if ( ! is_user_logged_in() ) {
+			$this->empty_box( 'برای مشاهده ابتدا وارد شوید.' );
+			return;
+		}
+		$s = $this->get_settings_for_display();
+		echo SZP_Sessions_Render::render( get_current_user_id(), $s['title'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput
+	}
+
+	protected function output( $id, $uid ) { return ''; }
+}
+
 class SZP_W_Eval_Board extends SZP_Widget_Base {
 	protected $ctx = 'none';
 	public function get_name() { return 'szp_eval_board'; }
@@ -680,6 +713,7 @@ function szp_elementor_widget_list() {
 		'SZP_W_Eval_Board',
 		'SZP_W_Eval_Ledger',
 		'SZP_W_Courses_Slider',
+		'SZP_W_Coach_Sessions',
 		'SZP_W_Service_Canvas',
 		'SZP_W_Canvas_Carousel',
 		'SZP_W_Canvas_Grid',

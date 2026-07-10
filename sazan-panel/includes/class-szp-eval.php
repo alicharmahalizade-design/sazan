@@ -37,6 +37,7 @@ class SZP_Eval {
 			'day_target'         => 2,    // سه‌شنبه
 			'day_result'         => 1,    // دوشنبه
 			'sms_enabled'        => 0,
+			'sms_provider'       => 'ippanel', // ippanel | smsir
 			'sms_base'           => 'https://rest.ippanel.com/v1',
 			'sms_apikey'         => '',
 			'sms_originator'     => '',
@@ -47,6 +48,13 @@ class SZP_Eval {
 			'sms_text_target'    => '%name% عزیز، امروز روز ثبت تارگت هفتگی شماست. لطفاً تارگت این هفته را در پنل ثبت کنید.',
 			'sms_text_result'    => '%name% عزیز، امروز آخرین مهلت ثبت نتیجه‌ی تارگت این هفته است. لطفاً نتیجه را در پنل وارد کنید.',
 			'board_viewers'      => '', // کاربران مجاز به مشاهده‌ی تابلو/دفتر ارزیابی (نام‌کاربری/ایمیل/شناسه)
+			// جلسات کوچینگ (زمان‌بندی + نظرسنجی)
+			'sms_pattern_session' => '',
+			'sms_pattern_survey'  => '',
+			'sms_text_session'    => '%name% عزیز، جلسه‌ی «%title%» با کوچ %coach% در تاریخ %date% ساعت %time% ثبت شد.',
+			'sms_text_survey'     => '%name% عزیز، از حضور شما در جلسه سپاسگزاریم. لطفاً نظرسنجی کوتاه را تکمیل کنید: %link%',
+			'survey_url'          => '',
+			'survey_delay'        => 60, // دقیقه پس از پایان جلسه
 		);
 	}
 
