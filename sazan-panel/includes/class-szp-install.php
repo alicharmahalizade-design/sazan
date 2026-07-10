@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SZP_Install {
 
-	const DB_VERSION = '1.4.0';
+	const DB_VERSION = '1.5.0';
 
 	public static function activate() {
 		self::create_tables();
@@ -268,6 +268,24 @@ class SZP_Install {
 			PRIMARY KEY  (id),
 			UNIQUE KEY user_week (user_id,week_no),
 			KEY user_id (user_id)
+		) $charset;";
+
+		// ---- حضور و غیاب (attendance / QR check-in) ----
+		$at = $wpdb->prefix . 'szp_attendance';
+
+		$sql .= "
+		CREATE TABLE $at (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			session_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			status varchar(10) NOT NULL DEFAULT 'ontime',
+			late_min int(11) NOT NULL DEFAULT 0,
+			checkin_at datetime DEFAULT NULL,
+			created_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY att (session_id,user_id),
+			KEY user_id (user_id),
+			KEY session_id (session_id)
 		) $charset;";
 
 		dbDelta( $sql );

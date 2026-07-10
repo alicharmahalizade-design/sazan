@@ -13,6 +13,8 @@ class SZP_Frontend {
 		add_shortcode( 'sazan_canvas_gallery', array( __CLASS__, 'sc_canvas_gallery' ) );
 		add_shortcode( 'sazan_my_eval', array( __CLASS__, 'sc_eval' ) );
 		add_shortcode( 'sazan_eval_board', array( __CLASS__, 'sc_eval_board' ) );
+		add_shortcode( 'sazan_attendance', array( __CLASS__, 'sc_attendance' ) );
+		add_shortcode( 'sazan_attendance_board', array( __CLASS__, 'sc_attendance_board' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
 
@@ -50,6 +52,32 @@ class SZP_Frontend {
 		$evjs  = SZP_DIR . 'assets/js/sazan-eval.js';
 		wp_register_style( 'szp-eval', SZP_URL . 'assets/css/sazan-eval.css', array( 'szp-front' ), file_exists( $evcss ) ? filemtime( $evcss ) : SZP_VERSION );
 		wp_register_script( 'szp-eval', SZP_URL . 'assets/js/sazan-eval.js', array( 'szp-front' ), file_exists( $evjs ) ? filemtime( $evjs ) : SZP_VERSION, true );
+
+		$atcss = SZP_DIR . 'assets/css/sazan-att.css';
+		$atjs  = SZP_DIR . 'assets/js/sazan-att.js';
+		wp_register_style( 'szp-att', SZP_URL . 'assets/css/sazan-att.css', array( 'szp-front' ), file_exists( $atcss ) ? filemtime( $atcss ) : SZP_VERSION );
+		wp_register_script( 'szp-att', SZP_URL . 'assets/js/sazan-att.js', array( 'szp-front' ), file_exists( $atjs ) ? filemtime( $atjs ) : SZP_VERSION, true );
+	}
+
+	/* ---------------- attendance shortcodes ---------------- */
+
+	/** صفحهٔ ثبت حضور که کیوآرکد به آن اشاره می‌کند: [sazan_attendance] */
+	public static function sc_attendance( $atts ) {
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_script( 'szp-front' );
+		wp_enqueue_style( 'szp-att' );
+		wp_enqueue_script( 'szp-att' );
+		return SZP_Attendance::render_checkin( (array) $atts );
+	}
+
+	/** تابلوی زندهٔ حضور برای تلویزیون کلاس: [sazan_attendance_board session="ID"] */
+	public static function sc_attendance_board( $atts ) {
+		$a = shortcode_atts( array( 'session' => '0', 'title' => '' ), $atts, 'sazan_attendance_board' );
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_script( 'szp-front' );
+		wp_enqueue_style( 'szp-att' );
+		wp_enqueue_script( 'szp-att' );
+		return SZP_Attendance::render_board( array( 'session' => absint( $a['session'] ), 'title' => $a['title'] ) );
 	}
 
 	/* ---------------- «ارزیابی من» shortcode ---------------- */

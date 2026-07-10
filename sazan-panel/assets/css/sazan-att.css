@@ -1,0 +1,105 @@
+/* ===== سازان: حضور و غیاب ===== */
+.szp-att-checkin,.szp-att-board{
+	--at-bg:#ffffff;--at-bg2:#f5f8fa;--at-text:#1f2933;--at-text2:#5b6671;
+	--at-line:#e6eaef;--at-input-bg:#ffffff;--at-input-text:#13212b;
+	--at-ontime:#16a34a;--at-warned:#f59e0b;--at-penalized:#ef4444;
+	--at-shadow:0 6px 22px rgba(15,159,179,.08);
+	color:var(--at-text);direction:rtl
+}
+.szp-att-checkin *,.szp-att-board *{box-sizing:border-box}
+
+@media (prefers-color-scheme:dark){
+	.szp-att-checkin,.szp-att-board{
+		--at-bg:#1f242b;--at-bg2:#252b33;--at-text:#e8edf2;--at-text2:#a9b3bd;
+		--at-line:#3a424c;--at-input-bg:#2c333c;--at-input-text:#f3f6f9;--at-shadow:0 6px 22px rgba(0,0,0,.35)
+	}
+}
+body.dark .szp-att-checkin,body.dark-mode .szp-att-checkin,.dark .szp-att-checkin,.dark-mode .szp-att-checkin,
+[data-theme="dark"] .szp-att-checkin,[data-bs-theme="dark"] .szp-att-checkin,html.dark .szp-att-checkin,
+body.dark .szp-att-board,body.dark-mode .szp-att-board,.dark .szp-att-board,.dark-mode .szp-att-board,
+[data-theme="dark"] .szp-att-board,[data-bs-theme="dark"] .szp-att-board,html.dark .szp-att-board{
+	--at-bg:#1f242b;--at-bg2:#252b33;--at-text:#e8edf2;--at-text2:#a9b3bd;
+	--at-line:#3a424c;--at-input-bg:#2c333c;--at-input-text:#f3f6f9;--at-shadow:0 6px 22px rgba(0,0,0,.35)
+}
+
+/* ---------- صفحهٔ ثبت حضور ---------- */
+.szp-att-ci-card{max-width:420px;margin:24px auto;background:var(--at-bg);border:1px solid var(--at-line);
+	border-radius:20px;padding:26px 22px;box-shadow:var(--at-shadow);text-align:center}
+.szp-att-ci-head{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px}
+.szp-att-ci-ico{font-size:40px;line-height:1}
+.szp-att-ci-title{margin:0;font-size:22px;font-weight:800;color:var(--at-text)}
+.szp-att-ci-info{background:var(--at-bg2);border:1px solid var(--at-line);border-radius:14px;padding:14px;margin-bottom:16px}
+.szp-att-ci-cls{font-size:18px;font-weight:800;color:var(--at-text)}
+.szp-att-ci-course{font-size:13px;color:var(--at-text2);margin-top:4px}
+.szp-att-ci-time{font-size:13px;color:var(--at-text2);margin-top:6px}
+.szp-att-ci-hello{font-size:14px;color:var(--at-text2);margin:0 0 14px}
+.szp-att-ci-form{display:flex;flex-direction:column;gap:10px;margin-bottom:8px}
+.szp-att-ci-mobile,.szp-att-ci-fname{width:100%;padding:13px 14px;border:1px solid var(--at-line);border-radius:12px;
+	background:var(--at-input-bg);color:var(--at-input-text);font-size:16px;text-align:center;direction:ltr}
+.szp-att-ci-btn{display:inline-block;width:100%;padding:14px;border:0;border-radius:12px;cursor:pointer;
+	background:linear-gradient(135deg,#0f9fb3,#0b7d8d);color:#fff;font-size:17px;font-weight:800;text-decoration:none;
+	transition:transform .15s,opacity .15s}
+.szp-att-ci-btn:hover{transform:translateY(-1px)}
+.szp-att-ci-btn:disabled{opacity:.6;cursor:default;transform:none}
+.szp-att-ci-msg{display:none;margin-top:14px;padding:12px;border-radius:12px;font-weight:700;font-size:15px}
+.szp-att-ci-msg.is-show{display:block}
+.szp-att-ci-msg.is-ok{background:rgba(22,163,74,.12);color:#16a34a}
+.szp-att-ci-msg.is-warn{background:rgba(245,158,11,.14);color:#c17d09}
+.szp-att-ci-msg.is-err{background:rgba(239,68,68,.12);color:#ef4444}
+.szp-att-ci-done{background:rgba(22,163,74,.12);color:#16a34a;padding:14px;border-radius:12px;font-weight:800}
+
+/* ---------- تابلوی کلاس ---------- */
+.szp-att-fullscreen{width:100%}
+.szp-att-board{background:var(--at-bg);border-radius:18px;padding:20px;box-shadow:var(--at-shadow);min-height:70vh}
+.szp-att-b-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;
+	padding-bottom:16px;margin-bottom:18px;border-bottom:2px solid var(--at-line)}
+.szp-att-b-cls{margin:0;font-size:30px;font-weight:900;color:var(--at-text);line-height:1.2}
+.szp-att-b-sub{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;font-size:15px;color:var(--at-text2)}
+.szp-att-b-clock{display:flex;flex-direction:column;align-items:center;background:var(--at-bg2);
+	border:1px solid var(--at-line);border-radius:16px;padding:10px 20px;min-width:110px}
+.szp-att-b-count{font-size:34px;font-weight:900;color:#0f9fb3;line-height:1}
+.szp-att-b-count-l{font-size:12px;color:var(--at-text2)}
+.szp-att-b-time{font-size:16px;font-weight:700;color:var(--at-text);margin-top:6px;letter-spacing:1px}
+
+.szp-att-b-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.szp-att-col{background:var(--at-bg2);border:1px solid var(--at-line);border-top:5px solid var(--c,#999);
+	border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.szp-att-col-head{display:flex;align-items:center;gap:8px;padding:14px 16px;
+	background:color-mix(in srgb,var(--c) 12%,transparent);border-bottom:1px solid var(--at-line)}
+.szp-att-col-ico{font-size:22px}
+.szp-att-col-title{font-size:18px;font-weight:800;color:var(--at-text);flex:1}
+.szp-att-col-n{font-size:20px;font-weight:900;color:var(--c);background:var(--at-bg);
+	border-radius:999px;min-width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;padding:0 8px}
+.szp-att-col-list{padding:12px;display:flex;flex-direction:column;gap:10px;max-height:66vh;overflow:auto}
+
+.szp-att-person{display:flex;align-items:center;gap:12px;background:var(--at-bg);border:1px solid var(--at-line);
+	border-radius:12px;padding:10px 12px;animation:szp-att-in .35s ease}
+.szp-att-person.is-new{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 55%,transparent);animation:szp-att-pop .5s ease}
+.szp-att-p-av{width:44px;height:44px;border-radius:50%;background-size:cover;background-position:center;
+	background-color:var(--at-bg2);flex:0 0 auto}
+.szp-att-p-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.szp-att-p-name{font-size:17px;font-weight:800;color:var(--at-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.szp-att-p-sub{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--at-text2)}
+.szp-att-p-late{color:var(--at-warned);font-weight:700}
+.szp-att-p-warn{flex:0 0 auto;font-size:13px;font-weight:800;color:var(--at-text2);
+	background:var(--at-bg2);border:1px solid var(--at-line);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.szp-att-p-warn.has{color:var(--at-penalized);border-color:color-mix(in srgb,var(--at-penalized) 40%,transparent)}
+.szp-att-empty{text-align:center;color:var(--at-text2);padding:24px 0;font-size:15px}
+
+@keyframes szp-att-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes szp-att-pop{0%{transform:scale(.9)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+/* روی تلویزیون/نمایش بزرگ، درشت‌تر */
+@media (min-width:1400px){
+	.szp-att-b-cls{font-size:38px}
+	.szp-att-col-title{font-size:22px}
+	.szp-att-p-name{font-size:20px}
+	.szp-att-p-av{width:52px;height:52px}
+}
+@media (max-width:820px){
+	.szp-att-b-cols{grid-template-columns:1fr}
+}
+
+/* ---------- کیوآرکد (ادمین/چاپ) ---------- */
+.szp-att-qr{width:260px;max-width:100%;background:#fff;padding:14px;border-radius:12px;line-height:0}
+.szp-att-qr img{display:block}
