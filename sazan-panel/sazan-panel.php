@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان پنل (Sazan Panel)
  * Description: نمایش دوره‌ها و جلسات اختصاصی هر کاربر یا گروه در پنل کاربری از طریق شورت‌کد [sazan_panel].
- * Version: 1.17.0
+ * Version: 1.18.0
  * Author: Sazan
  * Text Domain: sazan-panel
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.17.0' );
+define( 'SZP_VERSION', '1.18.0' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -32,6 +32,7 @@ require_once SZP_DIR . 'includes/class-szp-ai.php';
 require_once SZP_DIR . 'includes/class-szp-canvas.php';
 require_once SZP_DIR . 'includes/class-szp-eval.php';
 require_once SZP_DIR . 'includes/class-szp-attendance.php';
+require_once SZP_DIR . 'includes/class-szp-emp-attendance.php';
 require_once SZP_DIR . 'includes/class-szp-sms.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-frontend.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-front-ajax.php';
@@ -40,6 +41,7 @@ require_once SZP_DIR . 'includes/frontend/class-szp-coach-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-canvas-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-eval-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-att-ajax.php';
+require_once SZP_DIR . 'includes/frontend/class-szp-emp-ajax.php';
 
 if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-admin.php';
@@ -53,6 +55,7 @@ if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-eval-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-eval-settings.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-att-admin.php';
+	require_once SZP_DIR . 'includes/admin/class-szp-emp-admin.php';
 }
 
 register_activation_hook( __FILE__, array( 'SZP_Install', 'activate' ) );
@@ -71,6 +74,7 @@ function szp_init() {
 	SZP_Canvas_Ajax::init();
 	SZP_Eval_Ajax::init();
 	SZP_Att_Ajax::init();
+	SZP_Emp_Ajax::init();
 
 	// یادآور پیامکی روزانه (ارزیابی).
 	add_action( 'szp_eval_daily', array( 'SZP_SMS', 'run_daily_reminders' ) );
@@ -97,6 +101,7 @@ function szp_init() {
 		SZP_Eval_Admin::init();
 		SZP_Eval_Settings::init();
 		SZP_Att_Admin::init();
+		SZP_Emp_Admin::init();
 	}
 }
 

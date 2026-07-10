@@ -15,6 +15,8 @@ class SZP_Frontend {
 		add_shortcode( 'sazan_eval_board', array( __CLASS__, 'sc_eval_board' ) );
 		add_shortcode( 'sazan_attendance', array( __CLASS__, 'sc_attendance' ) );
 		add_shortcode( 'sazan_attendance_board', array( __CLASS__, 'sc_attendance_board' ) );
+		add_shortcode( 'sazan_employee_attendance', array( __CLASS__, 'sc_emp_attendance' ) );
+		add_shortcode( 'sazan_employee_board', array( __CLASS__, 'sc_emp_board' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
 
@@ -78,6 +80,25 @@ class SZP_Frontend {
 		wp_enqueue_style( 'szp-att' );
 		wp_enqueue_script( 'szp-att' );
 		return SZP_Attendance::render_board( array( 'session' => absint( $a['session'] ), 'title' => $a['title'] ) );
+	}
+
+	/** صفحهٔ ثبت حضور کارمندان که کیوآرکد به آن اشاره می‌کند: [sazan_employee_attendance] */
+	public static function sc_emp_attendance( $atts ) {
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_script( 'szp-front' );
+		wp_enqueue_style( 'szp-att' );
+		wp_enqueue_script( 'szp-att' );
+		return SZP_Emp_Attendance::render_checkin( (array) $atts );
+	}
+
+	/** تابلوی زندهٔ حضور کارمندان: [sazan_employee_board] */
+	public static function sc_emp_board( $atts ) {
+		$a = shortcode_atts( array( 'title' => '' ), $atts, 'sazan_employee_board' );
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_script( 'szp-front' );
+		wp_enqueue_style( 'szp-att' );
+		wp_enqueue_script( 'szp-att' );
+		return SZP_Emp_Attendance::render_board( array( 'title' => $a['title'] ) );
 	}
 
 	/* ---------------- «ارزیابی من» shortcode ---------------- */

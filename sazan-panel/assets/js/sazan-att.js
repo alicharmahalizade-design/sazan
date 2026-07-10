@@ -25,6 +25,7 @@
 
 		var session = root.getAttribute('data-session');
 		var token = root.getAttribute('data-token');
+		var action = root.getAttribute('data-action') || 'szp_att_checkin';
 		var msg = root.querySelector('.szp-att-ci-msg');
 		var btn = root.querySelector('.szp-att-ci-btn');
 		if (!btn || btn.tagName === 'A') return;
@@ -52,12 +53,13 @@
 				if (nameEl) d.append('name', nameEl.value.trim());
 			}
 
+			d.append('mode', mode || '');
 			btn.disabled = true;
 			show('در حال ثبت…', '');
-			ajax('szp_att_checkin', d, function (res) {
+			ajax(action, d, function (res) {
 				if (res && res.success) {
 					var m = (res.data && res.data.msg) || 'ثبت شد ✓';
-					show(m, (res.data && res.data.bucket === 'ontime') || res.data.already ? 'ok' : 'warn');
+					show(m, (res.data && (res.data.bucket === 'ontime' || res.data.already)) ? 'ok' : 'warn');
 					var form = root.querySelector('.szp-att-ci-form');
 					if (form) form.style.display = 'none';
 					btn.style.display = 'none';
@@ -77,6 +79,7 @@
 
 		var session = root.getAttribute('data-session');
 		var token = root.getAttribute('data-token');
+		var boardAction = root.getAttribute('data-board-action') || 'szp_att_board';
 		var poll = (parseInt(root.getAttribute('data-poll'), 10) || 6) * 1000;
 		var totalEl = root.querySelector('[data-total]');
 		var clockEl = root.querySelector('[data-clock]');
@@ -108,7 +111,7 @@
 			var d = new FormData();
 			d.append('session_id', session);
 			d.append('token', token);
-			ajax('szp_att_board', d, function (res) {
+			ajax(boardAction, d, function (res) {
 				if (!res || !res.success) return;
 				var data = res.data;
 				if (totalEl) totalEl.textContent = faDigits(data.total);

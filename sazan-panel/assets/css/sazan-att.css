@@ -62,6 +62,8 @@ body.dark .szp-att-board,body.dark-mode .szp-att-board,.dark .szp-att-board,.dar
 .szp-att-b-time{font-size:16px;font-weight:700;color:var(--at-text);margin-top:6px;letter-spacing:1px}
 
 .szp-att-b-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.szp-att-b-cols.szp-emp-cols-4{grid-template-columns:repeat(4,1fr)}
+.szp-att-col-absent{opacity:.96}
 .szp-att-col{background:var(--at-bg2);border:1px solid var(--at-line);border-top:5px solid var(--c,#999);
 	border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
 .szp-att-col-head{display:flex;align-items:center;gap:8px;padding:14px 16px;
@@ -96,8 +98,11 @@ body.dark .szp-att-board,body.dark-mode .szp-att-board,.dark .szp-att-board,.dar
 	.szp-att-p-name{font-size:20px}
 	.szp-att-p-av{width:52px;height:52px}
 }
+@media (max-width:1100px){
+	.szp-att-b-cols.szp-emp-cols-4{grid-template-columns:repeat(2,1fr)}
+}
 @media (max-width:820px){
-	.szp-att-b-cols{grid-template-columns:1fr}
+	.szp-att-b-cols,.szp-att-b-cols.szp-emp-cols-4{grid-template-columns:1fr}
 }
 
 /* ---------- کیوآرکد (ادمین/چاپ) ---------- */

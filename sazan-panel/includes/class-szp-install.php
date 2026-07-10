@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SZP_Install {
 
-	const DB_VERSION = '1.5.0';
+	const DB_VERSION = '1.6.0';
 
 	public static function activate() {
 		self::create_tables();
@@ -286,6 +286,25 @@ class SZP_Install {
 			UNIQUE KEY att (session_id,user_id),
 			KEY user_id (user_id),
 			KEY session_id (session_id)
+		) $charset;";
+
+		// ---- حضور و غیاب کارمندان (daily employee attendance) ----
+		$ea = $wpdb->prefix . 'szp_emp_attendance';
+
+		$sql .= "
+		CREATE TABLE $ea (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			work_date date DEFAULT NULL,
+			status varchar(10) NOT NULL DEFAULT 'ontime',
+			late_min int(11) NOT NULL DEFAULT 0,
+			checkin_at datetime DEFAULT NULL,
+			checkout_at datetime DEFAULT NULL,
+			created_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY emp_day (user_id,work_date),
+			KEY user_id (user_id),
+			KEY work_date (work_date)
 		) $charset;";
 
 		dbDelta( $sql );
