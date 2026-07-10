@@ -33,12 +33,27 @@ class SZC_SMS {
 		return ! empty( $s['sms_enabled'] ) && $s['sms_apikey'] !== '' && $s['sms_originator'] !== '';
 	}
 
+	/** سرویس‌دهنده‌ی پیامک: ippanel (فراز/آی‌پی‌پنل) یا smsir. */
+	protected static function provider() {
+		return SZC_Settings::get( 'sms_provider' ) === 'smsir' ? 'smsir' : 'ippanel';
+	}
+
 	protected static function base() {
 		$b = rtrim( (string) SZC_Settings::get( 'sms_base' ), '/' );
+		if ( self::provider() === 'smsir' ) {
+			return ( $b !== '' && strpos( $b, 'sms.ir' ) !== false ) ? $b : 'https://api.sms.ir';
+		}
 		return $b !== '' ? $b : 'https://rest.ippanel.com/v1';
 	}
 
 	protected static function headers() {
+		if ( self::provider() === 'smsir' ) {
+			return array(
+				'X-API-KEY'    => (string) SZC_Settings::get( 'sms_apikey' ),
+				'Content-Type' => 'application/json',
+				'Accept'       => 'application/json',
+			);
+		}
 		return array(
 			'apikey'       => (string) SZC_Settings::get( 'sms_apikey' ),
 			'Content-Type' => 'application/json',
@@ -46,10 +61,22 @@ class SZC_SMS {
 		);
 	}
 
+	protected static function line_number() {
+		$o = trim( (string) SZC_Settings::get( 'sms_originator' ) );
+		return ctype_digit( $o ) ? (int) $o : $o;
+	}
+
 	public static function send_text( $to, $message ) {
 		$to = szc_normalize_mobile( $to );
 		if ( $to === '' || trim( (string) $message ) === '' ) {
 			return array( 'ok' => false, 'msg' => 'گیرنده یا متن نامعتبر است.' );
+		}
+		if ( self::provider() === 'smsir' ) {
+			return self::post( '/v1/send/bulk', array(
+				'lineNumber'  => self::line_number(),
+				'messageText' => (string) $message,
+				'mobiles'     => array( $to ),
+			) );
 		}
 		return self::post( '/messages', array(
 			'originator' => (string) SZC_Settings::get( 'sms_originator' ),
@@ -58,10 +85,22 @@ class SZC_SMS {
 		) );
 	}
 
+	/** ارسال پترن. در sms.ir «کد پترن» همان templateId عددی است. */
 	public static function send_pattern( $to, $pattern_code, $values ) {
 		$to = szc_normalize_mobile( $to );
 		if ( $to === '' || trim( (string) $pattern_code ) === '' ) {
 			return array( 'ok' => false, 'msg' => 'گیرنده یا کد پترن نامعتبر است.' );
+		}
+		if ( self::provider() === 'smsir' ) {
+			$params = array();
+			foreach ( (array) $values as $k => $v ) {
+				$params[] = array( 'name' => (string) $k, 'value' => (string) $v );
+			}
+			return self::post( '/v1/send/verify', array(
+				'mobile'     => $to,
+				'templateId' => (int) $pattern_code,
+				'parameters' => $params,
+			) );
 		}
 		return self::post( '/messages/patterns/send', array(
 			'pattern_code' => (string) $pattern_code,
@@ -83,6 +122,13 @@ class SZC_SMS {
 		$code = (int) wp_remote_retrieve_response_code( $res );
 		$raw  = wp_remote_retrieve_body( $res );
 		$ok   = ( $code >= 200 && $code < 300 );
+		if ( $ok && self::provider() === 'smsir' ) {
+			$j = json_decode( (string) $raw, true );
+			if ( is_array( $j ) && isset( $j['status'] ) && (int) $j['status'] !== 1 ) {
+				$ok  = false;
+				$raw = $j['message'] ?? $raw;
+			}
+		}
 		return array( 'ok' => $ok, 'msg' => $ok ? 'ارسال شد.' : ( 'خطای سرویس پیامک (' . $code . '): ' . wp_strip_all_tags( (string) $raw ) ), 'code' => $code );
 	}
 

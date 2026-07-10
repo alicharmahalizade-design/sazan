@@ -37,6 +37,7 @@ class SZP_Eval {
 			'day_target'         => 2,    // سه‌شنبه
 			'day_result'         => 1,    // دوشنبه
 			'sms_enabled'        => 0,
+			'sms_provider'       => 'ippanel', // ippanel | smsir
 			'sms_base'           => 'https://rest.ippanel.com/v1',
 			'sms_apikey'         => '',
 			'sms_originator'     => '',

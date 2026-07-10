@@ -352,7 +352,14 @@ class SZC_Admin_Pages {
 				<h2>پنل پیامک (فراز/آی‌پی‌پنل)</h2>
 				<table class="form-table"><tbody>
 					<tr><th>فعال‌سازی</th><td><label><input type="checkbox" name="sms_enabled" value="1" <?php checked( ! empty( $s['sms_enabled'] ) ); ?>> ارسال پیامک فعال باشد</label></td></tr>
-					<tr><th>آدرس پایه API</th><td><input type="text" name="sms_base" value="<?php echo esc_attr( $s['sms_base'] ); ?>" class="regular-text" dir="ltr"></td></tr>
+					<tr><th>سرویس‌دهنده</th><td>
+						<select name="sms_provider">
+							<option value="ippanel" <?php selected( $s['sms_provider'], 'ippanel' ); ?>>فراز / آی‌پی‌پنل (ippanel)</option>
+							<option value="smsir" <?php selected( $s['sms_provider'], 'smsir' ); ?>>اس‌ام‌اس‌دات‌آی‌آر (sms.ir)</option>
+						</select>
+						<p class="description">برای <b>sms.ir</b>: «کلید API» همان API Key، «خط ارسال» شماره‌ی خط، و در قالب‌ها «کد پترن» همان <code>templateId</code> عددی است. آدرس پایه را خالی بگذارید.</p>
+					</td></tr>
+					<tr><th>آدرس پایه API</th><td><input type="text" name="sms_base" value="<?php echo esc_attr( $s['sms_base'] ); ?>" class="regular-text" dir="ltr" placeholder="برای sms.ir خالی بگذارید"></td></tr>
 					<tr><th>کلید API</th><td><input type="text" name="sms_apikey" value="<?php echo esc_attr( $s['sms_apikey'] ); ?>" class="regular-text" dir="ltr" autocomplete="off"></td></tr>
 					<tr><th>خط ارسال</th><td><input type="text" name="sms_originator" value="<?php echo esc_attr( $s['sms_originator'] ); ?>" class="regular-text" dir="ltr" placeholder="+983000..."></td></tr>
 					<tr><th>حالت ارسال</th><td>
@@ -423,6 +430,7 @@ class SZC_Admin_Pages {
 			'max_per_run'      => max( 1, absint( $p['max_per_run'] ?? 80 ) ),
 			'max_per_day'      => max( 0, absint( $p['max_per_day'] ?? 0 ) ),
 			'sms_enabled'      => empty( $p['sms_enabled'] ) ? 0 : 1,
+			'sms_provider'     => ( ( $p['sms_provider'] ?? 'ippanel' ) === 'smsir' ) ? 'smsir' : 'ippanel',
 			'sms_base'         => esc_url_raw( $p['sms_base'] ?? '' ),
 			'sms_apikey'       => sanitize_text_field( $p['sms_apikey'] ?? '' ),
 			'sms_originator'   => sanitize_text_field( $p['sms_originator'] ?? '' ),

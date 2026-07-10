@@ -34,6 +34,7 @@ class SZC_Settings {
 			'max_per_run'    => 80,      // سقف ارسال در هر اجرای صف (هر ۵ دقیقه)
 			'max_per_day'    => 0,       // سقف ارسال روزانه (۰ = نامحدود)
 			'sms_enabled'    => 0,
+			'sms_provider'   => 'ippanel', // ippanel | smsir
 			'sms_base'       => 'https://rest.ippanel.com/v1',
 			'sms_apikey'     => '',
 			'sms_originator' => '',

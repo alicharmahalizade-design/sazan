@@ -68,9 +68,19 @@ class SZP_Eval_Settings {
 						<td><label><input type="checkbox" name="sms_enabled" value="1" <?php checked( ! empty( $s['sms_enabled'] ) ); ?>> ارسال پیامک یادآوری در روز تارگت و روز نتیجه</label></td>
 					</tr>
 					<tr>
+						<th scope="row"><label>سرویس‌دهنده</label></th>
+						<td>
+							<select name="sms_provider">
+								<option value="ippanel" <?php selected( $s['sms_provider'], 'ippanel' ); ?>>فراز / آی‌پی‌پنل (ippanel)</option>
+								<option value="smsir" <?php selected( $s['sms_provider'], 'smsir' ); ?>>اس‌ام‌اس‌دات‌آی‌آر (sms.ir)</option>
+							</select>
+							<p class="description">برای <b>sms.ir</b>: «کلید API» همان API Key پنل، «خط ارسال» شماره‌ی خط، و «کد پترن» همان <code>templateId</code> عددیِ قالب است. آدرس پایه را خالی بگذارید (خودکار <code>https://api.sms.ir</code>).</p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><label>آدرس پایه API</label></th>
 						<td><input type="text" name="sms_base" value="<?php echo esc_attr( $s['sms_base'] ); ?>" class="regular-text" dir="ltr">
-							<p class="description">پیش‌فرض فراز/آی‌پی‌پنل: <code>https://rest.ippanel.com/v1</code></p></td>
+							<p class="description">فراز/آی‌پی‌پنل: <code>https://rest.ippanel.com/v1</code> — برای sms.ir خالی بگذارید.</p></td>
 					</tr>
 					<tr>
 						<th scope="row"><label>کلید API</label></th>
@@ -177,6 +187,7 @@ class SZP_Eval_Settings {
 			'day_target'         => min( 7, max( 1, absint( $p['day_target'] ?? 2 ) ) ),
 			'day_result'         => min( 7, max( 1, absint( $p['day_result'] ?? 1 ) ) ),
 			'sms_enabled'        => empty( $p['sms_enabled'] ) ? 0 : 1,
+			'sms_provider'       => ( ( $p['sms_provider'] ?? 'ippanel' ) === 'smsir' ) ? 'smsir' : 'ippanel',
 			'sms_base'           => esc_url_raw( $p['sms_base'] ?? '' ),
 			'sms_apikey'         => sanitize_text_field( $p['sms_apikey'] ?? '' ),
 			'sms_originator'     => sanitize_text_field( $p['sms_originator'] ?? '' ),
