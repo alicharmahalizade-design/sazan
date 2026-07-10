@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SZP_Install {
 
-	const DB_VERSION = '1.4.0';
+	const DB_VERSION = '1.5.0';
 
 	public static function activate() {
 		self::create_tables();
@@ -219,6 +219,7 @@ class SZP_Install {
 			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			week_no int(11) NOT NULL DEFAULT 0,
 			title varchar(191) NOT NULL DEFAULT '',
+			session_at varchar(32) NOT NULL DEFAULT '',
 			actions longtext NULL,
 			tasks longtext NULL,
 			metrics longtext NULL,

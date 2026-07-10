@@ -221,6 +221,7 @@ class SZP_Coach_Ajax {
 
 		$fields = array(
 			'title'          => sanitize_text_field( wp_unslash( $_POST['title'] ?? '' ) ),
+			'session_at'     => sanitize_text_field( wp_unslash( $_POST['session_at'] ?? '' ) ),
 			'actions'        => wp_json_encode( $actions ),
 			'tasks'          => wp_json_encode( $tasks ),
 			'coach_feedback' => sanitize_textarea_field( wp_unslash( $_POST['feedback'] ?? '' ) ),
