@@ -83,8 +83,10 @@ class SZP_Sessions_Render {
 
 					<label class="szp-sess-fld">
 						<span>تاریخ جلسه *</span>
-						<input type="date" data-f="date">
-						<em class="szp-sess-jalali" data-jalali></em>
+						<span class="szp-jp" data-jp="date-greg">
+							<input type="text" class="szp-jp-disp" readonly placeholder="انتخاب تاریخ (تقویم شمسی)">
+							<input type="hidden" class="szp-jp-val" data-f="date">
+						</span>
 					</label>
 					<div class="szp-sess-fld szp-sess-two">
 						<label><span>ساعت شروع *</span><input type="time" dir="ltr" data-f="start"></label>
