@@ -267,20 +267,24 @@
 	border-radius: 999px; padding: 3px 12px; margin-inline-start: 8px; white-space: nowrap;
 }
 .szp-jp-pop {
-	z-index: 100000; width: 268px; padding: 12px; border-radius: 16px;
-	background: #10151c; border: 1px solid rgba(120,140,160,.28);
-	box-shadow: 0 18px 50px rgba(0,0,0,.5); color: #e8eef4; direction: rtl;
-	font-family: inherit;
+	box-sizing: border-box; z-index: 100000; width: 304px; max-width: calc(100vw - 24px);
+	padding: 14px; border-radius: 18px; background: #10151c; border: 1px solid rgba(120,140,160,.28);
+	box-shadow: 0 18px 50px rgba(0,0,0,.5); color: #e8eef4; direction: rtl; font-family: inherit; line-height: 1.4;
 }
-.szp-jp-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-weight: 800; font-size: 14px; }
-.szp-jp-nav button { border: none; background: rgba(120,140,160,.15); color: #e8eef4; width: 30px; height: 30px; border-radius: 9px; cursor: pointer; font-size: 16px; }
+.szp-jp-pop *, .szp-jp-pop *::before, .szp-jp-pop *::after { box-sizing: border-box; }
+.szp-jp-pop button { margin: 0; border: none; font-family: inherit; -webkit-appearance: none; appearance: none; }
+.szp-jp-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-weight: 800; font-size: 14px; }
+.szp-jp-nav button { flex: 0 0 auto; width: 34px; height: 34px; min-width: 0; padding: 0; background: rgba(120,140,160,.15); color: #e8eef4; border-radius: 10px; cursor: pointer; font-size: 17px; line-height: 1; }
 .szp-jp-nav button:hover { background: rgba(0,182,241,.25); }
-.szp-jp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.szp-jp-dow { text-align: center; font-size: 11px; color: #8ea0b2; padding: 4px 0; }
-.szp-jp-day { border: none; background: transparent; color: #e8eef4; height: 30px; border-radius: 8px; cursor: pointer; font-size: 12.5px; font-family: inherit; }
+.szp-jp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.szp-jp-grid > span { min-width: 0; }
+.szp-jp-dow { text-align: center; font-size: 11px; color: #8ea0b2; padding: 4px 0; font-weight: 700; }
+.szp-jp-day { min-width: 0; width: 100%; aspect-ratio: 1 / 1; padding: 0; display: flex; align-items: center; justify-content: center; background: transparent; color: #e8eef4; border-radius: 10px; cursor: pointer; font-size: 13px; line-height: 1; transition: background .12s, color .12s; }
 .szp-jp-day:hover { background: rgba(0,182,241,.18); }
 .szp-jp-day.on { background: var(--szp-primary, #00b6f1); color: #001018; font-weight: 800; }
-.szp-jp-time { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; color: #8ea0b2; }
-.szp-jp-time select { background: #0b1016; color: #e8eef4; border: 1px solid rgba(120,140,160,.28); border-radius: 8px; padding: 5px 8px; font-family: inherit; }
-.szp-jp-foot { display: flex; gap: 8px; margin-top: 12px; }
-.szp-jp-foot .szp-co-btn { flex: 1; padding: 9px 12px; font-size: 13px; border-radius: 11px; }
+.szp-jp-day.on:hover { background: var(--szp-primary, #00b6f1); color: #001018; }
+.szp-jp-time { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(120,140,160,.18); font-size: 13px; color: #a9b6c2; font-weight: 700; }
+.szp-jp-tinput { flex: 1; min-width: 0; background: #0b1016; color: #e8eef4; border: 1px solid rgba(120,140,160,.28); border-radius: 10px; padding: 9px 12px; font-family: inherit; font-size: 15px; letter-spacing: 1px; text-align: center; }
+.szp-jp-tinput::-webkit-calendar-picker-indicator { filter: invert(.7); }
+.szp-jp-foot { display: flex; gap: 8px; margin-top: 14px; }
+.szp-jp-foot .szp-co-btn { flex: 1; padding: 10px 12px; font-size: 13.5px; border-radius: 12px; }

@@ -392,11 +392,8 @@
 			}
 			h += '</div>';
 			if (mode === 'datetime') {
-				h += '<div class="szp-jp-time"><span>ساعت</span><select class="szp-jp-h">';
-				for (var hn = 0; hn < 24; hn++) h += '<option value="' + hn + '"' + (hn === hh ? ' selected' : '') + '>' + toFa(pad2(hn)) + '</option>';
-				h += '</select> : <select class="szp-jp-m">';
-				for (var mn = 0; mn < 60; mn += 5) h += '<option value="' + mn + '"' + (mn === mm ? ' selected' : '') + '>' + toFa(pad2(mn)) + '</option>';
-				h += '</select></div>';
+				h += '<div class="szp-jp-time"><span>ساعت جلسه</span>'
+					+ '<input type="time" dir="ltr" class="szp-jp-tinput" value="' + pad2(hh) + ':' + pad2(mm) + '"></div>';
 			}
 			h += '<div class="szp-jp-foot"><button type="button" class="szp-co-btn primary szp-jp-ok">تأیید</button>'
 				+ '<button type="button" class="szp-co-btn ghost szp-jp-clear">پاک کردن</button></div>';
@@ -417,7 +414,7 @@
 			else if (t.classList.contains('szp-jp-clear')) { onConfirm(null); closePop(); }
 			else if (t.classList.contains('szp-jp-ok')) {
 				if (!sel) { closePop(); return; }
-				if (mode === 'datetime') { hh = parseInt(pop.querySelector('.szp-jp-h').value, 10); mm = parseInt(pop.querySelector('.szp-jp-m').value, 10); }
+				if (mode === 'datetime') { var tv = (pop.querySelector('.szp-jp-tinput').value || '').split(':'); hh = parseInt(tv[0], 10) || 0; mm = parseInt(tv[1], 10) || 0; }
 				onConfirm({ sel: sel, hh: hh, mm: mm });
 				closePop();
 			}
