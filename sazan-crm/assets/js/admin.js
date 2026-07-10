@@ -104,6 +104,18 @@
 			d.append('template', tpl.value);
 			btn.disabled = true;
 			ajax('szc_' + act, d, function (r) { handleRes(r, btn); });
+		} else if (act === 'enroll') {
+			e.preventDefault();
+			var seq = document.querySelector('[data-seq]');
+			if (!seq) return;
+			d.append('sequence', seq.value);
+			btn.disabled = true;
+			ajax('szc_enroll', d, function (r) { handleRes(r, btn); });
+		} else if (act === 'blacklist') {
+			e.preventDefault();
+			d.append('op', btn.getAttribute('data-op') || 'add');
+			btn.disabled = true;
+			ajax('szc_blacklist', d, function (r) { handleRes(r, btn); });
 		} else if (act === 'del_contact') {
 			e.preventDefault();
 			if (!confirm('این مخاطب و همه‌ی سوابقش حذف شود؟')) return;
@@ -111,6 +123,47 @@
 			ajax('szc_del_contact', d, function (r) { handleRes(r, btn); });
 		}
 	});
+
+	// ===== پیش‌تنظیم‌های پیگیری (Callback) =====
+	function pad(n) { return (n < 10 ? '0' : '') + n; }
+	function toLocalInput(dt) {
+		return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate()) + 'T' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+	}
+	document.querySelectorAll('[data-preset]').forEach(function (b) {
+		b.addEventListener('click', function () {
+			var t = b.getAttribute('data-preset');
+			var d = new Date();
+			d.setSeconds(0, 0);
+			if (t === 'tomorrow10') { d.setDate(d.getDate() + 1); d.setHours(10, 0); }
+			else if (t === 'today17') { d.setHours(17, 0); }
+			else if (t === 'd3') { d.setDate(d.getDate() + 3); d.setHours(10, 0); }
+			else if (t === 'week') { d.setDate(d.getDate() + 7); d.setHours(10, 0); }
+			var input = document.querySelector('[data-followup-at]');
+			if (input) input.value = toLocalInput(d);
+		});
+	});
+
+	// ===== انتخاب همه در فهرست + نمایش پارامتر اقدام گروهی =====
+	var chkAll = document.getElementById('szc-check-all');
+	if (chkAll) {
+		chkAll.addEventListener('change', function () {
+			document.querySelectorAll('.szc-row-check').forEach(function (x) { x.checked = chkAll.checked; });
+		});
+	}
+	var bulkSel = document.querySelector('.szc-bulk-action');
+	if (bulkSel) {
+		var pmap = { stage: 'p_stage', priority: 'p_priority', tag: 'p_tag', assign: 'p_owner', send: 'p_template', enroll: 'p_sequence' };
+		function toggleParams() {
+			document.querySelectorAll('.szc-bp').forEach(function (el) { el.style.display = 'none'; });
+			var want = pmap[bulkSel.value];
+			if (want) {
+				var el = document.querySelector('[name="' + want + '"]');
+				if (el) el.style.display = '';
+			}
+		}
+		bulkSel.addEventListener('change', toggleParams);
+		toggleParams();
+	}
 
 	// تغییر سریع مرحله/اولویت/لغو پیامک (روی change).
 	document.addEventListener('change', function (e) {

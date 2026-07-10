@@ -10,6 +10,13 @@ class SZC_Admin_Pages {
 		add_action( 'admin_post_szc_template_save',   array( __CLASS__, 'handle_template_save' ) );
 		add_action( 'admin_post_szc_template_delete', array( __CLASS__, 'handle_template_delete' ) );
 		add_action( 'admin_post_szc_settings_save',   array( __CLASS__, 'handle_settings_save' ) );
+		add_action( 'admin_post_szc_bulk',            array( __CLASS__, 'handle_bulk' ) );
+		add_action( 'admin_post_szc_save_segment',    array( __CLASS__, 'handle_save_segment' ) );
+		add_action( 'admin_post_szc_delete_segment',  array( __CLASS__, 'handle_delete_segment' ) );
+		add_action( 'admin_post_szc_sequence_save',   array( __CLASS__, 'handle_sequence_save' ) );
+		add_action( 'admin_post_szc_sequence_delete', array( __CLASS__, 'handle_sequence_delete' ) );
+		add_action( 'admin_post_szc_blacklist_add',   array( __CLASS__, 'handle_blacklist_add' ) );
+		add_action( 'admin_post_szc_blacklist_remove', array( __CLASS__, 'handle_blacklist_remove' ) );
 		add_action( 'wp_ajax_szc_test_sms',           array( __CLASS__, 'ajax_test_sms' ) );
 	}
 
@@ -292,8 +299,9 @@ class SZC_Admin_Pages {
 		self::guard();
 		$s         = SZC_Settings::all();
 		$templates = SZC_Templates::all();
-		$staff     = get_users( array( 'role__in' => array( 'administrator', 'editor', 'author', 'shop_manager' ), 'number' => 500, 'fields' => array( 'ID', 'display_name', 'user_login' ) ) );
-		$allowed   = SZC_Settings::allowed_user_ids();
+		$staff     = get_users( array( 'role__in' => array( 'administrator', 'editor', 'author', 'shop_manager', 'contributor' ), 'number' => 500, 'fields' => array( 'ID', 'display_name', 'user_login' ) ) );
+		$managers  = SZC_Settings::manager_ids();
+		$agents    = SZC_Settings::agent_ids();
 		?>
 		<div class="wrap szc-wrap">
 			<h1>تنظیمات سازان CRM</h1>
@@ -303,15 +311,23 @@ class SZC_Admin_Pages {
 				<?php wp_nonce_field( 'szc_settings_save' ); ?>
 				<input type="hidden" name="action" value="szc_settings_save">
 
-				<h2>دسترسی تیم فروش</h2>
+				<h2>دسترسی و نقش‌ها</h2>
 				<table class="form-table"><tbody>
-					<tr><th>کاربران دارای دسترسی</th><td>
-						<select name="access_users[]" multiple size="6" style="min-width:320px">
+					<tr><th>مدیران فروش</th><td>
+						<select name="managers[]" multiple size="6" style="min-width:320px">
 							<?php foreach ( $staff as $u ) : ?>
-								<option value="<?php echo (int) $u->ID; ?>" <?php echo in_array( (int) $u->ID, $allowed, true ) ? 'selected' : ''; ?>><?php echo esc_html( $u->display_name . ' (' . $u->user_login . ')' ); ?></option>
+								<option value="<?php echo (int) $u->ID; ?>" <?php echo in_array( (int) $u->ID, $managers, true ) ? 'selected' : ''; ?>><?php echo esc_html( $u->display_name . ' (' . $u->user_login . ')' ); ?></option>
 							<?php endforeach; ?>
 						</select>
-						<p class="description">مدیران سایت همیشه دسترسی دارند. این‌جا اعضای تیم فروش را انتخاب کنید (Ctrl/Cmd برای چندتایی).</p>
+						<p class="description">مدیر همه‌ی سرنخ‌ها را می‌بیند و می‌تواند تخصیص دهد. (مدیران سایت همیشه مدیر فروش‌اند.)</p>
+					</td></tr>
+					<tr><th>کارشناسان فروش</th><td>
+						<select name="agents[]" multiple size="6" style="min-width:320px">
+							<?php foreach ( $staff as $u ) : ?>
+								<option value="<?php echo (int) $u->ID; ?>" <?php echo in_array( (int) $u->ID, $agents, true ) ? 'selected' : ''; ?>><?php echo esc_html( $u->display_name . ' (' . $u->user_login . ')' ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<p class="description">کارشناس فقط سرنخ‌های تخصیص‌یافته به خودش را می‌بیند. (Ctrl/Cmd برای انتخاب چندتایی)</p>
 					</td></tr>
 				</tbody></table>
 
@@ -332,6 +348,13 @@ class SZC_Admin_Pages {
 						از ساعت <input type="number" name="send_from" min="0" max="23" value="<?php echo esc_attr( $s['send_from'] ); ?>" class="small-text">
 						تا ساعت <input type="number" name="send_to" min="1" max="24" value="<?php echo esc_attr( $s['send_to'] ); ?>" class="small-text">
 						<p class="description">پیامک‌های خودکار فقط در این بازه ارسال می‌شوند (برای پرهیز از پیامک شبانه).</p>
+					</td></tr>
+					<tr><th>سقف ارسال در هر نوبت</th><td>
+						<input type="number" name="max_per_run" min="1" value="<?php echo esc_attr( $s['max_per_run'] ); ?>" class="small-text"> پیامک در هر اجرای صف (هر ۵ دقیقه)
+						<p class="description">برای محدودسازی نرخ ارسال انبوه و پرهیز از فشار روی خط پیامک.</p>
+					</td></tr>
+					<tr><th>سقف ارسال روزانه</th><td>
+						<input type="number" name="max_per_day" min="0" value="<?php echo esc_attr( $s['max_per_day'] ); ?>" class="small-text"> (۰ = نامحدود)
 					</td></tr>
 				</tbody></table>
 
@@ -370,7 +393,10 @@ class SZC_Admin_Pages {
 		check_admin_referer( 'szc_settings_save' );
 		$p   = wp_unslash( $_POST );
 		$new = array(
-			'access_users'     => array_map( 'intval', (array) ( $p['access_users'] ?? array() ) ),
+			'managers'         => array_map( 'intval', (array) ( $p['managers'] ?? array() ) ),
+			'agents'           => array_map( 'intval', (array) ( $p['agents'] ?? array() ) ),
+			'max_per_run'      => max( 1, absint( $p['max_per_run'] ?? 80 ) ),
+			'max_per_day'      => max( 0, absint( $p['max_per_day'] ?? 0 ) ),
 			'sms_enabled'      => empty( $p['sms_enabled'] ) ? 0 : 1,
 			'sms_base'         => esc_url_raw( $p['sms_base'] ?? '' ),
 			'sms_apikey'       => sanitize_text_field( $p['sms_apikey'] ?? '' ),
@@ -406,5 +432,419 @@ class SZC_Admin_Pages {
 			wp_send_json_success( array( 'msg' => 'ارسال شد ✓' ) );
 		}
 		wp_send_json_error( array( 'msg' => $res['msg'] ?? 'ارسال ناموفق بود.' ) );
+	}
+
+	/* ==================== اقدام گروهی ==================== */
+
+	public static function handle_bulk() {
+		self::guard();
+		check_admin_referer( 'szc_bulk' );
+		$is_manager = SZC_Settings::is_manager();
+		$scope      = ( ( $_POST['scope'] ?? '' ) === 'all' ) ? 'all' : 'selected';
+		$action     = sanitize_key( $_POST['bulk_action'] ?? '' );
+
+		$fargs = array(
+			'search'   => sanitize_text_field( wp_unslash( $_POST['f_s'] ?? '' ) ),
+			'stage'    => sanitize_key( $_POST['f_stage'] ?? '' ),
+			'priority' => sanitize_key( $_POST['f_priority'] ?? '' ),
+			'due'      => sanitize_key( $_POST['f_due'] ?? '' ),
+			'owner'    => absint( $_POST['f_owner'] ?? 0 ),
+		);
+		if ( ! $is_manager ) {
+			$fargs['owner'] = get_current_user_id();
+		}
+
+		if ( $scope === 'all' ) {
+			$ids = SZC_Contacts::ids_matching( $fargs );
+		} else {
+			$ids = array_map( 'intval', (array) ( $_POST['ids'] ?? array() ) );
+			if ( ! $is_manager ) {
+				$self = get_current_user_id();
+				$ids  = array_values( array_filter( $ids, function ( $id ) use ( $self ) {
+					$c = SZC_Contacts::get( $id );
+					return $c && (int) $c->owner_id === $self;
+				} ) );
+			}
+		}
+		$ids = array_values( array_filter( $ids ) );
+		$n   = count( $ids );
+		$msg = '';
+
+		switch ( $action ) {
+			case 'stage':
+				$v = sanitize_key( $_POST['p_stage'] ?? '' );
+				foreach ( $ids as $id ) { SZC_Contacts::set_stage( $id, $v ); }
+				$msg = 'مرحله‌ی ' . szc_fa_digits( $n ) . ' مخاطب تغییر کرد.';
+				break;
+			case 'priority':
+				$v = sanitize_key( $_POST['p_priority'] ?? '' );
+				foreach ( $ids as $id ) { SZC_Contacts::set_priority( $id, $v ); }
+				$msg = 'اولویت ' . szc_fa_digits( $n ) . ' مخاطب تغییر کرد.';
+				break;
+			case 'tag':
+				$tag = sanitize_text_field( wp_unslash( $_POST['p_tag'] ?? '' ) );
+				foreach ( $ids as $id ) { SZC_Contacts::add_tag( $id, $tag ); }
+				$msg = 'برچسب به ' . szc_fa_digits( $n ) . ' مخاطب افزوده شد.';
+				break;
+			case 'assign':
+				if ( $is_manager ) {
+					$owner = absint( $_POST['p_owner'] ?? 0 );
+					foreach ( $ids as $id ) { SZC_Contacts::set_owner( $id, $owner ); }
+					$msg = szc_fa_digits( $n ) . ' مخاطب تخصیص یافت.';
+				}
+				break;
+			case 'blacklist':
+				foreach ( $ids as $id ) {
+					$c = SZC_Contacts::get( $id );
+					if ( $c ) { SZC_Blacklist::add( $c->mobile, 'اقدام گروهی' ); }
+				}
+				$msg = szc_fa_digits( $n ) . ' مخاطب به لیست سیاه رفت.';
+				break;
+			case 'delete':
+				foreach ( $ids as $id ) { SZC_Contacts::delete( $id ); }
+				$msg = szc_fa_digits( $n ) . ' مخاطب حذف شد.';
+				break;
+			case 'send':
+				$tid = absint( $_POST['p_template'] ?? 0 );
+				$r   = SZC_SMS::enqueue_template_bulk( $ids, $tid );
+				$msg = szc_fa_digits( $r['queued'] ) . ' پیامک در صف قرار گرفت (' . szc_fa_digits( $r['skipped'] ) . ' رد شد).';
+				break;
+			case 'enroll':
+				$sid = absint( $_POST['p_sequence'] ?? 0 );
+				$r   = SZC_Sequences::enroll_bulk( $sid, $ids );
+				$msg = szc_fa_digits( $r['enrolled'] ) . ' مخاطب در دنباله ثبت شد (' . szc_fa_digits( $r['skipped'] ) . ' رد شد).';
+				break;
+			default:
+				$msg = 'اقدامی انتخاب نشد.';
+		}
+		set_transient( 'szc_bulk_' . get_current_user_id(), $msg, 60 );
+		wp_safe_redirect( wp_get_referer() ?: self::url( 'szc-contacts' ) );
+		exit;
+	}
+
+	/* ==================== بخش‌بندی ==================== */
+
+	public static function handle_save_segment() {
+		self::guard();
+		check_admin_referer( 'szc_save_segment' );
+		$name = sanitize_text_field( wp_unslash( $_POST['seg_name'] ?? '' ) );
+		if ( $name !== '' ) {
+			SZC_Segments::create( $name, array(
+				'search'   => sanitize_text_field( wp_unslash( $_POST['f_s'] ?? '' ) ),
+				'stage'    => sanitize_key( $_POST['f_stage'] ?? '' ),
+				'priority' => sanitize_key( $_POST['f_priority'] ?? '' ),
+				'due'      => sanitize_key( $_POST['f_due'] ?? '' ),
+				'owner'    => absint( $_POST['f_owner'] ?? 0 ),
+			) );
+		}
+		wp_safe_redirect( wp_get_referer() ?: self::url( 'szc-contacts' ) );
+		exit;
+	}
+
+	public static function handle_delete_segment() {
+		self::guard();
+		$id = absint( $_GET['id'] ?? 0 );
+		check_admin_referer( 'szc_delete_segment_' . $id );
+		SZC_Segments::delete( $id );
+		wp_safe_redirect( self::url( 'szc-segments' ) );
+		exit;
+	}
+
+	public static function page_segments() {
+		self::guard();
+		$segments = SZC_Segments::all();
+		?>
+		<div class="wrap szc-wrap">
+			<h1>بخش‌بندی‌ها (فیلترهای ذخیره‌شده)</h1>
+			<p class="szc-muted">در صفحه‌ی «مخاطبین» فیلتر بزنید و با دکمه‌ی «ذخیره بخش‌بندی» آن را این‌جا نگه دارید.</p>
+			<table class="wp-list-table widefat fixed striped">
+				<thead><tr><th>نام</th><th>فیلترها</th><th></th></tr></thead>
+				<tbody>
+				<?php if ( ! $segments ) : ?>
+					<tr><td colspan="3" class="szc-muted">هنوز بخش‌بندی‌ای ذخیره نشده است.</td></tr>
+				<?php else : foreach ( $segments as $sg ) :
+					$f = SZC_Segments::filters( $sg ); ?>
+					<tr>
+						<td><a href="<?php echo esc_url( self::url( 'szc-contacts', $f ) ); ?>"><b><?php echo esc_html( $sg->name ); ?></b></a></td>
+						<td class="szc-muted"><?php echo esc_html( implode( '، ', array_map( function ( $k, $v ) { return $k . '=' . $v; }, array_keys( $f ), $f ) ) ?: '—' ); ?></td>
+						<td><a class="button-link szc-danger" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=szc_delete_segment&id=' . $sg->id ), 'szc_delete_segment_' . $sg->id ) ); ?>" onclick="return confirm('حذف شود؟')">حذف</a></td>
+					</tr>
+				<?php endforeach; endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	/* ==================== پیگیری‌ها ==================== */
+
+	public static function page_followups() {
+		self::guard();
+		$tab   = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'due'; // phpcs:ignore WordPress.Security.NonceVerification
+		$owner = SZC_Settings::scope_owner();
+		$rows  = SZC_Activity::followups( $tab === 'upcoming' ? 'upcoming' : 'due', $owner, 300 );
+		?>
+		<div class="wrap szc-wrap">
+			<h1>پیگیری‌ها</h1>
+			<div class="szc-msg" aria-live="polite"></div>
+			<h2 class="nav-tab-wrapper">
+				<a class="nav-tab <?php echo $tab === 'due' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( self::url( 'szc-followups', array( 'tab' => 'due' ) ) ); ?>">امروز و عقب‌افتاده</a>
+				<a class="nav-tab <?php echo $tab === 'upcoming' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( self::url( 'szc-followups', array( 'tab' => 'upcoming' ) ) ); ?>">آینده</a>
+			</h2>
+			<table class="wp-list-table widefat fixed striped" style="margin-top:12px">
+				<thead><tr><th>مخاطب</th><th>موبایل</th><th>زمان</th><th>موضوع</th><th></th></tr></thead>
+				<tbody>
+				<?php if ( ! $rows ) : ?>
+					<tr><td colspan="5" class="szc-muted">موردی نیست.</td></tr>
+				<?php else : foreach ( $rows as $r ) :
+					$overdue = ( $tab === 'due' && strtotime( $r->due_at ) < strtotime( current_time( 'mysql' ) ) - DAY_IN_SECONDS ); ?>
+					<tr>
+						<td><a href="<?php echo esc_url( add_query_arg( array( 'page' => 'szc-contacts', 'contact' => $r->contact_id ), admin_url( 'admin.php' ) ) ); ?>"><b><?php echo esc_html( trim( $r->first_name . ' ' . $r->last_name ) ?: szc_fa_digits( $r->mobile ) ); ?></b></a></td>
+						<td dir="ltr"><?php echo esc_html( szc_fa_digits( $r->mobile ) ); ?></td>
+						<td class="<?php echo $overdue ? 'szc-danger' : ''; ?>"><?php echo esc_html( szc_format_mysql( $r->due_at ) ); ?></td>
+						<td class="szc-muted"><?php echo esc_html( $r->body ?: '—' ); ?></td>
+						<td><button class="button button-small" data-szc-act="done_followup" data-id="<?php echo (int) $r->id; ?>">انجام شد</button></td>
+					</tr>
+				<?php endforeach; endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	/* ==================== دنباله‌های پیامکی ==================== */
+
+	public static function page_sequences() {
+		self::guard();
+		$edit      = isset( $_GET['edit'] ) ? absint( $_GET['edit'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification
+		$seq       = $edit ? SZC_Sequences::get( $edit ) : null;
+		$steps     = $seq ? SZC_Sequences::steps( $seq->id ) : array();
+		$templates = SZC_Templates::all();
+		?>
+		<div class="wrap szc-wrap">
+			<h1>دنباله‌های پیامکی (Drip)</h1>
+			<?php if ( isset( $_GET['msg'] ) ) : ?><div class="notice notice-success is-dismissible"><p>ذخیره شد.</p></div><?php endif; ?>
+			<?php if ( ! $templates ) : ?>
+				<div class="notice notice-warning"><p>ابتدا از <a href="<?php echo esc_url( self::url( 'szc-templates' ) ); ?>">قالب‌های پیامک</a> چند قالب بسازید تا بتوانید گام‌های دنباله را تعریف کنید.</p></div>
+			<?php endif; ?>
+
+			<div class="szc-single-grid">
+				<div class="szc-col">
+					<div class="szc-card">
+						<h2><?php echo $seq ? 'ویرایش دنباله' : 'دنباله‌ی جدید'; ?></h2>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<?php wp_nonce_field( 'szc_sequence_save' ); ?>
+							<input type="hidden" name="action" value="szc_sequence_save">
+							<input type="hidden" name="id" value="<?php echo (int) ( $seq->id ?? 0 ); ?>">
+							<p><label>نام دنباله<br><input type="text" name="name" class="regular-text" required value="<?php echo esc_attr( $seq->name ?? '' ); ?>"></label></p>
+							<p><label><input type="checkbox" name="active" value="1" <?php checked( $seq ? $seq->active : 1 ); ?>> فعال</label></p>
+							<h3>گام‌ها</h3>
+							<p class="szc-muted">هر گام: چند روز پس از ثبت‌نام، ساعت چند، با کدام قالب. قالبِ «— بدون —» یعنی آن ردیف نادیده گرفته می‌شود.</p>
+							<table class="widefat"><thead><tr><th>روز</th><th>ساعت</th><th>قالب</th></tr></thead><tbody>
+							<?php for ( $i = 0; $i < 6; $i++ ) :
+								$st = $steps[ $i ] ?? null; ?>
+								<tr>
+									<td><input type="number" name="step_day[]" min="0" value="<?php echo esc_attr( $st ? $st->day_offset : ( $i === 0 ? 0 : '' ) ); ?>" class="small-text"></td>
+									<td><input type="number" name="step_hour[]" min="0" max="23" value="<?php echo esc_attr( $st ? $st->hour : 10 ); ?>" class="small-text"></td>
+									<td>
+										<select name="step_template[]">
+											<option value="0">— بدون —</option>
+											<?php foreach ( $templates as $t ) : ?>
+												<option value="<?php echo (int) $t->id; ?>" <?php selected( $st ? (int) $st->template_id : 0, (int) $t->id ); ?>><?php echo esc_html( $t->name ); ?></option>
+											<?php endforeach; ?>
+										</select>
+									</td>
+								</tr>
+							<?php endfor; ?>
+							</tbody></table>
+							<p style="margin-top:12px"><button class="button button-primary"><?php echo $seq ? 'ذخیره' : 'ایجاد دنباله'; ?></button>
+								<?php if ( $seq ) : ?><a class="button" href="<?php echo esc_url( self::url( 'szc-sequences' ) ); ?>">دنباله‌ی جدید</a><?php endif; ?></p>
+						</form>
+					</div>
+				</div>
+				<div class="szc-col">
+					<div class="szc-card">
+						<h2>دنباله‌های موجود</h2>
+						<?php $all = SZC_Sequences::all(); if ( ! $all ) : ?>
+							<p class="szc-muted">هنوز دنباله‌ای نساخته‌اید.</p>
+						<?php else : ?>
+							<ul class="szc-tpl-list">
+								<?php foreach ( $all as $s ) : $stt = SZC_Sequences::stats( $s->id ); ?>
+									<li>
+										<div><b><?php echo esc_html( $s->name ); ?></b> <?php echo $s->active ? '' : '<span class="szc-muted">(غیرفعال)</span>'; ?>
+											<p class="szc-muted"><?php echo esc_html( szc_fa_digits( $stt['steps'] ) ); ?> گام · <?php echo esc_html( szc_fa_digits( $stt['active'] ) ); ?> ثبت‌نام فعال</p></div>
+										<div class="szc-tpl-ops">
+											<a class="button-link" href="<?php echo esc_url( self::url( 'szc-sequences', array( 'edit' => $s->id ) ) ); ?>">ویرایش</a>
+											<a class="button-link szc-danger" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=szc_sequence_delete&id=' . $s->id ), 'szc_sequence_delete_' . $s->id ) ); ?>" onclick="return confirm('حذف دنباله و لغو گام‌های در صف؟')">حذف</a>
+										</div>
+									</li>
+								<?php endforeach; ?>
+							</ul>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	public static function handle_sequence_save() {
+		self::guard();
+		check_admin_referer( 'szc_sequence_save' );
+		$id     = absint( $_POST['id'] ?? 0 );
+		$name   = wp_unslash( $_POST['name'] ?? '' );
+		$active = ! empty( $_POST['active'] );
+		if ( $id ) {
+			SZC_Sequences::update( $id, $name, $active );
+		} else {
+			$id = SZC_Sequences::create( $name );
+			if ( ! $active ) { SZC_Sequences::update( $id, $name, false ); }
+		}
+		$days = array_map( 'intval', (array) ( $_POST['step_day'] ?? array() ) );
+		$hrs  = array_map( 'intval', (array) ( $_POST['step_hour'] ?? array() ) );
+		$tpls = array_map( 'intval', (array) ( $_POST['step_template'] ?? array() ) );
+		$rows = array();
+		foreach ( $tpls as $i => $tid ) {
+			if ( $tid > 0 ) {
+				$rows[] = array( 'day_offset' => $days[ $i ] ?? 0, 'hour' => $hrs[ $i ] ?? 10, 'template_id' => $tid );
+			}
+		}
+		if ( $id ) {
+			SZC_Sequences::set_steps( $id, $rows );
+		}
+		wp_safe_redirect( self::url( 'szc-sequences', array( 'edit' => $id, 'msg' => 1 ) ) );
+		exit;
+	}
+
+	public static function handle_sequence_delete() {
+		self::guard();
+		$id = absint( $_GET['id'] ?? 0 );
+		check_admin_referer( 'szc_sequence_delete_' . $id );
+		SZC_Sequences::delete( $id );
+		wp_safe_redirect( self::url( 'szc-sequences' ) );
+		exit;
+	}
+
+	/* ==================== لیست سیاه ==================== */
+
+	public static function page_blacklist() {
+		self::guard();
+		$page = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification
+		$rows = SZC_Blacklist::all( 100, $page );
+		$cnt  = SZC_Blacklist::count();
+		?>
+		<div class="wrap szc-wrap">
+			<h1>لیست سیاه (لغو دریافت سراسری)</h1>
+			<p class="szc-muted">شماره‌های این فهرست هرگز پیامک دریافت نمی‌کنند (چه دستی، چه خودکار، چه دنباله). مجموع: <b><?php echo esc_html( szc_fa_digits( $cnt ) ); ?></b></p>
+
+			<div class="szc-card" style="max-width:640px">
+				<h2>افزودن شماره</h2>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<?php wp_nonce_field( 'szc_blacklist_add' ); ?>
+					<input type="hidden" name="action" value="szc_blacklist_add">
+					<p><textarea name="numbers" rows="4" class="large-text" dir="ltr" placeholder="هر خط یک شماره (۰۹...)"></textarea></p>
+					<p><input type="text" name="reason" class="regular-text" placeholder="دلیل (اختیاری)"></p>
+					<p><button class="button button-primary">افزودن به لیست سیاه</button></p>
+				</form>
+			</div>
+
+			<table class="wp-list-table widefat fixed striped" style="margin-top:16px">
+				<thead><tr><th>موبایل</th><th>دلیل</th><th>تاریخ</th><th></th></tr></thead>
+				<tbody>
+				<?php if ( ! $rows ) : ?>
+					<tr><td colspan="4" class="szc-muted">فهرست خالی است.</td></tr>
+				<?php else : foreach ( $rows as $r ) : ?>
+					<tr>
+						<td dir="ltr"><?php echo esc_html( szc_fa_digits( $r->mobile ) ); ?></td>
+						<td class="szc-muted"><?php echo esc_html( $r->reason ?: '—' ); ?></td>
+						<td class="szc-muted"><?php echo esc_html( szc_format_mysql( $r->created_at, false ) ); ?></td>
+						<td><a class="button-link szc-danger" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=szc_blacklist_remove&id=' . $r->id ), 'szc_blacklist_remove_' . $r->id ) ); ?>">حذف</a></td>
+					</tr>
+				<?php endforeach; endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	public static function handle_blacklist_add() {
+		self::guard();
+		check_admin_referer( 'szc_blacklist_add' );
+		$n = SZC_Blacklist::add_bulk_text( wp_unslash( $_POST['numbers'] ?? '' ), sanitize_text_field( wp_unslash( $_POST['reason'] ?? '' ) ) );
+		set_transient( 'szc_bulk_' . get_current_user_id(), szc_fa_digits( $n ) . ' شماره به لیست سیاه افزوده شد.', 60 );
+		wp_safe_redirect( self::url( 'szc-blacklist' ) );
+		exit;
+	}
+
+	public static function handle_blacklist_remove() {
+		self::guard();
+		$id = absint( $_GET['id'] ?? 0 );
+		check_admin_referer( 'szc_blacklist_remove_' . $id );
+		SZC_Blacklist::remove( $id );
+		wp_safe_redirect( self::url( 'szc-blacklist' ) );
+		exit;
+	}
+
+	/* ==================== گزارش‌ها ==================== */
+
+	public static function page_reports() {
+		self::guard();
+		$owner   = SZC_Settings::scope_owner();
+		$funnel  = SZC_Reports::funnel( $owner );
+		$byout   = SZC_Reports::calls_by_outcome( 7 );
+		$board   = SZC_Settings::is_manager() ? SZC_Reports::agent_leaderboard() : array();
+		$maxstage = 1;
+		foreach ( $funnel['stages'] as $s ) { $maxstage = max( $maxstage, $s['count'] ); }
+		?>
+		<div class="wrap szc-wrap">
+			<h1>گزارش‌ها</h1>
+
+			<div class="szc-kpis">
+				<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( SZC_Reports::calls_today( $owner ) ) ); ?></span><span class="szc-kpi-l">تماس امروز</span></div>
+				<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( SZC_Reports::sms_sent( 1 ) ) ); ?></span><span class="szc-kpi-l">پیامک امروز</span></div>
+				<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( SZC_Reports::sms_sent( 7 ) ) ); ?></span><span class="szc-kpi-l">پیامک ۷ روز</span></div>
+				<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $funnel['conversion'] ) ); ?>٪</span><span class="szc-kpi-l">نرخ تبدیل</span></div>
+			</div>
+
+			<div class="szc-single-grid">
+				<div class="szc-col">
+					<div class="szc-card">
+						<h2>قیف فروش</h2>
+						<div class="szc-funnel">
+							<?php foreach ( $funnel['stages'] as $s ) :
+								$w = $maxstage > 0 ? round( $s['count'] / $maxstage * 100 ) : 0; ?>
+								<div class="szc-funnel-row">
+									<span class="szc-funnel-lbl"><?php echo esc_html( $s['label'] ); ?></span>
+									<span class="szc-funnel-bar"><span style="width:<?php echo (int) $w; ?>%"></span></span>
+									<span class="szc-funnel-n"><?php echo esc_html( szc_fa_digits( $s['count'] ) ); ?></span>
+								</div>
+							<?php endforeach; ?>
+						</div>
+						<p class="szc-muted">مجموع: <?php echo esc_html( szc_fa_digits( $funnel['total'] ) ); ?> · ثبت‌نام: <?php echo esc_html( szc_fa_digits( $funnel['registered'] ) ); ?></p>
+					</div>
+				</div>
+				<div class="szc-col">
+					<div class="szc-card">
+						<h2>تماس‌های ۷ روز اخیر (بر اساس نتیجه)</h2>
+						<ul class="szc-queue-stats">
+							<?php foreach ( $byout as $o ) : ?>
+								<li><?php echo esc_html( $o['label'] ); ?>: <b><?php echo esc_html( szc_fa_digits( $o['count'] ) ); ?></b></li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+					<?php if ( $board ) : ?>
+					<div class="szc-card">
+						<h2>عملکرد کارشناسان (تماسِ امروز)</h2>
+						<ul class="szc-queue-stats">
+							<?php foreach ( $board as $b ) : ?>
+								<li><?php echo esc_html( $b['name'] ); ?>: <b><?php echo esc_html( szc_fa_digits( $b['calls'] ) ); ?></b></li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+					<?php endif; ?>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 }

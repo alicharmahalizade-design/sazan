@@ -157,14 +157,36 @@ class SZC_Activity {
 		return $items;
 	}
 
-	/** پیگیری‌های سررسیدشده/امروز در کل CRM (برای داشبورد). */
-	public static function due_followups( $limit = 50 ) {
+	/**
+	 * پیگیری‌های باز. $when: 'due' (سررسیدشده/امروز و قبل)، 'upcoming' (آینده)، 'all'.
+	 * $owner>0 فقط سرنخ‌های آن کارشناس.
+	 */
+	public static function followups( $when = 'due', $owner = 0, $limit = 200 ) {
 		global $wpdb;
-		return $wpdb->get_results( $wpdb->prepare(
-			'SELECT a.*, c.first_name, c.last_name, c.mobile FROM ' . self::t_act() . ' a '
+		$now  = current_time( 'mysql' );
+		$sql  = 'SELECT a.*, c.first_name, c.last_name, c.mobile, c.owner_id FROM ' . self::t_act() . ' a '
 			. 'JOIN ' . SZC_Contacts::table() . ' c ON c.id=a.contact_id '
-			. "WHERE a.type='followup' AND a.done=0 AND a.due_at IS NOT NULL AND a.due_at<=%s "
-			. 'ORDER BY a.due_at ASC LIMIT %d',
-			current_time( 'mysql' ), (int) $limit ) );
+			. "WHERE a.type='followup' AND a.done=0 AND a.due_at IS NOT NULL";
+		$args = array();
+		if ( $when === 'due' ) {
+			$sql .= ' AND a.due_at<=%s'; $args[] = $now;
+			$order = 'ASC';
+		} elseif ( $when === 'upcoming' ) {
+			$sql .= ' AND a.due_at>%s'; $args[] = $now;
+			$order = 'ASC';
+		} else {
+			$order = 'ASC';
+		}
+		if ( $owner > 0 ) {
+			$sql .= ' AND c.owner_id=%d'; $args[] = (int) $owner;
+		}
+		$sql   .= ' ORDER BY a.due_at ' . $order . ' LIMIT %d';
+		$args[] = (int) $limit;
+		return $wpdb->get_results( $wpdb->prepare( $sql, $args ) );
+	}
+
+	/** میان‌بر: پیگیری‌های سررسیدشده (برای داشبورد). */
+	public static function due_followups( $limit = 50, $owner = 0 ) {
+		return self::followups( 'due', $owner, $limit );
 	}
 }

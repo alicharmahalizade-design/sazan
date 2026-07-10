@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SZC_Install {
 
-	const DB_VERSION = '1.0.0';
+	const DB_VERSION = '1.1.0';
 
 	public static function activate() {
 		self::create_tables();
@@ -95,6 +95,7 @@ class SZC_Install {
 			pattern_code varchar(60) NOT NULL DEFAULT '',
 			pattern_values longtext NULL,
 			template_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			enrollment_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			send_at datetime DEFAULT NULL,
 			status varchar(20) NOT NULL DEFAULT 'pending',
 			attempts int(11) NOT NULL DEFAULT 0,
@@ -104,7 +105,8 @@ class SZC_Install {
 			sent_at datetime DEFAULT NULL,
 			PRIMARY KEY  (id),
 			KEY due (status,send_at),
-			KEY contact_id (contact_id)
+			KEY contact_id (contact_id),
+			KEY enrollment_id (enrollment_id)
 		) $charset;
 		CREATE TABLE $t (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -114,6 +116,66 @@ class SZC_Install {
 			created_at datetime DEFAULT NULL,
 			updated_at datetime DEFAULT NULL,
 			PRIMARY KEY  (id)
+		) $charset;";
+
+		// ---- لیست سیاه (blacklist / opt-out سراسری بر اساس موبایل) ----
+		$bl = $wpdb->prefix . 'szc_blacklist';
+		$sql .= "
+		CREATE TABLE $bl (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			mobile varchar(20) NOT NULL DEFAULT '',
+			reason varchar(191) NOT NULL DEFAULT '',
+			created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+			created_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY mobile (mobile)
+		) $charset;";
+
+		// ---- بخش‌بندی/فیلترِ ذخیره‌شده (segments) ----
+		$sg = $wpdb->prefix . 'szc_segments';
+		$sql .= "
+		CREATE TABLE $sg (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			name varchar(150) NOT NULL DEFAULT '',
+			filters longtext NULL,
+			created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+			created_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id)
+		) $charset;";
+
+		// ---- دنباله‌ی پیامکی (drip sequences) ----
+		$seq = $wpdb->prefix . 'szc_sequences';
+		$sst = $wpdb->prefix . 'szc_sequence_steps';
+		$enr = $wpdb->prefix . 'szc_enrollments';
+		$sql .= "
+		CREATE TABLE $seq (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			name varchar(150) NOT NULL DEFAULT '',
+			active tinyint(1) NOT NULL DEFAULT 1,
+			created_at datetime DEFAULT NULL,
+			updated_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id)
+		) $charset;
+		CREATE TABLE $sst (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			sequence_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			step_no int(11) NOT NULL DEFAULT 0,
+			day_offset int(11) NOT NULL DEFAULT 0,
+			hour int(11) NOT NULL DEFAULT 10,
+			template_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			PRIMARY KEY  (id),
+			KEY sequence_id (sequence_id)
+		) $charset;
+		CREATE TABLE $enr (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			sequence_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			contact_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			status varchar(20) NOT NULL DEFAULT 'active',
+			started_at datetime DEFAULT NULL,
+			created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+			PRIMARY KEY  (id),
+			UNIQUE KEY enroll (sequence_id,contact_id),
+			KEY contact_id (contact_id)
 		) $charset;";
 
 		dbDelta( $sql );

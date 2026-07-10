@@ -129,6 +129,7 @@ class SZC_Contacts {
 			'priority' => '',
 			'tag'      => '',
 			'opt_out'  => '',
+			'owner'    => '',   // آیدی مالک؛ برای محدودسازی کارشناس
 			'due'      => '',   // 'today' | 'overdue'
 			'orderby'  => 'updated_at',
 			'order'    => 'DESC',
@@ -136,39 +137,7 @@ class SZC_Contacts {
 			'per_page' => 25,
 		) );
 
-		$where = array( '1=1' );
-		$vals  = array();
-
-		if ( $a['search'] !== '' ) {
-			$like = '%' . $wpdb->esc_like( szc_latin_digits( $a['search'] ) ) . '%';
-			$where[] = '(first_name LIKE %s OR last_name LIKE %s OR mobile LIKE %s OR company LIKE %s OR job LIKE %s OR city LIKE %s)';
-			array_push( $vals, $like, $like, $like, $like, $like, $like );
-		}
-		if ( $a['stage'] !== '' ) {
-			$where[] = 'stage=%s';
-			$vals[]  = $a['stage'];
-		}
-		if ( $a['priority'] !== '' ) {
-			$where[] = 'priority=%s';
-			$vals[]  = $a['priority'];
-		}
-		if ( $a['tag'] !== '' ) {
-			$where[] = 'tags LIKE %s';
-			$vals[]  = '%' . $wpdb->esc_like( $a['tag'] ) . '%';
-		}
-		if ( $a['opt_out'] !== '' ) {
-			$where[] = 'opt_out=%d';
-			$vals[]  = (int) $a['opt_out'];
-		}
-		if ( $a['due'] === 'today' ) {
-			$where[] = 'next_followup_at IS NOT NULL AND next_followup_at <= %s';
-			$vals[]  = current_time( 'mysql' );
-		} elseif ( $a['due'] === 'overdue' ) {
-			$where[] = 'next_followup_at IS NOT NULL AND next_followup_at < %s';
-			$vals[]  = current_time( 'mysql' );
-		}
-
-		$where_sql = implode( ' AND ', $where );
+		list( $where_sql, $vals ) = self::build_where( $a );
 
 		$allowed_orderby = array( 'updated_at', 'created_at', 'last_contacted_at', 'next_followup_at', 'first_name', 'priority' );
 		$orderby = in_array( $a['orderby'], $allowed_orderby, true ) ? $a['orderby'] : 'updated_at';
@@ -192,19 +161,103 @@ class SZC_Contacts {
 		return array( 'items' => $items, 'total' => $total, 'per_page' => $per_page, 'page' => $page );
 	}
 
-	public static function counts_by_stage() {
+	/** ساخت WHERE مشترک از آرگومان‌های فیلتر. خروجی: array( where_sql, vals ). */
+	protected static function build_where( $a ) {
 		global $wpdb;
-		$rows = $wpdb->get_results( 'SELECT stage, COUNT(*) c FROM ' . self::table() . ' GROUP BY stage', OBJECT_K );
-		$out  = array();
+		$where = array( '1=1' );
+		$vals  = array();
+		if ( ! empty( $a['search'] ) ) {
+			$like = '%' . $wpdb->esc_like( szc_latin_digits( $a['search'] ) ) . '%';
+			$where[] = '(first_name LIKE %s OR last_name LIKE %s OR mobile LIKE %s OR company LIKE %s OR job LIKE %s OR city LIKE %s)';
+			array_push( $vals, $like, $like, $like, $like, $like, $like );
+		}
+		if ( ! empty( $a['stage'] ) ) {
+			$where[] = 'stage=%s'; $vals[] = $a['stage'];
+		}
+		if ( ! empty( $a['priority'] ) ) {
+			$where[] = 'priority=%s'; $vals[] = $a['priority'];
+		}
+		if ( ! empty( $a['tag'] ) ) {
+			$where[] = 'tags LIKE %s'; $vals[] = '%' . $wpdb->esc_like( $a['tag'] ) . '%';
+		}
+		if ( isset( $a['opt_out'] ) && $a['opt_out'] !== '' ) {
+			$where[] = 'opt_out=%d'; $vals[] = (int) $a['opt_out'];
+		}
+		if ( ! empty( $a['owner'] ) ) {
+			$where[] = 'owner_id=%d'; $vals[] = (int) $a['owner'];
+		}
+		if ( ( $a['due'] ?? '' ) === 'today' ) {
+			$where[] = 'next_followup_at IS NOT NULL AND next_followup_at <= %s'; $vals[] = current_time( 'mysql' );
+		} elseif ( ( $a['due'] ?? '' ) === 'overdue' ) {
+			$where[] = 'next_followup_at IS NOT NULL AND next_followup_at < %s'; $vals[] = current_time( 'mysql' );
+		}
+		return array( implode( ' AND ', $where ), $vals );
+	}
+
+	/** همه‌ی آیدی‌های منطبق با یک فیلتر (برای اقدام گروهی روی کل نتایج). */
+	public static function ids_matching( $args, $cap = 20000 ) {
+		global $wpdb;
+		list( $where_sql, $vals ) = self::build_where( $args );
+		$sql = 'SELECT id FROM ' . self::table() . " WHERE $where_sql LIMIT " . (int) $cap;
+		$col = $vals ? $wpdb->get_col( $wpdb->prepare( $sql, $vals ) ) : $wpdb->get_col( $sql );
+		return array_map( 'intval', $col );
+	}
+
+	public static function counts_by_stage( $owner = 0 ) {
+		global $wpdb;
+		$where = $owner > 0 ? $wpdb->prepare( 'WHERE owner_id=%d', (int) $owner ) : '';
+		$rows  = $wpdb->get_results( 'SELECT stage, COUNT(*) c FROM ' . self::table() . " $where GROUP BY stage", OBJECT_K );
+		$out   = array();
 		foreach ( SZC_Settings::stages() as $k => $lbl ) {
 			$out[ $k ] = isset( $rows[ $k ] ) ? (int) $rows[ $k ]->c : 0;
 		}
 		return $out;
 	}
 
-	public static function total() {
+	public static function total( $owner = 0 ) {
 		global $wpdb;
+		if ( $owner > 0 ) {
+			return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . self::table() . ' WHERE owner_id=%d', (int) $owner ) );
+		}
 		return (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . self::table() );
+	}
+
+	/** افزودن یک برچسب به مخاطب (اگر نبود). */
+	public static function add_tag( $id, $tag ) {
+		global $wpdb;
+		$tag = sanitize_text_field( $tag );
+		if ( $tag === '' ) {
+			return;
+		}
+		$c = self::get( $id );
+		if ( ! $c ) {
+			return;
+		}
+		$tags = array_filter( array_map( 'trim', explode( ',', (string) $c->tags ) ), 'strlen' );
+		if ( in_array( $tag, $tags, true ) ) {
+			return;
+		}
+		$tags[] = $tag;
+		$wpdb->update( self::table(), array( 'tags' => implode( '، ', $tags ), 'updated_at' => current_time( 'mysql' ) ), array( 'id' => (int) $id ) );
+	}
+
+	public static function set_owner( $id, $owner_id ) {
+		global $wpdb;
+		$wpdb->update( self::table(), array( 'owner_id' => (int) $owner_id, 'updated_at' => current_time( 'mysql' ) ), array( 'id' => (int) $id ) );
+	}
+
+	/** تخصیص گردشی (round-robin) گروهی از مخاطبین به فهرستی از کارشناسان. */
+	public static function assign_round_robin( $contact_ids, $agent_ids ) {
+		$agent_ids = array_values( array_filter( array_map( 'intval', (array) $agent_ids ) ) );
+		if ( ! $agent_ids ) {
+			return 0;
+		}
+		$i = 0;
+		foreach ( (array) $contact_ids as $cid ) {
+			self::set_owner( (int) $cid, $agent_ids[ $i % count( $agent_ids ) ] );
+			$i++;
+		}
+		return $i;
 	}
 
 	/* ==================== تغییرات سریع ==================== */

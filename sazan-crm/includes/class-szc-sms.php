@@ -13,6 +13,14 @@ class SZC_SMS {
 
 	public static function init() {}
 
+	/** آیا می‌توان به این مخاطب/شماره پیامک زد؟ (لیست سیاه + لغو دریافت) */
+	public static function is_sendable( $mobile, $contact = null ) {
+		if ( $contact && (int) $contact->opt_out === 1 ) {
+			return false;
+		}
+		return ! SZC_Blacklist::is_blocked( $mobile );
+	}
+
 	public static function queue_table() {
 		global $wpdb;
 		return $wpdb->prefix . 'szc_sms_queue';
@@ -104,6 +112,9 @@ class SZC_SMS {
 		if ( ! $tpl ) {
 			return array( 'ok' => false, 'msg' => 'قالب یافت نشد.' );
 		}
+		if ( SZC_Blacklist::is_blocked( $contact->mobile ) ) {
+			return array( 'ok' => false, 'msg' => 'این شماره در لیست سیاه است.' );
+		}
 		$r   = self::resolve( $tpl, $contact );
 		$res = ( $r['pattern_code'] !== '' )
 			? self::send_pattern( $contact->mobile, $r['pattern_code'], $r['values'] )
@@ -121,7 +132,7 @@ class SZC_SMS {
 
 	public static function enqueue( $contact_id, $mobile, $message, $send_at, $opts = array() ) {
 		global $wpdb;
-		$o = wp_parse_args( $opts, array( 'pattern_code' => '', 'values' => array(), 'template_id' => 0 ) );
+		$o = wp_parse_args( $opts, array( 'pattern_code' => '', 'values' => array(), 'template_id' => 0, 'enrollment_id' => 0 ) );
 		$wpdb->insert( self::queue_table(), array(
 			'contact_id'     => (int) $contact_id,
 			'mobile'         => szc_normalize_mobile( $mobile ),
@@ -129,6 +140,7 @@ class SZC_SMS {
 			'pattern_code'   => (string) $o['pattern_code'],
 			'pattern_values' => wp_json_encode( (array) $o['values'] ),
 			'template_id'    => (int) $o['template_id'],
+			'enrollment_id'  => (int) $o['enrollment_id'],
 			'send_at'        => $send_at,
 			'status'         => 'pending',
 			'attempts'       => 0,
@@ -143,6 +155,9 @@ class SZC_SMS {
 	 * template_id=0 یعنی از قالب پیش‌فرضِ تنظیمات (یا اولین قالب) استفاده شود.
 	 */
 	public static function schedule_thanks( $contact, $template_id = 0 ) {
+		if ( ! self::is_sendable( $contact->mobile, $contact ) ) {
+			return false;
+		}
 		$tid = $template_id ?: (int) SZC_Settings::get( 'auto_template_id' );
 		$tpl = $tid ? SZC_Templates::get( $tid ) : null;
 		if ( ! $tpl ) {
@@ -172,6 +187,36 @@ class SZC_SMS {
 		return true;
 	}
 
+	/**
+	 * صف‌بندی یک قالب برای گروهی از مخاطبین (ارسال گروهی).
+	 * $when_mysql=null یعنی همین حالا (در جاروب بعدی و در بازه‌ی مجاز ارسال می‌شود).
+	 * خروجی: array( queued, skipped ).
+	 */
+	public static function enqueue_template_bulk( $contact_ids, $template_id, $when_mysql = null ) {
+		$tpl = SZC_Templates::get( $template_id );
+		if ( ! $tpl ) {
+			return array( 'queued' => 0, 'skipped' => 0 );
+		}
+		$when    = $when_mysql ?: current_time( 'mysql' );
+		$queued  = 0;
+		$skipped = 0;
+		foreach ( (array) $contact_ids as $cid ) {
+			$c = SZC_Contacts::get( $cid );
+			if ( ! $c || ! self::is_sendable( $c->mobile, $c ) ) {
+				$skipped++;
+				continue;
+			}
+			$r = self::resolve( $tpl, $c );
+			self::enqueue( (int) $c->id, $c->mobile, $r['message'], $when, array(
+				'pattern_code' => $r['pattern_code'],
+				'values'       => $r['values'],
+				'template_id'  => (int) $tpl->id,
+			) );
+			$queued++;
+		}
+		return array( 'queued' => $queued, 'skipped' => $skipped );
+	}
+
 	public static function cancel_queued_for_contact( $contact_id ) {
 		global $wpdb;
 		$wpdb->update( self::queue_table(), array( 'status' => 'canceled' ),
@@ -199,19 +244,36 @@ class SZC_SMS {
 		return $out;
 	}
 
-	/** جاروب صف: ارسال پیامک‌های سررسیدشده در بازه‌ی مجاز. */
+	/** تعداد پیامکِ ارسال‌شده از ابتدای امروز (برای سقف روزانه). */
+	public static function sent_today() {
+		global $wpdb;
+		$start = wp_date( 'Y-m-d 00:00:00' );
+		return (int) $wpdb->get_var( $wpdb->prepare(
+			'SELECT COUNT(*) FROM ' . self::queue_table() . " WHERE status='sent' AND sent_at>=%s", $start ) );
+	}
+
+	/** جاروب صف: ارسال پیامک‌های سررسیدشده در بازه‌ی مجاز، با سقف در هر اجرا و روزانه. */
 	public static function run_queue() {
 		global $wpdb;
 		if ( ! self::enabled() || ! self::within_window() ) {
 			return;
 		}
+		$per_run = max( 1, (int) SZC_Settings::get( 'max_per_run' ) );
+		$per_day = (int) SZC_Settings::get( 'max_per_day' );
+		if ( $per_day > 0 ) {
+			$remaining = $per_day - self::sent_today();
+			if ( $remaining <= 0 ) {
+				return;
+			}
+			$per_run = min( $per_run, $remaining );
+		}
 		$rows = $wpdb->get_results( $wpdb->prepare(
 			'SELECT * FROM ' . self::queue_table() . " WHERE status='pending' AND send_at<=%s ORDER BY send_at ASC LIMIT %d",
-			current_time( 'mysql' ), self::MAX_PER_RUN ) );
+			current_time( 'mysql' ), $per_run ) );
 		foreach ( $rows as $row ) {
 			$contact = SZC_Contacts::get( $row->contact_id );
-			if ( $contact && $contact->opt_out ) {
-				$wpdb->update( self::queue_table(), array( 'status' => 'canceled', 'response' => 'لغو دریافت' ), array( 'id' => (int) $row->id ) );
+			if ( ( $contact && $contact->opt_out ) || SZC_Blacklist::is_blocked( $row->mobile ) ) {
+				$wpdb->update( self::queue_table(), array( 'status' => 'canceled', 'response' => 'لغو دریافت/لیست سیاه' ), array( 'id' => (int) $row->id ) );
 				continue;
 			}
 			$res = ( $row->pattern_code !== '' && SZC_Settings::get( 'sms_mode' ) === 'pattern' )

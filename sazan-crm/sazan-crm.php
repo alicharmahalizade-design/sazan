@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان CRM (Sazan CRM)
  * Description: سیستم مدیریت ارتباط با مشتری برای تیم فروش — مخاطبین، ایمپورت انبوه، اولویت‌بندی، یادداشت، ثبت تماس، قالب و اتوماسیون پیامک (فراز/آی‌پی‌پنل).
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Sazan
  * Text Domain: sazan-crm
  * Requires PHP: 7.4
@@ -10,7 +10,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZC_VERSION', '1.0.0' );
+define( 'SZC_VERSION', '1.1.0' );
 define( 'SZC_FILE', __FILE__ );
 define( 'SZC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZC_URL', plugin_dir_url( __FILE__ ) );
@@ -22,7 +22,11 @@ require_once SZC_DIR . 'includes/class-szc-settings.php';
 require_once SZC_DIR . 'includes/class-szc-contacts.php';
 require_once SZC_DIR . 'includes/class-szc-activity.php';
 require_once SZC_DIR . 'includes/class-szc-templates.php';
+require_once SZC_DIR . 'includes/class-szc-blacklist.php';
 require_once SZC_DIR . 'includes/class-szc-sms.php';
+require_once SZC_DIR . 'includes/class-szc-sequences.php';
+require_once SZC_DIR . 'includes/class-szc-segments.php';
+require_once SZC_DIR . 'includes/class-szc-reports.php';
 require_once SZC_DIR . 'includes/class-szc-import.php';
 
 if ( is_admin() ) {

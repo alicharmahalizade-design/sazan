@@ -57,6 +57,32 @@ a.szc-stat:hover{border-color:#2271b1}
 .szc-tpl-list li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eef2f6}
 .szc-tpl-ops{display:flex;flex-direction:column;gap:4px;white-space:nowrap}
 
+/* KPI strip */
+.szc-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:14px 0}
+.szc-kpi{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;text-align:center}
+.szc-kpi-n{display:block;font-size:26px;font-weight:800;color:#111827}
+.szc-kpi-l{display:block;font-size:12.5px;color:#6b7280;margin-top:2px}
+
+/* segments + bulk toolbar */
+.szc-segbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 10px}
+.szc-saveseg{display:inline-flex;gap:6px;margin-inline-start:auto}
+.szc-bulkbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px;margin-bottom:6px}
+.szc-bp{display:none}
+.check-column{width:32px}
+
+/* callback presets */
+.szc-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.szc-enr-list{list-style:none;margin:8px 0;padding:0}
+.szc-enr-list li{padding:4px 0;border-bottom:1px solid #eef2f6;font-size:13px}
+
+/* funnel */
+.szc-funnel{display:flex;flex-direction:column;gap:8px}
+.szc-funnel-row{display:flex;align-items:center;gap:10px}
+.szc-funnel-lbl{width:120px;font-size:13px;font-weight:700;flex-shrink:0}
+.szc-funnel-bar{flex:1;background:#eef2f6;border-radius:6px;height:20px;overflow:hidden}
+.szc-funnel-bar>span{display:block;height:100%;background:#2271b1;border-radius:6px;min-width:2px}
+.szc-funnel-n{width:48px;text-align:left;font-weight:800}
+
 .szc-msg{display:none;margin:8px 0;font-weight:700}
 .szc-msg.is-show{display:block}
 .szc-msg.is-ok{color:#15803d}

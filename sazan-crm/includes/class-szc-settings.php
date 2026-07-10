@@ -29,7 +29,10 @@ class SZC_Settings {
 
 	public static function defaults() {
 		return array(
-			'access_users'   => array(),
+			'managers'       => array(), // نقش مدیر: همه‌ی سرنخ‌ها را می‌بیند
+			'agents'         => array(), // نقش کارشناس: فقط سرنخ‌های خودش
+			'max_per_run'    => 80,      // سقف ارسال در هر اجرای صف (هر ۵ دقیقه)
+			'max_per_day'    => 0,       // سقف ارسال روزانه (۰ = نامحدود)
 			'sms_enabled'    => 0,
 			'sms_base'       => 'https://rest.ippanel.com/v1',
 			'sms_apikey'     => '',
@@ -59,9 +62,62 @@ class SZC_Settings {
 		update_option( self::OPTION, wp_parse_args( $new, self::all() ) );
 	}
 
+	public static function manager_ids() {
+		return array_values( array_filter( array_map( 'intval', (array) self::get( 'managers' ) ) ) );
+	}
+
+	public static function agent_ids() {
+		return array_values( array_filter( array_map( 'intval', (array) self::get( 'agents' ) ) ) );
+	}
+
+	/** همه‌ی کاربران دارای دسترسی (مدیر + کارشناس). */
 	public static function allowed_user_ids() {
-		$ids = self::get( 'access_users' );
-		return array_values( array_filter( array_map( 'intval', (array) $ids ) ) );
+		return array_values( array_unique( array_merge( self::manager_ids(), self::agent_ids() ) ) );
+	}
+
+	/** آیا این کاربر مدیرِ CRM است؟ (مدیران سایت همیشه بله) */
+	public static function is_manager( $uid = 0 ) {
+		$uid = $uid ? (int) $uid : get_current_user_id();
+		if ( user_can( $uid, 'manage_options' ) ) {
+			return true;
+		}
+		return in_array( $uid, self::manager_ids(), true );
+	}
+
+	/** نقش کاربر در CRM: manager | agent | none. */
+	public static function role( $uid = 0 ) {
+		$uid = $uid ? (int) $uid : get_current_user_id();
+		if ( self::is_manager( $uid ) ) {
+			return 'manager';
+		}
+		return in_array( $uid, self::agent_ids(), true ) ? 'agent' : 'none';
+	}
+
+	/**
+	 * محدوده‌ی مالکیت برای کوئری‌ها: مدیر → 0 (بدون محدودیت)، کارشناس → آیدی خودش.
+	 * برای اعمال در فیلترِ owner استفاده می‌شود.
+	 */
+	public static function scope_owner( $uid = 0 ) {
+		$uid = $uid ? (int) $uid : get_current_user_id();
+		return self::is_manager( $uid ) ? 0 : $uid;
+	}
+
+	/** کاربرانی که می‌توان سرنخ را به آن‌ها تخصیص داد ([id => display_name]). */
+	public static function assignable_users() {
+		$ids = self::allowed_user_ids();
+		// مدیران سایت را هم اضافه کن.
+		foreach ( get_users( array( 'role' => 'administrator', 'fields' => 'ID' ) ) as $a ) {
+			$ids[] = (int) $a;
+		}
+		$ids = array_values( array_unique( array_filter( $ids ) ) );
+		$out = array();
+		foreach ( $ids as $id ) {
+			$u = get_userdata( $id );
+			if ( $u ) {
+				$out[ $id ] = $u->display_name;
+			}
+		}
+		return $out;
 	}
 
 	/**
@@ -73,6 +129,12 @@ class SZC_Settings {
 		if ( ! is_array( $cur ) ) {
 			$cur = array();
 		}
+		// مهاجرت از نسخه‌ی قبلی: access_users → agents.
+		if ( ! empty( $cur['access_users'] ) && empty( $cur['managers'] ) && empty( $cur['agents'] ) ) {
+			$cur['agents'] = array_map( 'intval', (array) $cur['access_users'] );
+		}
+		unset( $cur['access_users'] );
+
 		if ( empty( $cur['sms_apikey'] ) ) {
 			$sazan = get_option( 'szp_eval_settings', array() );
 			if ( is_array( $sazan ) && ! empty( $sazan['sms_apikey'] ) ) {
