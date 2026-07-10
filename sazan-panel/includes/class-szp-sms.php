@@ -75,6 +75,44 @@ class SZP_SMS {
 		return self::send_text( $to, $msg );
 	}
 
+	/** جایگزینی متغیرها در قالب متن آزاد: %key% → مقدار. */
+	protected static function fill( $tpl, $vars ) {
+		$rep = array();
+		foreach ( (array) $vars as $k => $v ) {
+			$rep[ '%' . $k . '%' ] = (string) $v;
+		}
+		return strtr( (string) $tpl, $rep );
+	}
+
+	/**
+	 * پیامک «ثبت جلسه» (خدماتی). $vars: name, date, time, coach, mentor, title.
+	 * در حالت پترن، کلیدهای $vars باید با نام متغیرهای پترن یکی باشند.
+	 */
+	public static function send_session_notice( $to, $vars ) {
+		$s = SZP_Eval::settings();
+		if ( $s['sms_mode'] === 'pattern' ) {
+			$code = (string) ( $s['sms_pattern_session'] ?? '' );
+			if ( trim( $code ) === '' ) {
+				return array( 'ok' => false, 'msg' => 'کد پترن «ثبت جلسه» تنظیم نشده است.' );
+			}
+			return self::send_pattern( $to, $code, $vars );
+		}
+		return self::send_text( $to, self::fill( $s['sms_text_session'] ?? '', $vars ) );
+	}
+
+	/** پیامک «لینک نظرسنجی» برای مشتری. $vars: name, link, coach. */
+	public static function send_survey( $to, $vars ) {
+		$s = SZP_Eval::settings();
+		if ( $s['sms_mode'] === 'pattern' ) {
+			$code = (string) ( $s['sms_pattern_survey'] ?? '' );
+			if ( trim( $code ) === '' ) {
+				return array( 'ok' => false, 'msg' => 'کد پترن «نظرسنجی» تنظیم نشده است.' );
+			}
+			return self::send_pattern( $to, $code, $vars );
+		}
+		return self::send_text( $to, self::fill( $s['sms_text_survey'] ?? '', $vars ) );
+	}
+
 	protected static function post( $path, $body ) {
 		$res = wp_remote_post( self::base() . $path, array(
 			'timeout' => 20,
