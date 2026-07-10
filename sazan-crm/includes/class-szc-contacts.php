@@ -72,6 +72,10 @@ class SZC_Contacts {
 		$data['created_by'] = get_current_user_id();
 		$data['created_at'] = $now;
 		$data['updated_at'] = $now;
+		$cf = self::clean_cf( $in['cf'] ?? array() );
+		if ( $cf ) {
+			$data['meta'] = wp_json_encode( $cf );
+		}
 		$wpdb->insert( self::table(), $data );
 		return (int) $wpdb->insert_id;
 	}
@@ -86,11 +90,42 @@ class SZC_Contacts {
 				$data['mobile'] = $m;
 			}
 		}
+		// فیلدهای سفارشی: ادغام با مقادیر موجود.
+		if ( isset( $in['cf'] ) ) {
+			$c = self::get( $id );
+			$meta = $c ? self::get_meta( $c ) : array();
+			foreach ( self::clean_cf( $in['cf'] ) as $k => $v ) {
+				$meta[ $k ] = $v;
+			}
+			$data['meta'] = wp_json_encode( $meta );
+		}
 		if ( ! $data ) {
 			return;
 		}
 		$data['updated_at'] = current_time( 'mysql' );
 		$wpdb->update( self::table(), $data, array( 'id' => (int) $id ) );
+	}
+
+	/** مقادیر فیلدهای سفارشی (فقط کلیدهای تعریف‌شده). */
+	protected static function clean_cf( $cf ) {
+		$defined = array();
+		foreach ( SZC_Settings::custom_fields() as $f ) {
+			$defined[ $f['key'] ] = true;
+		}
+		$out = array();
+		foreach ( (array) $cf as $k => $v ) {
+			$k = sanitize_key( $k );
+			if ( isset( $defined[ $k ] ) ) {
+				$out[ $k ] = sanitize_text_field( $v );
+			}
+		}
+		return $out;
+	}
+
+	/** مقادیر فیلدهای سفارشی یک مخاطب. */
+	public static function get_meta( $c ) {
+		$m = json_decode( (string) ( $c->meta ?? '' ), true );
+		return is_array( $m ) ? $m : array();
 	}
 
 	/** درج یا به‌روزرسانی بر اساس موبایل (برای ایمپورت). خروجی: 'created'|'updated'|'skipped'. */
@@ -142,10 +177,16 @@ class SZC_Contacts {
 		$allowed_orderby = array( 'updated_at', 'created_at', 'last_contacted_at', 'next_followup_at', 'first_name', 'priority' );
 		$orderby = in_array( $a['orderby'], $allowed_orderby, true ) ? $a['orderby'] : 'updated_at';
 		$order   = strtoupper( $a['order'] ) === 'ASC' ? 'ASC' : 'DESC';
-		// اولویت با ترتیب معنایی (داغ→گرم→سرد) وقتی مرتب‌سازی روی priority است.
-		$orderby_sql = ( $orderby === 'priority' )
-			? "FIELD(priority,'hot','warm','cold') " . $order
-			: "$orderby $order";
+		// اولویت با ترتیب معنایی (طبق ترتیب تنظیم‌شده) وقتی مرتب‌سازی روی priority است.
+		if ( $orderby === 'priority' ) {
+			$quoted = array();
+			foreach ( SZC_Settings::priority_keys() as $pk ) {
+				$quoted[] = "'" . esc_sql( $pk ) . "'";
+			}
+			$orderby_sql = $quoted ? 'FIELD(priority,' . implode( ',', $quoted ) . ') ' . $order : 'updated_at ' . $order;
+		} else {
+			$orderby_sql = "$orderby $order";
+		}
 
 		$per_page = max( 1, min( 200, (int) $a['per_page'] ) );
 		$page     = max( 1, (int) $a['page'] );
@@ -201,6 +242,14 @@ class SZC_Contacts {
 		$sql = 'SELECT id FROM ' . self::table() . " WHERE $where_sql LIMIT " . (int) $cap;
 		$col = $vals ? $wpdb->get_col( $wpdb->prepare( $sql, $vals ) ) : $wpdb->get_col( $sql );
 		return array_map( 'intval', $col );
+	}
+
+	/** همه‌ی ردیف‌های منطبق با فیلتر (برای خروجی CSV). */
+	public static function rows_matching( $args, $cap = 50000 ) {
+		global $wpdb;
+		list( $where_sql, $vals ) = self::build_where( $args );
+		$sql = 'SELECT * FROM ' . self::table() . " WHERE $where_sql ORDER BY id ASC LIMIT " . (int) $cap;
+		return $vals ? $wpdb->get_results( $wpdb->prepare( $sql, $vals ) ) : $wpdb->get_results( $sql );
 	}
 
 	public static function counts_by_stage( $owner = 0 ) {
@@ -304,8 +353,8 @@ class SZC_Contacts {
 
 	/** متغیرهای قابل‌استفاده در قالب پیامک برای یک مخاطب. */
 	public static function vars( $c ) {
-		$s = SZC_Settings::all();
-		return array(
+		$s    = SZC_Settings::all();
+		$vars = array(
 			'name'    => self::full_name( $c ),
 			'first'   => (string) $c->first_name,
 			'last'    => (string) $c->last_name,
@@ -316,5 +365,110 @@ class SZC_Contacts {
 			'intro'   => (string) $s['intro_link'],
 			'link'    => (string) $s['mini_link'],
 		);
+		// فیلدهای سفارشی به‌صورت %key%.
+		$meta = self::get_meta( $c );
+		foreach ( SZC_Settings::custom_fields() as $f ) {
+			$vars[ $f['key'] ] = (string) ( $meta[ $f['key'] ] ?? '' );
+		}
+		return $vars;
+	}
+
+	/* ==================== ادغام تکراری‌ها ==================== */
+
+	/**
+	 * ادغام مخاطب فرعی در مخاطب اصلی: انتقال یادداشت/فعالیت/صف/دنباله،
+	 * پر کردن فیلدهای خالیِ اصلی از فرعی، سپس حذف فرعی.
+	 */
+	public static function merge( $primary_id, $secondary_id ) {
+		global $wpdb;
+		$primary_id   = (int) $primary_id;
+		$secondary_id = (int) $secondary_id;
+		if ( $primary_id === $secondary_id ) {
+			return array( 'ok' => false, 'msg' => 'دو مخاطب یکسان‌اند.' );
+		}
+		$p = self::get( $primary_id );
+		$s = self::get( $secondary_id );
+		if ( ! $p || ! $s ) {
+			return array( 'ok' => false, 'msg' => 'مخاطب یافت نشد.' );
+		}
+
+		// پر کردن فیلدهای خالیِ اصلی از فرعی.
+		$fill = array();
+		foreach ( array( 'first_name', 'last_name', 'job', 'company', 'city', 'email', 'source', 'tags' ) as $k ) {
+			if ( trim( (string) $p->$k ) === '' && trim( (string) $s->$k ) !== '' ) {
+				$fill[ $k ] = $s->$k;
+			}
+		}
+		if ( ! $p->owner_id && $s->owner_id ) {
+			$fill['owner_id'] = (int) $s->owner_id;
+		}
+		// ادغام فیلدهای سفارشی (خالی‌ها از فرعی).
+		$pm = self::get_meta( $p );
+		$sm = self::get_meta( $s );
+		foreach ( $sm as $k => $v ) {
+			if ( ( ! isset( $pm[ $k ] ) || $pm[ $k ] === '' ) && $v !== '' ) {
+				$pm[ $k ] = $v;
+			}
+		}
+		$fill['meta']       = wp_json_encode( $pm );
+		$fill['updated_at'] = current_time( 'mysql' );
+		$wpdb->update( self::table(), $fill, array( 'id' => $primary_id ) );
+
+		// انتقال یادداشت‌ها/فعالیت‌ها/صف.
+		$wpdb->update( $wpdb->prefix . 'szc_notes', array( 'contact_id' => $primary_id ), array( 'contact_id' => $secondary_id ) );
+		$wpdb->update( $wpdb->prefix . 'szc_activities', array( 'contact_id' => $primary_id ), array( 'contact_id' => $secondary_id ) );
+		$wpdb->update( $wpdb->prefix . 'szc_sms_queue', array( 'contact_id' => $primary_id ), array( 'contact_id' => $secondary_id ) );
+
+		// دنباله‌ها: از تداخل کلید یکتا (sequence_id,contact_id) پرهیز کن.
+		$enr = $wpdb->get_results( $wpdb->prepare( 'SELECT id, sequence_id FROM ' . $wpdb->prefix . 'szc_enrollments WHERE contact_id=%d', $secondary_id ) );
+		foreach ( $enr as $e ) {
+			$dup = $wpdb->get_var( $wpdb->prepare(
+				'SELECT id FROM ' . $wpdb->prefix . 'szc_enrollments WHERE sequence_id=%d AND contact_id=%d', (int) $e->sequence_id, $primary_id ) );
+			if ( $dup ) {
+				$wpdb->delete( $wpdb->prefix . 'szc_enrollments', array( 'id' => (int) $e->id ) );
+			} else {
+				$wpdb->update( $wpdb->prefix . 'szc_enrollments', array( 'contact_id' => $primary_id ), array( 'id' => (int) $e->id ) );
+			}
+		}
+
+		// حذف رکورد فرعی (فرزندانش قبلاً منتقل شدند).
+		$wpdb->delete( self::table(), array( 'id' => $secondary_id ) );
+		self::log_merge( $primary_id, $s );
+		return array( 'ok' => true, 'msg' => 'مخاطب‌ها ادغام شدند.' );
+	}
+
+	protected static function log_merge( $primary_id, $secondary ) {
+		if ( class_exists( 'SZC_Activity' ) ) {
+			SZC_Activity::log( $primary_id, 'stage', array(
+				'outcome' => 'merge',
+				'body'    => 'ادغام با رکورد تکراری: ' . self::full_name( $secondary ) . ' (' . szc_fa_digits( $secondary->mobile ) . ')',
+			) );
+		}
+	}
+
+	/** گروه‌های مشکوک به تکراری بر اساس نامِ کاملِ یکسان (نام+فامیل غیرخالی). */
+	public static function find_duplicate_groups( $limit = 100 ) {
+		global $wpdb;
+		$t    = self::table();
+		$rows = $wpdb->get_results(
+			"SELECT LOWER(CONCAT(TRIM(first_name),' ',TRIM(last_name))) k, GROUP_CONCAT(id) ids, COUNT(*) c
+			 FROM $t
+			 WHERE TRIM(CONCAT(first_name,last_name))<>''
+			 GROUP BY k HAVING c>1 ORDER BY c DESC LIMIT " . (int) $limit );
+		$groups = array();
+		foreach ( $rows as $r ) {
+			$ids  = array_map( 'intval', explode( ',', $r->ids ) );
+			$list = array();
+			foreach ( $ids as $id ) {
+				$c = self::get( $id );
+				if ( $c ) {
+					$list[] = $c;
+				}
+			}
+			if ( count( $list ) > 1 ) {
+				$groups[] = $list;
+			}
+		}
+		return $groups;
 	}
 }

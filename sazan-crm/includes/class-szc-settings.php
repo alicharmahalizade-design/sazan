@@ -45,6 +45,11 @@ class SZC_Settings {
 			'auto_delay_min' => 60,
 			'mini_link'      => '',
 			'intro_link'     => '',
+			'followup_remind'       => 1, // پیامک یادآوری پیگیری به کارشناس
+			'followup_remind_email' => 0, // ایمیل یادآوری پیگیری به کارشناس
+			'stages'         => self::default_stages(),
+			'priorities'     => self::default_priorities(),
+			'custom_fields'  => array(), // [ { key, label } ]
 		);
 	}
 
@@ -153,9 +158,8 @@ class SZC_Settings {
 
 	/* ==================== مراحل و اولویت‌ها ==================== */
 
-	/** مراحل قیف فروش: key => label. قابل توسعه در فازهای بعد. */
-	public static function stages() {
-		return apply_filters( 'szc_stages', array(
+	public static function default_stages() {
+		return array(
 			'new'            => 'جدید',
 			'contacted'      => 'تماس گرفته شد',
 			'interested'     => 'علاقه‌مند',
@@ -164,16 +168,10 @@ class SZC_Settings {
 			'registered'     => 'ثبت‌نام کرد',
 			'not_interested' => 'بی‌علاقه',
 			'wrong'          => 'شماره اشتباه',
-		) );
+		);
 	}
 
-	public static function stage_label( $key ) {
-		$all = self::stages();
-		return isset( $all[ $key ] ) ? $all[ $key ] : $key;
-	}
-
-	/** اولویت‌ها: key => [label, color]. */
-	public static function priorities() {
+	public static function default_priorities() {
 		return array(
 			'hot'  => array( 'label' => 'داغ',  'color' => '#ef4444' ),
 			'warm' => array( 'label' => 'گرم',  'color' => '#f59e0b' ),
@@ -181,9 +179,63 @@ class SZC_Settings {
 		);
 	}
 
+	/** مراحل قیف فروش (قابل تنظیم از پنل): key => label. */
+	public static function stages() {
+		$s = self::get( 'stages' );
+		if ( ! is_array( $s ) || ! $s ) {
+			$s = self::default_stages();
+		}
+		return apply_filters( 'szc_stages', $s );
+	}
+
+	public static function stage_label( $key ) {
+		$all = self::stages();
+		return isset( $all[ $key ] ) ? $all[ $key ] : $key;
+	}
+
+	/** اولویت‌ها (قابل تنظیم از پنل): key => [label, color]. */
+	public static function priorities() {
+		$p = self::get( 'priorities' );
+		if ( ! is_array( $p ) || ! $p ) {
+			$p = self::default_priorities();
+		}
+		return $p;
+	}
+
+	/** کلیدهای اولویت به ترتیب، برای مرتب‌سازی معنایی. */
+	public static function priority_keys() {
+		return array_keys( self::priorities() );
+	}
+
+	/** فیلدهای سفارشی: آرایه‌ای از { key, label }. */
+	public static function custom_fields() {
+		$cf  = self::get( 'custom_fields' );
+		$out = array();
+		foreach ( (array) $cf as $f ) {
+			$k = sanitize_key( $f['key'] ?? '' );
+			$l = isset( $f['label'] ) ? (string) $f['label'] : '';
+			if ( $k !== '' && $l !== '' ) {
+				$out[] = array( 'key' => $k, 'label' => $l );
+			}
+		}
+		return $out;
+	}
+
+	public static function save_pipeline( $stages, $priorities, $custom_fields ) {
+		$cur = self::all();
+		$cur['stages']        = $stages;
+		$cur['priorities']    = $priorities;
+		$cur['custom_fields'] = $custom_fields;
+		update_option( self::OPTION, $cur );
+	}
+
 	public static function priority_meta( $key ) {
 		$all = self::priorities();
-		return isset( $all[ $key ] ) ? $all[ $key ] : $all['warm'];
+		if ( isset( $all[ $key ] ) ) {
+			return $all[ $key ];
+		}
+		$first = reset( $all );
+		return $first ?: array( 'label' => $key, 'color' => '#888888' );
 	}
 
 	/** نتیجه‌های تماس: key => label. */

@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SZC_Install {
 
-	const DB_VERSION = '1.1.0';
+	const DB_VERSION = '1.2.0';
 
 	public static function activate() {
 		self::create_tables();
@@ -52,6 +52,7 @@ class SZC_Install {
 			last_contacted_at datetime DEFAULT NULL,
 			next_followup_at datetime DEFAULT NULL,
 			note text NULL,
+			meta longtext NULL,
 			created_by bigint(20) unsigned NOT NULL DEFAULT 0,
 			created_at datetime DEFAULT NULL,
 			updated_at datetime DEFAULT NULL,
@@ -81,6 +82,7 @@ class SZC_Install {
 			meta longtext NULL,
 			due_at datetime DEFAULT NULL,
 			done tinyint(1) NOT NULL DEFAULT 0,
+			reminded tinyint(1) NOT NULL DEFAULT 0,
 			created_at datetime DEFAULT NULL,
 			PRIMARY KEY  (id),
 			KEY contact_id (contact_id),

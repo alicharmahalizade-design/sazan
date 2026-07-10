@@ -83,6 +83,14 @@ a.szc-stat:hover{border-color:#2271b1}
 .szc-funnel-bar>span{display:block;height:100%;background:#2271b1;border-radius:6px;min-width:2px}
 .szc-funnel-n{width:48px;text-align:left;font-weight:800}
 
+/* quick find + quick call + duplicates */
+.szc-quickfind{display:inline-flex;gap:6px;margin-inline-start:8px;vertical-align:middle}
+.szc-quickfind input[type=search]{min-width:170px}
+.szc-quickcall{margin-inline-start:auto}
+.szc-quickhint{margin:2px 0 10px}
+.szc-dupgroup{margin-bottom:16px}
+.szc-dupgroup h2{margin-top:0}
+
 .szc-msg{display:none;margin:8px 0;font-weight:700}
 .szc-msg.is-show{display:block}
 .szc-msg.is-ok{color:#15803d}

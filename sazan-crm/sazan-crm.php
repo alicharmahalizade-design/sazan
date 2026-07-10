@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان CRM (Sazan CRM)
  * Description: سیستم مدیریت ارتباط با مشتری برای تیم فروش — مخاطبین، ایمپورت انبوه، اولویت‌بندی، یادداشت، ثبت تماس، قالب و اتوماسیون پیامک (فراز/آی‌پی‌پنل).
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Sazan
  * Text Domain: sazan-crm
  * Requires PHP: 7.4
@@ -10,7 +10,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZC_VERSION', '1.1.0' );
+define( 'SZC_VERSION', '1.2.0' );
 define( 'SZC_FILE', __FILE__ );
 define( 'SZC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZC_URL', plugin_dir_url( __FILE__ ) );
@@ -46,6 +46,7 @@ function szc_init() {
 
 	// صف پیامک: جاروب هر ۵ دقیقه برای ارسال پیامک‌های زمان‌بندی‌شده (اتوماسیون/زمان‌بندی‌شده).
 	add_action( SZC_SMS::HOOK_SWEEP, array( 'SZC_SMS', 'run_queue' ) );
+	add_action( SZC_SMS::HOOK_SWEEP, array( 'SZC_Activity', 'run_followup_reminders' ) );
 	if ( ! wp_next_scheduled( SZC_SMS::HOOK_SWEEP ) ) {
 		wp_schedule_event( time() + 60, 'szc_5min', SZC_SMS::HOOK_SWEEP );
 	}

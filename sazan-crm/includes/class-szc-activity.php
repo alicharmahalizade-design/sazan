@@ -189,4 +189,48 @@ class SZC_Activity {
 	public static function due_followups( $limit = 50, $owner = 0 ) {
 		return self::followups( 'due', $owner, $limit );
 	}
+
+	/**
+	 * یادآوری پیگیری به کارشناسِ مسئول (پیامک/ایمیل) در زمان سررسید.
+	 * روی کرونِ ۵ دقیقه‌ای اجرا می‌شود؛ هر پیگیری فقط یک‌بار یادآوری می‌شود.
+	 */
+	public static function run_followup_reminders() {
+		global $wpdb;
+		$sms   = (int) SZC_Settings::get( 'followup_remind' ) === 1;
+		$email = (int) SZC_Settings::get( 'followup_remind_email' ) === 1;
+		if ( ! $sms && ! $email ) {
+			return;
+		}
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			'SELECT a.id, a.body, a.due_at, c.owner_id, c.first_name, c.last_name, c.mobile, c.id cid '
+			. 'FROM ' . self::t_act() . ' a JOIN ' . SZC_Contacts::table() . ' c ON c.id=a.contact_id '
+			. "WHERE a.type='followup' AND a.done=0 AND a.reminded=0 AND a.due_at IS NOT NULL AND a.due_at<=%s "
+			. 'ORDER BY a.due_at ASC LIMIT 50',
+			current_time( 'mysql' ) ) );
+		foreach ( $rows as $r ) {
+			// هر پیگیری فقط یک‌بار پردازش می‌شود (چه ارسال موفق، چه بدون کارشناس).
+			$wpdb->update( self::t_act(), array( 'reminded' => 1 ), array( 'id' => (int) $r->id ) );
+			$owner = (int) $r->owner_id;
+			if ( ! $owner ) {
+				continue;
+			}
+			$name = trim( $r->first_name . ' ' . $r->last_name ) ?: szc_fa_digits( $r->mobile );
+			$msg  = 'یادآوری پیگیری: با ' . $name . ' (' . szc_fa_digits( $r->mobile ) . ') تماس بگیرید.';
+			if ( $r->body ) {
+				$msg .= ' موضوع: ' . $r->body;
+			}
+			if ( $sms && SZC_SMS::enabled() ) {
+				$to = szc_user_mobile( $owner );
+				if ( $to !== '' ) {
+					SZC_SMS::send_text( $to, $msg );
+				}
+			}
+			if ( $email ) {
+				$u = get_userdata( $owner );
+				if ( $u && $u->user_email ) {
+					wp_mail( $u->user_email, 'یادآوری پیگیری — سازان CRM', $msg );
+				}
+			}
+		}
+	}
 }

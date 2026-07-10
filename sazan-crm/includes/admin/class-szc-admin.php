@@ -7,6 +7,7 @@ class SZC_Admin {
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
+		add_action( 'admin_init', array( __CLASS__, 'maybe_find' ) );
 
 		$ajax = array(
 			'save_contact'  => 'save_contact',
@@ -23,6 +24,7 @@ class SZC_Admin {
 			'add_contact'   => 'add_contact',
 			'enroll'        => 'enroll',
 			'blacklist'     => 'blacklist',
+			'merge'         => 'merge',
 		);
 		foreach ( $ajax as $action => $method ) {
 			add_action( 'wp_ajax_szc_' . $action, array( __CLASS__, 'ajax_' . $method ) );
@@ -36,12 +38,14 @@ class SZC_Admin {
 		add_submenu_page( 'szc', 'مخاطبین', 'مخاطبین', $cap, 'szc-contacts', array( __CLASS__, 'page_contacts' ) );
 		add_submenu_page( 'szc', 'افزودن مخاطب', 'افزودن مخاطب', $cap, 'szc-add', array( __CLASS__, 'page_add' ) );
 		add_submenu_page( 'szc', 'پیگیری‌ها', 'پیگیری‌ها', $cap, 'szc-followups', array( 'SZC_Admin_Pages', 'page_followups' ) );
+		add_submenu_page( 'szc', 'مخاطبین تکراری', 'مخاطبین تکراری', $cap, 'szc-duplicates', array( 'SZC_Admin_Pages', 'page_duplicates' ) );
 		add_submenu_page( 'szc', 'ایمپورت شماره‌ها', 'ایمپورت شماره‌ها', $cap, 'szc-import', array( 'SZC_Admin_Pages', 'page_import' ) );
 		add_submenu_page( 'szc', 'قالب‌های پیامک', 'قالب‌های پیامک', $cap, 'szc-templates', array( 'SZC_Admin_Pages', 'page_templates' ) );
 		add_submenu_page( 'szc', 'دنباله‌های پیامکی', 'دنباله‌های پیامکی', $cap, 'szc-sequences', array( 'SZC_Admin_Pages', 'page_sequences' ) );
 		add_submenu_page( 'szc', 'بخش‌بندی‌ها', 'بخش‌بندی‌ها', $cap, 'szc-segments', array( 'SZC_Admin_Pages', 'page_segments' ) );
 		add_submenu_page( 'szc', 'لیست سیاه', 'لیست سیاه', $cap, 'szc-blacklist', array( 'SZC_Admin_Pages', 'page_blacklist' ) );
 		add_submenu_page( 'szc', 'گزارش‌ها', 'گزارش‌ها', $cap, 'szc-reports', array( 'SZC_Admin_Pages', 'page_reports' ) );
+		add_submenu_page( 'szc', 'مراحل و فیلدها', 'مراحل و فیلدها', $cap, 'szc-pipeline', array( 'SZC_Admin_Pages', 'page_pipeline' ) );
 		add_submenu_page( 'szc', 'تنظیمات', 'تنظیمات', $cap, 'szc-settings', array( 'SZC_Admin_Pages', 'page_settings' ) );
 	}
 
@@ -61,6 +65,27 @@ class SZC_Admin {
 
 	protected static function url( $page, $args = array() ) {
 		return add_query_arg( array_merge( array( 'page' => $page ), $args ), admin_url( 'admin.php' ) );
+	}
+
+	/** جستجوی سریع شماره: اگر مخاطبِ دقیق پیدا شد مستقیم بازش کن، وگرنه در فهرست جستجو کن. */
+	public static function maybe_find() {
+		if ( ! isset( $_GET['page'], $_GET['find'] ) || $_GET['page'] !== 'szc-contacts' ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+		if ( ! SZC_Settings::can_access() ) {
+			return;
+		}
+		$raw = sanitize_text_field( wp_unslash( $_GET['find'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$m   = szc_normalize_mobile( $raw );
+		if ( szc_is_valid_mobile( $m ) ) {
+			$c = SZC_Contacts::get_by_mobile( $m );
+			if ( $c && ( SZC_Settings::is_manager() || (int) $c->owner_id === get_current_user_id() ) ) {
+				wp_safe_redirect( self::contact_url( $c->id ) );
+				exit;
+			}
+		}
+		wp_safe_redirect( self::url( 'szc-contacts', array( 's' => $raw ) ) );
+		exit;
 	}
 
 	protected static function contact_url( $id ) {
@@ -189,6 +214,11 @@ class SZC_Admin {
 			<h1 class="wp-heading-inline">مخاطبین</h1>
 			<a href="<?php echo esc_url( self::url( 'szc-add' ) ); ?>" class="page-title-action">افزودن مخاطب</a>
 			<a href="<?php echo esc_url( self::url( 'szc-import' ) ); ?>" class="page-title-action">ایمپورت شماره‌ها</a>
+			<form method="get" class="szc-quickfind">
+				<input type="hidden" name="page" value="szc-contacts">
+				<input type="search" name="find" dir="ltr" placeholder="جستجوی سریع شماره…">
+				<button class="button">یافتن</button>
+			</form>
 			<?php $bmsg = get_transient( 'szc_bulk_' . get_current_user_id() ); if ( $bmsg ) { delete_transient( 'szc_bulk_' . get_current_user_id() ); echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $bmsg ) . '</p></div>'; } ?>
 
 			<form method="get" class="szc-filters">
@@ -237,6 +267,12 @@ class SZC_Admin {
 					<?php foreach ( $filter_hidden as $k => $v ) : ?><input type="hidden" name="f_<?php echo esc_attr( $k ); ?>" value="<?php echo esc_attr( $v ); ?>"><?php endforeach; ?>
 					<input type="text" name="seg_name" placeholder="ذخیره فیلتر فعلی به‌نام…">
 					<button class="button button-small">ذخیره بخش‌بندی</button>
+				</form>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<?php wp_nonce_field( 'szc_export' ); ?>
+					<input type="hidden" name="action" value="szc_export">
+					<?php foreach ( $filter_hidden as $k => $v ) : ?><input type="hidden" name="f_<?php echo esc_attr( $k ); ?>" value="<?php echo esc_attr( $v ); ?>"><?php endforeach; ?>
+					<button class="button button-small">⬇ خروجی CSV</button>
 				</form>
 			</div>
 
@@ -339,6 +375,8 @@ class SZC_Admin {
 		$sequences   = SZC_Sequences::active_sequences();
 		$enrollments = SZC_Sequences::enrollments_for_contact( $c->id );
 		$blocked     = SZC_Blacklist::is_blocked( $c->mobile );
+		$customs     = SZC_Settings::custom_fields();
+		$cmeta       = SZC_Contacts::get_meta( $c );
 		?>
 		<div class="wrap szc-wrap szc-single" data-contact="<?php echo (int) $c->id; ?>">
 			<a href="<?php echo esc_url( self::url( 'szc-contacts' ) ); ?>" class="szc-back">‹ بازگشت به لیست</a>
@@ -347,8 +385,10 @@ class SZC_Admin {
 			<div class="szc-single-head">
 				<h1><?php echo esc_html( SZC_Contacts::full_name( $c ) ); ?></h1>
 				<span class="szc-badge" style="--c:<?php echo esc_attr( $pm['color'] ); ?>"><?php echo esc_html( $pm['label'] ); ?></span>
-				<a href="tel:<?php echo esc_attr( $c->mobile ); ?>" class="szc-mobile" dir="ltr"><?php echo esc_html( szc_fa_digits( $c->mobile ) ); ?></a>
+				<a href="tel:<?php echo esc_attr( $c->mobile ); ?>" class="szc-mobile" dir="ltr">☎ <?php echo esc_html( szc_fa_digits( $c->mobile ) ); ?></a>
+				<button class="button button-primary szc-quickcall" data-szc-act="quick_call">تماس گرفتم ✓</button>
 			</div>
+			<p class="szc-muted szc-quickhint">«تماس گرفتم» یک تماسِ موفق ثبت می‌کند و پیامک تشکر خودکار را (در صورت فعال‌بودن) زمان‌بندی می‌کند.</p>
 
 			<div class="szc-single-grid">
 				<div class="szc-col">
@@ -364,6 +404,9 @@ class SZC_Admin {
 							<label>ایمیل<input type="email" dir="ltr" data-f="email" value="<?php echo esc_attr( $c->email ); ?>"></label>
 							<label>منبع<input type="text" data-f="source" value="<?php echo esc_attr( $c->source ); ?>"></label>
 							<label>برچسب‌ها<input type="text" data-f="tags" value="<?php echo esc_attr( $c->tags ); ?>" placeholder="با ویرگول جدا کنید"></label>
+							<?php foreach ( $customs as $cf ) : ?>
+								<label><?php echo esc_html( $cf['label'] ); ?><input type="text" data-cf="<?php echo esc_attr( $cf['key'] ); ?>" value="<?php echo esc_attr( $cmeta[ $cf['key'] ] ?? '' ); ?>"></label>
+							<?php endforeach; ?>
 						</div>
 						<div class="szc-form-row">
 							<label>اولویت
@@ -479,6 +522,15 @@ class SZC_Admin {
 					</div>
 
 					<div class="szc-card">
+						<h2>ادغام رکورد تکراری</h2>
+						<p class="szc-muted">اگر این شخص رکورد دیگری هم دارد، موبایلِ آن رکورد را وارد کنید تا در همین مخاطب ادغام شود (سوابق منتقل و رکورد دوم حذف می‌شود).</p>
+						<div class="szc-form-row">
+							<input type="text" dir="ltr" data-merge-mobile placeholder="۰۹... رکورد دوم">
+							<button class="button szc-danger" data-szc-act="merge">ادغام در این مخاطب</button>
+						</div>
+					</div>
+
+					<div class="szc-card">
 						<h2>یادداشت</h2>
 						<textarea data-note-body rows="2" placeholder="یادداشت درباره‌ی این مخاطب…"></textarea>
 						<div class="szc-actions"><button class="button" data-szc-act="add_note">افزودن یادداشت</button></div>
@@ -539,7 +591,8 @@ class SZC_Admin {
 
 	public static function page_add() {
 		if ( ! SZC_Settings::can_access() ) { wp_die( 'دسترسی غیرمجاز' ); }
-		$prios = SZC_Settings::priorities();
+		$prios   = SZC_Settings::priorities();
+		$customs = SZC_Settings::custom_fields();
 		?>
 		<div class="wrap szc-wrap">
 			<h1>افزودن مخاطب</h1>
@@ -561,6 +614,9 @@ class SZC_Admin {
 							<?php endforeach; ?>
 						</select>
 					</label>
+					<?php foreach ( $customs as $cf ) : ?>
+						<label><?php echo esc_html( $cf['label'] ); ?><input type="text" data-cf="<?php echo esc_attr( $cf['key'] ); ?>"></label>
+					<?php endforeach; ?>
 				</div>
 				<div class="szc-actions"><button class="button button-primary" data-szc-act="add_contact">افزودن مخاطب</button></div>
 			</div>
@@ -613,6 +669,9 @@ class SZC_Admin {
 			if ( isset( $_POST[ $f ] ) ) {
 				$out[ $f ] = wp_unslash( $_POST[ $f ] );
 			}
+		}
+		if ( isset( $_POST['cf'] ) && is_array( $_POST['cf'] ) ) {
+			$out['cf'] = (array) wp_unslash( $_POST['cf'] );
 		}
 		return $out;
 	}
@@ -753,5 +812,26 @@ class SZC_Admin {
 		$c = self::req_contact();
 		SZC_Contacts::delete( (int) $c->id );
 		wp_send_json_success( array( 'msg' => 'مخاطب حذف شد.', 'redirect' => self::url( 'szc-contacts' ) ) );
+	}
+
+	/** ادغام مخاطب دیگر (فرعی) در مخاطب فعلی (اصلی). */
+	public static function ajax_merge() {
+		self::guard();
+		$c     = self::req_contact();
+		$other = isset( $_POST['other'] ) ? absint( $_POST['other'] ) : 0;
+		if ( ! $other ) {
+			// جستجو بر اساس موبایل اگر شناسه داده نشده.
+			$m = isset( $_POST['other_mobile'] ) ? szc_normalize_mobile( wp_unslash( $_POST['other_mobile'] ) ) : '';
+			$o = $m ? SZC_Contacts::get_by_mobile( $m ) : null;
+			$other = $o ? (int) $o->id : 0;
+		}
+		if ( ! $other ) {
+			wp_send_json_error( array( 'msg' => 'مخاطب دوم پیدا نشد.' ) );
+		}
+		$res = SZC_Contacts::merge( (int) $c->id, $other );
+		if ( empty( $res['ok'] ) ) {
+			wp_send_json_error( array( 'msg' => $res['msg'] ?? 'ادغام ناموفق بود.' ) );
+		}
+		wp_send_json_success( array( 'msg' => $res['msg'], 'reload' => true ) );
 	}
 }

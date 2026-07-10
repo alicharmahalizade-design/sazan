@@ -17,7 +17,25 @@ class SZC_Admin_Pages {
 		add_action( 'admin_post_szc_sequence_delete', array( __CLASS__, 'handle_sequence_delete' ) );
 		add_action( 'admin_post_szc_blacklist_add',   array( __CLASS__, 'handle_blacklist_add' ) );
 		add_action( 'admin_post_szc_blacklist_remove', array( __CLASS__, 'handle_blacklist_remove' ) );
+		add_action( 'admin_post_szc_export',          array( __CLASS__, 'handle_export' ) );
+		add_action( 'admin_post_szc_merge_group',     array( __CLASS__, 'handle_merge_group' ) );
+		add_action( 'admin_post_szc_pipeline_save',   array( __CLASS__, 'handle_pipeline_save' ) );
 		add_action( 'wp_ajax_szc_test_sms',           array( __CLASS__, 'ajax_test_sms' ) );
+	}
+
+	/** آرگومان‌های فیلتر از فیلدهای f_* (با اعمال محدوده‌ی کارشناس). */
+	protected static function filter_args_from_post() {
+		$a = array(
+			'search'   => sanitize_text_field( wp_unslash( $_POST['f_s'] ?? '' ) ),
+			'stage'    => sanitize_key( $_POST['f_stage'] ?? '' ),
+			'priority' => sanitize_key( $_POST['f_priority'] ?? '' ),
+			'due'      => sanitize_key( $_POST['f_due'] ?? '' ),
+			'owner'    => absint( $_POST['f_owner'] ?? 0 ),
+		);
+		if ( ! SZC_Settings::is_manager() ) {
+			$a['owner'] = get_current_user_id();
+		}
+		return $a;
 	}
 
 	protected static function guard( $post = false ) {
@@ -374,6 +392,13 @@ class SZC_Admin_Pages {
 					<tr><th>لینک جلسه‌ی معارفه</th><td><input type="url" name="intro_link" value="<?php echo esc_attr( $s['intro_link'] ); ?>" class="regular-text" dir="ltr"> <span class="szc-muted">متغیر <code>%intro%</code></span></td></tr>
 				</tbody></table>
 
+				<h2>یادآوری پیگیری به کارشناس</h2>
+				<table class="form-table"><tbody>
+					<tr><th>پیامک یادآوری</th><td><label><input type="checkbox" name="followup_remind" value="1" <?php checked( ! empty( $s['followup_remind'] ) ); ?>> سرِ زمان پیگیری، برای کارشناسِ مسئول پیامک یادآوری فرستاده شود</label>
+						<p class="description">به موبایلِ کاربرِ کارشناس (از پروفایل وردپرس) ارسال می‌شود.</p></td></tr>
+					<tr><th>ایمیل یادآوری</th><td><label><input type="checkbox" name="followup_remind_email" value="1" <?php checked( ! empty( $s['followup_remind_email'] ) ); ?>> ایمیل یادآوری هم به کارشناس فرستاده شود</label></td></tr>
+				</tbody></table>
+
 				<p><button class="button button-primary">ذخیره تنظیمات</button></p>
 			</form>
 
@@ -409,6 +434,8 @@ class SZC_Admin_Pages {
 			'auto_delay_min'   => max( 1, absint( $p['auto_delay_min'] ?? 60 ) ),
 			'mini_link'        => esc_url_raw( $p['mini_link'] ?? '' ),
 			'intro_link'       => esc_url_raw( $p['intro_link'] ?? '' ),
+			'followup_remind'       => empty( $p['followup_remind'] ) ? 0 : 1,
+			'followup_remind_email' => empty( $p['followup_remind_email'] ) ? 0 : 1,
 		);
 		SZC_Settings::save( $new );
 		wp_safe_redirect( self::url( 'szc-settings', array( 'msg' => 1 ) ) );
@@ -846,5 +873,236 @@ class SZC_Admin_Pages {
 			</div>
 		</div>
 		<?php
+	}
+
+	/* ==================== خروجی CSV ==================== */
+
+	public static function handle_export() {
+		self::guard();
+		check_admin_referer( 'szc_export' );
+		$rows    = SZC_Contacts::rows_matching( self::filter_args_from_post() );
+		$customs = SZC_Settings::custom_fields();
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=sazan-crm-' . wp_date( 'Y-m-d-His' ) . '.csv' );
+
+		$out = fopen( 'php://output', 'w' );
+		fwrite( $out, "\xEF\xBB\xBF" ); // BOM برای اکسل فارسی
+		$head = array( 'id', 'نام', 'نام خانوادگی', 'موبایل', 'شغل', 'شرکت', 'شهر', 'ایمیل', 'منبع', 'برچسب‌ها', 'اولویت', 'مرحله', 'کارشناس', 'لغو پیامک', 'آخرین تماس', 'پیگیری بعدی' );
+		foreach ( $customs as $cf ) { $head[] = $cf['label']; }
+		fputcsv( $out, $head );
+
+		foreach ( $rows as $c ) {
+			$owner = $c->owner_id ? get_userdata( $c->owner_id ) : null;
+			$meta  = SZC_Contacts::get_meta( $c );
+			$line  = array(
+				$c->id, $c->first_name, $c->last_name, $c->mobile, $c->job, $c->company, $c->city, $c->email,
+				$c->source, $c->tags, SZC_Settings::priority_meta( $c->priority )['label'], SZC_Settings::stage_label( $c->stage ),
+				$owner ? $owner->display_name : '', $c->opt_out ? 'بله' : '', $c->last_contacted_at, $c->next_followup_at,
+			);
+			foreach ( $customs as $cf ) { $line[] = $meta[ $cf['key'] ] ?? ''; }
+			fputcsv( $out, $line );
+		}
+		fclose( $out );
+		exit;
+	}
+
+	/* ==================== مخاطبین تکراری ==================== */
+
+	public static function page_duplicates() {
+		self::guard();
+		$groups = SZC_Contacts::find_duplicate_groups( 100 );
+		?>
+		<div class="wrap szc-wrap">
+			<h1>مخاطبین تکراری</h1>
+			<?php $bmsg = get_transient( 'szc_bulk_' . get_current_user_id() ); if ( $bmsg ) { delete_transient( 'szc_bulk_' . get_current_user_id() ); echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $bmsg ) . '</p></div>'; } ?>
+			<p class="szc-muted">گروه‌های زیر نامِ کاملِ یکسان دارند. برای هر گروه، رکوردِ «اصلی» را انتخاب کنید تا بقیه در آن ادغام شوند (سوابق منتقل و رکوردهای دیگر حذف می‌شوند).</p>
+			<?php if ( ! $groups ) : ?>
+				<div class="szc-card"><p class="szc-muted">مورد تکراریِ آشکاری پیدا نشد. 👌</p></div>
+			<?php else : foreach ( $groups as $gi => $g ) : ?>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="szc-card szc-dupgroup">
+					<?php wp_nonce_field( 'szc_merge_group' ); ?>
+					<input type="hidden" name="action" value="szc_merge_group">
+					<h2><?php echo esc_html( SZC_Contacts::full_name( $g[0] ) ); ?> — <?php echo esc_html( szc_fa_digits( count( $g ) ) ); ?> رکورد</h2>
+					<table class="widefat striped"><thead><tr><th>اصلی</th><th>موبایل</th><th>مرحله</th><th>شرکت</th><th>آخرین تماس</th></tr></thead><tbody>
+						<?php foreach ( $g as $i => $c ) : ?>
+							<tr>
+								<td><label><input type="radio" name="primary" value="<?php echo (int) $c->id; ?>" <?php checked( $i, 0 ); ?>> #<?php echo (int) $c->id; ?></label>
+									<input type="hidden" name="ids[]" value="<?php echo (int) $c->id; ?>"></td>
+								<td dir="ltr"><?php echo esc_html( szc_fa_digits( $c->mobile ) ); ?></td>
+								<td><?php echo esc_html( SZC_Settings::stage_label( $c->stage ) ); ?></td>
+								<td><?php echo esc_html( $c->company ?: '—' ); ?></td>
+								<td class="szc-muted"><?php echo esc_html( $c->last_contacted_at ? szc_format_mysql( $c->last_contacted_at ) : '—' ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody></table>
+					<p style="margin-top:10px"><button class="button button-primary" onclick="return confirm('ادغام این گروه؟')">ادغام گروه</button></p>
+				</form>
+			<?php endforeach; endif; ?>
+		</div>
+		<?php
+	}
+
+	public static function handle_merge_group() {
+		self::guard();
+		check_admin_referer( 'szc_merge_group' );
+		$primary = absint( $_POST['primary'] ?? 0 );
+		$ids     = array_map( 'intval', (array) ( $_POST['ids'] ?? array() ) );
+		$merged  = 0;
+		foreach ( $ids as $id ) {
+			if ( $id && $id !== $primary ) {
+				$r = SZC_Contacts::merge( $primary, $id );
+				if ( ! empty( $r['ok'] ) ) { $merged++; }
+			}
+		}
+		set_transient( 'szc_bulk_' . get_current_user_id(), szc_fa_digits( $merged ) . ' رکورد ادغام شد.', 60 );
+		wp_safe_redirect( self::url( 'szc-duplicates' ) );
+		exit;
+	}
+
+	/* ==================== مراحل، اولویت‌ها و فیلدهای سفارشی ==================== */
+
+	public static function page_pipeline() {
+		self::guard();
+		$stages  = SZC_Settings::stages();
+		$prios   = SZC_Settings::priorities();
+		$customs = SZC_Settings::custom_fields();
+		$counts  = SZC_Contacts::counts_by_stage();
+		?>
+		<div class="wrap szc-wrap">
+			<h1>مراحل، اولویت‌ها و فیلدهای سفارشی</h1>
+			<?php if ( isset( $_GET['msg'] ) ) : ?><div class="notice notice-success is-dismissible"><p>ذخیره شد.</p></div><?php endif; ?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( 'szc_pipeline_save' ); ?>
+				<input type="hidden" name="action" value="szc_pipeline_save">
+
+				<div class="szc-single-grid">
+					<div class="szc-col">
+						<div class="szc-card">
+							<h2>مراحل قیف فروش</h2>
+							<p class="szc-muted">عنوان‌ها را ویرایش کنید یا مرحله‌ی جدید در ردیف‌های خالی بیفزایید. حذفِ مرحله‌ای که مخاطب دارد ممکن نیست (تعداد نشان داده شده).</p>
+							<table class="widefat"><thead><tr><th>عنوان مرحله</th><th>تعداد</th><th>حذف</th></tr></thead><tbody>
+								<?php foreach ( $stages as $k => $lbl ) : $inuse = $counts[ $k ] ?? 0; ?>
+									<tr>
+										<td><input type="hidden" name="stage_key[]" value="<?php echo esc_attr( $k ); ?>"><input type="text" name="stage_label[]" value="<?php echo esc_attr( $lbl ); ?>" class="regular-text"></td>
+										<td><?php echo esc_html( szc_fa_digits( $inuse ) ); ?></td>
+										<td><?php if ( ! $inuse ) : ?><label><input type="checkbox" name="stage_del[]" value="<?php echo esc_attr( $k ); ?>"> حذف</label><?php else : ?><span class="szc-muted">—</span><?php endif; ?></td>
+									</tr>
+								<?php endforeach; ?>
+								<?php for ( $i = 0; $i < 3; $i++ ) : ?>
+									<tr><td><input type="hidden" name="stage_key[]" value=""><input type="text" name="stage_label[]" value="" class="regular-text" placeholder="مرحله‌ی جدید…"></td><td>—</td><td>—</td></tr>
+								<?php endfor; ?>
+							</tbody></table>
+						</div>
+
+						<div class="szc-card">
+							<h2>اولویت‌ها</h2>
+							<table class="widefat"><thead><tr><th>عنوان</th><th>رنگ</th><th>حذف</th></tr></thead><tbody>
+								<?php foreach ( $prios as $k => $m ) : ?>
+									<tr>
+										<td><input type="hidden" name="prio_key[]" value="<?php echo esc_attr( $k ); ?>"><input type="text" name="prio_label[]" value="<?php echo esc_attr( $m['label'] ); ?>"></td>
+										<td><input type="color" name="prio_color[]" value="<?php echo esc_attr( $m['color'] ); ?>"></td>
+										<td><label><input type="checkbox" name="prio_del[]" value="<?php echo esc_attr( $k ); ?>"> حذف</label></td>
+									</tr>
+								<?php endforeach; ?>
+								<?php for ( $i = 0; $i < 2; $i++ ) : ?>
+									<tr><td><input type="hidden" name="prio_key[]" value=""><input type="text" name="prio_label[]" value="" placeholder="اولویت جدید…"></td><td><input type="color" name="prio_color[]" value="#888888"></td><td>—</td></tr>
+								<?php endfor; ?>
+							</tbody></table>
+						</div>
+					</div>
+
+					<div class="szc-col">
+						<div class="szc-card">
+							<h2>فیلدهای سفارشی مخاطب</h2>
+							<p class="szc-muted">فیلدهای اضافه‌ای که می‌خواهید برای هر مخاطب ثبت کنید (مثلاً «کد ملی»، «منطقه»). در فرم مخاطب، خروجی CSV و متغیر پیامک (<code>%key%</code>) در دسترس‌اند.</p>
+							<table class="widefat"><thead><tr><th>عنوان</th><th>کلید (لاتین)</th></tr></thead><tbody>
+								<?php $rowsn = max( 6, count( $customs ) + 3 );
+								for ( $i = 0; $i < $rowsn; $i++ ) : $f = $customs[ $i ] ?? array( 'key' => '', 'label' => '' ); ?>
+									<tr>
+										<td><input type="text" name="cf_label[]" value="<?php echo esc_attr( $f['label'] ); ?>"></td>
+										<td><input type="text" dir="ltr" name="cf_key[]" value="<?php echo esc_attr( $f['key'] ); ?>" placeholder="مثلاً national_id"></td>
+									</tr>
+								<?php endfor; ?>
+							</tbody></table>
+							<p class="szc-muted">اگر «کلید» خالی باشد، از روی عنوان ساخته می‌شود. تغییرِ کلیدِ یک فیلد، مقادیر قبلی را جدا می‌کند.</p>
+						</div>
+					</div>
+				</div>
+				<p><button class="button button-primary">ذخیره</button></p>
+			</form>
+		</div>
+		<?php
+	}
+
+	public static function handle_pipeline_save() {
+		self::guard();
+		check_admin_referer( 'szc_pipeline_save' );
+		$p = wp_unslash( $_POST );
+
+		// مراحل.
+		$del_stage = array_map( 'sanitize_key', (array) ( $p['stage_del'] ?? array() ) );
+		$s_keys    = (array) ( $p['stage_key'] ?? array() );
+		$s_labels  = (array) ( $p['stage_label'] ?? array() );
+		$stages    = array();
+		foreach ( $s_labels as $i => $label ) {
+			$label = sanitize_text_field( $label );
+			if ( $label === '' ) { continue; }
+			$key = sanitize_key( $s_keys[ $i ] ?? '' );
+			if ( $key === '' ) { $key = self::slug_key( $label, $stages ); }
+			if ( in_array( $key, $del_stage, true ) ) { continue; }
+			$stages[ $key ] = $label;
+		}
+		if ( ! $stages ) { $stages = SZC_Settings::default_stages(); }
+
+		// اولویت‌ها.
+		$del_prio = array_map( 'sanitize_key', (array) ( $p['prio_del'] ?? array() ) );
+		$pk       = (array) ( $p['prio_key'] ?? array() );
+		$pl       = (array) ( $p['prio_label'] ?? array() );
+		$pc       = (array) ( $p['prio_color'] ?? array() );
+		$prios    = array();
+		foreach ( $pl as $i => $label ) {
+			$label = sanitize_text_field( $label );
+			if ( $label === '' ) { continue; }
+			$key = sanitize_key( $pk[ $i ] ?? '' );
+			if ( $key === '' ) { $key = self::slug_key( $label, $prios ); }
+			if ( in_array( $key, $del_prio, true ) ) { continue; }
+			$color = sanitize_hex_color( $pc[ $i ] ?? '' ) ?: '#888888';
+			$prios[ $key ] = array( 'label' => $label, 'color' => $color );
+		}
+		if ( ! $prios ) { $prios = SZC_Settings::default_priorities(); }
+
+		// فیلدهای سفارشی.
+		$cf_key   = (array) ( $p['cf_key'] ?? array() );
+		$cf_label = (array) ( $p['cf_label'] ?? array() );
+		$customs  = array();
+		$seen     = array();
+		foreach ( $cf_label as $i => $label ) {
+			$label = sanitize_text_field( $label );
+			if ( $label === '' ) { continue; }
+			$key = sanitize_key( $cf_key[ $i ] ?? '' );
+			if ( $key === '' ) { $key = self::slug_key( $label, array_flip( $seen ) ); }
+			if ( $key === '' || isset( $seen[ $key ] ) ) { continue; }
+			$seen[ $key ] = true;
+			$customs[]    = array( 'key' => $key, 'label' => $label );
+		}
+
+		SZC_Settings::save_pipeline( $stages, $prios, $customs );
+		wp_safe_redirect( self::url( 'szc-pipeline', array( 'msg' => 1 ) ) );
+		exit;
+	}
+
+	/** ساخت کلیدِ لاتینِ یکتا از یک عنوان (فارسی → transliterate ساده/تصادفی). */
+	protected static function slug_key( $label, $existing ) {
+		$slug = sanitize_key( str_replace( ' ', '_', $label ) );
+		if ( $slug === '' ) {
+			$slug = 'f_' . substr( md5( $label ), 0, 6 );
+		}
+		$base = $slug; $i = 2;
+		while ( array_key_exists( $slug, (array) $existing ) ) {
+			$slug = $base . '_' . $i; $i++;
+		}
+		return $slug;
 	}
 }

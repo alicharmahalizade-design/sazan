@@ -48,6 +48,17 @@ function szc_is_valid_mobile( $mobile ) {
 	return (bool) preg_match( '/^09\d{9}$/', (string) $mobile );
 }
 
+/** Best-effort mobile number for a WordPress user from common meta keys. */
+function szc_user_mobile( $user_id ) {
+	foreach ( array( 'billing_phone', 'mobile', 'phone', 'digits_phone', 'user_mobile', 'mobile_number' ) as $key ) {
+		$val = get_user_meta( (int) $user_id, $key, true );
+		if ( is_string( $val ) && trim( $val ) !== '' ) {
+			return szc_normalize_mobile( $val );
+		}
+	}
+	return '';
+}
+
 /** Convert a datetime-local / "Y-m-d H:i" value (site timezone) to a UTC timestamp. */
 function szc_ts_from_datetime( $value ) {
 	$value = trim( (string) $value );

@@ -42,6 +42,9 @@
 		(scope || document).querySelectorAll('[data-f]').forEach(function (el) {
 			d.append(el.getAttribute('data-f'), el.value);
 		});
+		(scope || document).querySelectorAll('[data-cf]').forEach(function (el) {
+			d.append('cf[' + el.getAttribute('data-cf') + ']', el.value);
+		});
 		return d;
 	}
 
@@ -104,6 +107,21 @@
 			d.append('template', tpl.value);
 			btn.disabled = true;
 			ajax('szc_' + act, d, function (r) { handleRes(r, btn); });
+		} else if (act === 'quick_call') {
+			e.preventDefault();
+			d.append('outcome', 'answered');
+			d.append('note', '');
+			d.append('sms', '1');
+			btn.disabled = true;
+			ajax('szc_log_call', d, function (r) { handleRes(r, btn); });
+		} else if (act === 'merge') {
+			e.preventDefault();
+			var mm = document.querySelector('[data-merge-mobile]');
+			if (!mm || mm.value.trim() === '') { msg('موبایل رکورد دوم را وارد کنید.', 'err'); return; }
+			if (!confirm('رکورد دوم در این مخاطب ادغام و سپس حذف شود؟')) return;
+			d.append('other_mobile', mm.value);
+			btn.disabled = true;
+			ajax('szc_merge', d, function (r) { handleRes(r, btn); });
 		} else if (act === 'enroll') {
 			e.preventDefault();
 			var seq = document.querySelector('[data-seq]');
