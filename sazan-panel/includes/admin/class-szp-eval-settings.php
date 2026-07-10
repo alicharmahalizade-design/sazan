@@ -68,9 +68,19 @@ class SZP_Eval_Settings {
 						<td><label><input type="checkbox" name="sms_enabled" value="1" <?php checked( ! empty( $s['sms_enabled'] ) ); ?>> ارسال پیامک یادآوری در روز تارگت و روز نتیجه</label></td>
 					</tr>
 					<tr>
+						<th scope="row"><label>سرویس‌دهنده</label></th>
+						<td>
+							<select name="sms_provider">
+								<option value="ippanel" <?php selected( $s['sms_provider'], 'ippanel' ); ?>>فراز / آی‌پی‌پنل (ippanel)</option>
+								<option value="smsir" <?php selected( $s['sms_provider'], 'smsir' ); ?>>اس‌ام‌اس‌دات‌آی‌آر (sms.ir)</option>
+							</select>
+							<p class="description">برای <b>sms.ir</b>: «کلید API» همان API Key پنل، «خط ارسال» شماره‌ی خط، و «کد پترن» همان <code>templateId</code> عددیِ قالب است. آدرس پایه را خالی بگذارید (خودکار <code>https://api.sms.ir</code>).</p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><label>آدرس پایه API</label></th>
 						<td><input type="text" name="sms_base" value="<?php echo esc_attr( $s['sms_base'] ); ?>" class="regular-text" dir="ltr">
-							<p class="description">پیش‌فرض فراز/آی‌پی‌پنل: <code>https://rest.ippanel.com/v1</code></p></td>
+							<p class="description">فراز/آی‌پی‌پنل: <code>https://rest.ippanel.com/v1</code> — برای sms.ir خالی بگذارید.</p></td>
 					</tr>
 					<tr>
 						<th scope="row"><label>کلید API</label></th>
@@ -114,7 +124,42 @@ class SZP_Eval_Settings {
 					</tr>
 				</table>
 
-				<p><button class="button button-primary">ذخیره تنظیمات</button></p>
+				<h2>جلسات کوچینگ (پیامک ثبت جلسه و نظرسنجی)</h2>
+					<p class="description">این تنظیمات برای ویجت «سازان: زمان‌بندی جلسات کوچینگ» استفاده می‌شود. از همان کلید API و خط ارسال و حالت (پترن/متن) بالا استفاده می‌شود.</p>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><label>لینک پیش‌فرض نظرسنجی</label></th>
+							<td><input type="url" name="survey_url" value="<?php echo esc_attr( $s['survey_url'] ); ?>" class="regular-text" dir="ltr" placeholder="https://...">
+								<p class="description">آدرس صفحه‌ای که مشتری برای تکمیل نظرسنجی به آن هدایت می‌شود. شناسه‌ی جلسه به‌صورت <code>?szp_session=ID</code> به آن افزوده می‌شود. برای هر جلسه هم می‌توان لینک اختصاصی داد.</p></td>
+						</tr>
+						<tr>
+							<th scope="row"><label>فاصله ارسال نظرسنجی</label></th>
+							<td><input type="number" name="survey_delay" min="1" value="<?php echo esc_attr( $s['survey_delay'] ); ?>" class="small-text"> دقیقه پس از پایان جلسه
+								<p class="description">پیش‌فرض ۶۰ دقیقه (یک ساعت پس از پایان جلسه‌ای که کوچ/مانتور ثبت کرده).</p></td>
+						</tr>
+						<tr>
+							<th scope="row"><label>کد پترن «ثبت جلسه»</label></th>
+							<td><input type="text" name="sms_pattern_session" value="<?php echo esc_attr( $s['sms_pattern_session'] ); ?>" class="regular-text" dir="ltr">
+								<p class="description">متغیرهای پترن: <code>name</code>، <code>title</code>، <code>date</code>، <code>time</code>، <code>coach</code>، <code>mentor</code>.</p></td>
+						</tr>
+						<tr>
+							<th scope="row"><label>کد پترن «نظرسنجی»</label></th>
+							<td><input type="text" name="sms_pattern_survey" value="<?php echo esc_attr( $s['sms_pattern_survey'] ); ?>" class="regular-text" dir="ltr">
+								<p class="description">متغیرهای پترن: <code>name</code>، <code>link</code>، <code>coach</code>.</p></td>
+						</tr>
+						<tr>
+							<th scope="row"><label>متن «ثبت جلسه» (حالت متن)</label></th>
+							<td><textarea name="sms_text_session" rows="2" class="large-text"><?php echo esc_textarea( $s['sms_text_session'] ); ?></textarea>
+								<p class="description">جایگزین‌ها: <code>%name%</code>، <code>%title%</code>، <code>%date%</code>، <code>%time%</code>، <code>%coach%</code>، <code>%mentor%</code>.</p></td>
+						</tr>
+						<tr>
+							<th scope="row"><label>متن «نظرسنجی» (حالت متن)</label></th>
+							<td><textarea name="sms_text_survey" rows="2" class="large-text"><?php echo esc_textarea( $s['sms_text_survey'] ); ?></textarea>
+								<p class="description">جایگزین‌ها: <code>%name%</code>، <code>%link%</code>، <code>%coach%</code>.</p></td>
+						</tr>
+					</table>
+
+					<p><button class="button button-primary">ذخیره تنظیمات</button></p>
 			</form>
 
 			<hr>
@@ -142,6 +187,7 @@ class SZP_Eval_Settings {
 			'day_target'         => min( 7, max( 1, absint( $p['day_target'] ?? 2 ) ) ),
 			'day_result'         => min( 7, max( 1, absint( $p['day_result'] ?? 1 ) ) ),
 			'sms_enabled'        => empty( $p['sms_enabled'] ) ? 0 : 1,
+			'sms_provider'       => ( ( $p['sms_provider'] ?? 'ippanel' ) === 'smsir' ) ? 'smsir' : 'ippanel',
 			'sms_base'           => esc_url_raw( $p['sms_base'] ?? '' ),
 			'sms_apikey'         => sanitize_text_field( $p['sms_apikey'] ?? '' ),
 			'sms_originator'     => sanitize_text_field( $p['sms_originator'] ?? '' ),
@@ -151,6 +197,12 @@ class SZP_Eval_Settings {
 			'sms_pattern_result' => sanitize_text_field( $p['sms_pattern_result'] ?? '' ),
 			'sms_text_target'    => sanitize_textarea_field( $p['sms_text_target'] ?? '' ),
 			'sms_text_result'    => sanitize_textarea_field( $p['sms_text_result'] ?? '' ),
+			'sms_pattern_session' => sanitize_text_field( $p['sms_pattern_session'] ?? '' ),
+			'sms_pattern_survey'  => sanitize_text_field( $p['sms_pattern_survey'] ?? '' ),
+			'sms_text_session'    => sanitize_textarea_field( $p['sms_text_session'] ?? '' ),
+			'sms_text_survey'     => sanitize_textarea_field( $p['sms_text_survey'] ?? '' ),
+			'survey_url'          => esc_url_raw( $p['survey_url'] ?? '' ),
+			'survey_delay'        => max( 1, absint( $p['survey_delay'] ?? 60 ) ),
 		);
 		update_option( SZP_Eval::OPTION, array_merge( $cur, $new ) );
 		wp_safe_redirect( add_query_arg( array( 'page' => 'szp-eval-settings', 'msg' => 1 ), admin_url( 'admin.php' ) ) );

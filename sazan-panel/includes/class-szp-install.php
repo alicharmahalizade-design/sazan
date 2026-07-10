@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SZP_Install {
 
-	const DB_VERSION = '1.4.0';
+	const DB_VERSION = '1.5.0';
 
 	public static function activate() {
 		self::create_tables();
@@ -14,6 +14,7 @@ class SZP_Install {
 
 	public static function deactivate() {
 		wp_clear_scheduled_hook( 'szp_eval_daily' );
+		wp_clear_scheduled_hook( 'szp_session_survey_sweep' );
 		flush_rewrite_rules();
 	}
 
@@ -268,6 +269,38 @@ class SZP_Install {
 			PRIMARY KEY  (id),
 			UNIQUE KEY user_week (user_id,week_no),
 			KEY user_id (user_id)
+		) $charset;";
+
+		// ---- جلسات کوچینگ (coach session scheduling) ----
+		$cs = $wpdb->prefix . 'szp_coach_sessions';
+
+		$sql .= "
+		CREATE TABLE $cs (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			title varchar(191) NOT NULL DEFAULT '',
+			customer_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			customer_name varchar(191) NOT NULL DEFAULT '',
+			customer_mobile varchar(32) NOT NULL DEFAULT '',
+			coach_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			coach_name varchar(191) NOT NULL DEFAULT '',
+			coach_mobile varchar(32) NOT NULL DEFAULT '',
+			mentor_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			mentor_name varchar(191) NOT NULL DEFAULT '',
+			mentor_mobile varchar(32) NOT NULL DEFAULT '',
+			start_ts bigint(20) NOT NULL DEFAULT 0,
+			end_ts bigint(20) NOT NULL DEFAULT 0,
+			survey_url text NULL,
+			note text NULL,
+			status varchar(20) NOT NULL DEFAULT 'scheduled',
+			notify_sent tinyint(1) NOT NULL DEFAULT 0,
+			survey_sent tinyint(1) NOT NULL DEFAULT 0,
+			created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+			created_at datetime DEFAULT NULL,
+			updated_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			KEY coach_id (coach_id),
+			KEY customer_id (customer_id),
+			KEY survey_due (survey_sent,end_ts)
 		) $charset;";
 
 		dbDelta( $sql );

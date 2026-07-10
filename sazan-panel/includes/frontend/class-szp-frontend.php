@@ -13,6 +13,7 @@ class SZP_Frontend {
 		add_shortcode( 'sazan_canvas_gallery', array( __CLASS__, 'sc_canvas_gallery' ) );
 		add_shortcode( 'sazan_my_eval', array( __CLASS__, 'sc_eval' ) );
 		add_shortcode( 'sazan_eval_board', array( __CLASS__, 'sc_eval_board' ) );
+		add_shortcode( 'sazan_coach_sessions', array( __CLASS__, 'sc_sessions_scheduler' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
 
@@ -50,6 +51,11 @@ class SZP_Frontend {
 		$evjs  = SZP_DIR . 'assets/js/sazan-eval.js';
 		wp_register_style( 'szp-eval', SZP_URL . 'assets/css/sazan-eval.css', array( 'szp-front' ), file_exists( $evcss ) ? filemtime( $evcss ) : SZP_VERSION );
 		wp_register_script( 'szp-eval', SZP_URL . 'assets/js/sazan-eval.js', array( 'szp-front' ), file_exists( $evjs ) ? filemtime( $evjs ) : SZP_VERSION, true );
+
+		$secss = SZP_DIR . 'assets/css/sazan-sessions.css';
+		$sejs  = SZP_DIR . 'assets/js/sazan-sessions.js';
+		wp_register_style( 'szp-sessions', SZP_URL . 'assets/css/sazan-sessions.css', array( 'szp-front' ), file_exists( $secss ) ? filemtime( $secss ) : SZP_VERSION );
+		wp_register_script( 'szp-sessions', SZP_URL . 'assets/js/sazan-sessions.js', array( 'szp-front' ), file_exists( $sejs ) ? filemtime( $sejs ) : SZP_VERSION, true );
 	}
 
 	/* ---------------- «ارزیابی من» shortcode ---------------- */
@@ -63,6 +69,19 @@ class SZP_Frontend {
 		wp_enqueue_style( 'szp-eval' );
 		wp_enqueue_script( 'szp-eval' );
 		return SZP_Eval::render( $a );
+	}
+
+	/** زمان‌بندی جلسات کوچینگ — مخصوص کوچ/مانتور. */
+	public static function sc_sessions_scheduler( $atts ) {
+		$a = shortcode_atts( array( 'title' => '' ), $atts, 'sazan_coach_sessions' );
+		if ( ! is_user_logged_in() ) {
+			return self::login_box();
+		}
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_script( 'szp-front' );
+		wp_enqueue_style( 'szp-sessions' );
+		wp_enqueue_script( 'szp-sessions' );
+		return SZP_Sessions_Render::render( get_current_user_id(), $a['title'] );
 	}
 
 	/** تابلوی ارزیابی همه‌ی اشخاص (شبکه‌ای) — مخصوص مدیر/مدرّب. */

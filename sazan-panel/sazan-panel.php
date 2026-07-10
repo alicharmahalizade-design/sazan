@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان پنل (Sazan Panel)
  * Description: نمایش دوره‌ها و جلسات اختصاصی هر کاربر یا گروه در پنل کاربری از طریق شورت‌کد [sazan_panel].
- * Version: 1.16.0
+ * Version: 1.18.0
  * Author: Sazan
  * Text Domain: sazan-panel
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.16.0' );
+define( 'SZP_VERSION', '1.18.0' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -32,12 +32,15 @@ require_once SZP_DIR . 'includes/class-szp-ai.php';
 require_once SZP_DIR . 'includes/class-szp-canvas.php';
 require_once SZP_DIR . 'includes/class-szp-eval.php';
 require_once SZP_DIR . 'includes/class-szp-sms.php';
+require_once SZP_DIR . 'includes/class-szp-sessions.php';
+require_once SZP_DIR . 'includes/class-szp-sessions-render.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-frontend.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-front-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-chat-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-coach-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-canvas-ajax.php';
 require_once SZP_DIR . 'includes/frontend/class-szp-eval-ajax.php';
+require_once SZP_DIR . 'includes/frontend/class-szp-sessions-ajax.php';
 
 if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-admin.php';
@@ -67,6 +70,7 @@ function szp_init() {
 	SZP_Coach_Ajax::init();
 	SZP_Canvas_Ajax::init();
 	SZP_Eval_Ajax::init();
+	SZP_Sessions_Ajax::init();
 
 	// یادآور پیامکی روزانه (ارزیابی).
 	add_action( 'szp_eval_daily', array( 'SZP_SMS', 'run_daily_reminders' ) );
@@ -74,6 +78,13 @@ function szp_init() {
 		// اجرای روزانه؛ ساعت ۹ صبح به‌وقت سایت.
 		$first = strtotime( 'tomorrow 09:00' );
 		wp_schedule_event( $first ? $first : ( time() + HOUR_IN_SECONDS ), 'daily', 'szp_eval_daily' );
+	}
+
+	// ارسال دقیقِ لینک نظرسنجی جلسه (رویداد تک‌بار) + جاروبِ ساعتیِ پشتیبان.
+	add_action( SZP_Sessions::HOOK_SURVEY, array( 'SZP_Sessions', 'send_survey_for' ) );
+	add_action( SZP_Sessions::HOOK_SWEEP, array( 'SZP_Sessions', 'run_survey_sweep' ) );
+	if ( ! wp_next_scheduled( SZP_Sessions::HOOK_SWEEP ) ) {
+		wp_schedule_event( time() + HOUR_IN_SECONDS, 'hourly', SZP_Sessions::HOOK_SWEEP );
 	}
 
 	// Elementor integration (loaded lazily, only when Elementor is active).
