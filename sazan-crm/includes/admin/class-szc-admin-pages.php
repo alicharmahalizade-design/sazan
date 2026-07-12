@@ -10,6 +10,7 @@ class SZC_Admin_Pages {
 		add_action( 'admin_post_szc_template_save',   array( __CLASS__, 'handle_template_save' ) );
 		add_action( 'admin_post_szc_template_delete', array( __CLASS__, 'handle_template_delete' ) );
 		add_action( 'admin_post_szc_settings_save',   array( __CLASS__, 'handle_settings_save' ) );
+		add_action( 'admin_post_szc_agent_create',    array( __CLASS__, 'handle_agent_create' ) );
 		add_action( 'admin_post_szc_bulk',            array( __CLASS__, 'handle_bulk' ) );
 		add_action( 'admin_post_szc_save_segment',    array( __CLASS__, 'handle_save_segment' ) );
 		add_action( 'admin_post_szc_delete_segment',  array( __CLASS__, 'handle_delete_segment' ) );
@@ -324,6 +325,21 @@ class SZC_Admin_Pages {
 		<div class="wrap szc-wrap">
 			<h1>تنظیمات سازان CRM</h1>
 			<?php if ( isset( $_GET['msg'] ) ) : ?><div class="notice notice-success is-dismissible"><p>تنظیمات ذخیره شد.</p></div><?php endif; ?>
+			<?php
+			if ( isset( $_GET['agent'] ) ) :
+				$ag   = sanitize_key( wp_unslash( $_GET['agent'] ) );
+				$amap = array(
+					'created'   => array( 'success', 'کارشناس ساخته شد و به تیم فروش افزوده شد. حالا می‌تواند با موبایل و رمزش وارد پورتال شود.' ),
+					'exists'    => array( 'error', 'کاربری با این موبایل/نام‌کاربری از قبل وجود دارد.' ),
+					'badmobile' => array( 'error', 'شماره‌ی موبایل نامعتبر است (۰۹...).' ),
+					'missing'   => array( 'error', 'نام، موبایل و رمز الزامی است.' ),
+					'err'       => array( 'error', 'ساخت کاربر ناموفق بود.' ),
+				);
+				if ( isset( $amap[ $ag ] ) ) :
+					?><div class="notice notice-<?php echo esc_attr( $amap[ $ag ][0] ); ?> is-dismissible"><p><?php echo esc_html( $amap[ $ag ][1] ); ?></p></div><?php
+				endif;
+			endif;
+			?>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'szc_settings_save' ); ?>
@@ -453,6 +469,21 @@ class SZC_Admin_Pages {
 			</form>
 
 			<hr>
+			<h2>ساخت کارشناس جدید (کاربر + رمز، در یک مرحله)</h2>
+			<p class="description">کارشناس را همین‌جا بسازید؛ یک کاربر وردپرس ساخته می‌شود، به «کارشناسان فروش» افزوده می‌شود و رمزِ ورودِ پورتال برایش تنظیم می‌گردد — بدون نیاز به ساختِ دستیِ کاربر.</p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( 'szc_agent_create' ); ?>
+				<input type="hidden" name="action" value="szc_agent_create">
+				<table class="form-table"><tbody>
+					<tr><th><label for="szc-ag-name">نام کارشناس</label></th><td><input id="szc-ag-name" type="text" name="ag_name" required style="width:260px" placeholder="مثلاً: مریم احمدی"></td></tr>
+					<tr><th><label for="szc-ag-mobile">موبایل (نام کاربری ورود)</label></th><td><input id="szc-ag-mobile" type="text" name="ag_mobile" required dir="ltr" style="width:200px" placeholder="۰۹۱۲..."><p class="description">همین موبایل، نام کاربریِ کاربر وردپرس هم می‌شود.</p></td></tr>
+					<tr><th><label for="szc-ag-pass">رمز ورود</label></th><td><input id="szc-ag-pass" type="text" name="ag_pass" required autocomplete="off" style="width:200px" placeholder="رمز دلخواه"><p class="description">این رمز، هم برای ورودِ سریعِ پورتال و هم برای حسابِ وردپرسِ کارشناس تنظیم می‌شود.</p></td></tr>
+					<tr><th><label for="szc-ag-email">ایمیل (اختیاری)</label></th><td><input id="szc-ag-email" type="email" name="ag_email" dir="ltr" style="width:260px" placeholder="اختیاری"></td></tr>
+				</tbody></table>
+				<p><button class="button button-primary">ساخت کارشناس و افزودن به تیم فروش</button></p>
+			</form>
+
+			<hr>
 			<h2>تست پیامک</h2>
 			<p>
 				<input type="text" id="szc-test-num" class="regular-text" dir="ltr" placeholder="۰۹۱۲...">
@@ -513,6 +544,73 @@ class SZC_Admin_Pages {
 		}
 
 		wp_safe_redirect( self::url( 'szc-settings', array( 'msg' => 1 ) ) );
+		exit;
+	}
+
+	/** ساخت کارشناس جدید در یک مرحله: کاربر وردپرس + افزودن به کارشناسان + رمزِ پورتال. */
+	public static function handle_agent_create() {
+		self::guard();
+		if ( ! SZC_Settings::is_manager() ) {
+			wp_die( 'دسترسی غیرمجاز' );
+		}
+		check_admin_referer( 'szc_agent_create' );
+		$p      = wp_unslash( $_POST );
+		$name   = sanitize_text_field( $p['ag_name'] ?? '' );
+		$mobile = szc_normalize_mobile( $p['ag_mobile'] ?? '' );
+		$pass   = (string) ( $p['ag_pass'] ?? '' );
+		$email  = sanitize_email( $p['ag_email'] ?? '' );
+
+		if ( $name === '' || $mobile === '' || $pass === '' ) {
+			wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'missing' ) ) );
+			exit;
+		}
+		if ( ! szc_is_valid_mobile( $mobile ) ) {
+			wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'badmobile' ) ) );
+			exit;
+		}
+
+		// نام کاربری = موبایل. اگر کاربری با همین نام‌کاربری یا موبایل هست، خطا بده.
+		$existing = get_user_by( 'login', $mobile );
+		if ( ! $existing ) {
+			$q = get_users( array( 'meta_key' => 'mobile', 'meta_value' => $mobile, 'number' => 1, 'fields' => 'ID' ) );
+			if ( $q ) {
+				$existing = get_userdata( (int) $q[0] );
+			}
+		}
+		if ( $existing ) {
+			wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'exists' ) ) );
+			exit;
+		}
+
+		if ( $email === '' ) {
+			$email = $mobile . '@sazan-crm.local';
+		}
+		if ( email_exists( $email ) ) {
+			$email = $mobile . '.' . wp_generate_password( 4, false ) . '@sazan-crm.local';
+		}
+
+		$uid = wp_insert_user( array(
+			'user_login'   => $mobile,
+			'user_pass'    => $pass,
+			'user_email'   => $email,
+			'display_name' => $name,
+			'first_name'   => $name,
+			'role'         => 'subscriber',
+		) );
+		if ( is_wp_error( $uid ) ) {
+			wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'err' ) ) );
+			exit;
+		}
+		update_user_meta( (int) $uid, 'mobile', $mobile );
+
+		$agents = SZC_Settings::agent_ids();
+		if ( ! in_array( (int) $uid, $agents, true ) ) {
+			$agents[] = (int) $uid;
+		}
+		SZC_Settings::save( array( 'agents' => $agents ) );
+		SZC_Settings::set_portal_pass( (int) $uid, $pass );
+
+		wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'created' ) ) );
 		exit;
 	}
 
