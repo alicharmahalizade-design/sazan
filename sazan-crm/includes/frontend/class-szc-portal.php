@@ -21,6 +21,107 @@ class SZC_Portal {
 		add_action( 'admin_init', array( __CLASS__, 'lock_admin' ) );
 		add_action( 'after_setup_theme', array( __CLASS__, 'maybe_hide_admin_bar' ) );
 		add_action( 'wp_ajax_szc_portal_view', array( __CLASS__, 'ajax_view' ) );
+		add_action( 'init', array( __CLASS__, 'maybe_serve_pwa' ) );
+		add_action( 'wp_head', array( __CLASS__, 'pwa_head' ), 1 );
+	}
+
+	/* ==================== PWA (نصب روی گوشی) ==================== */
+
+	/** مسیرِ ریشه‌ی نصبِ وردپرس (برای scope سرویس‌ورکر). */
+	protected static function home_path() {
+		$p = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+		return $p ? trailingslashit( $p ) : '/';
+	}
+
+	/** آیا صفحه‌ی فعلی، برگه‌ی پورتال است؟ */
+	protected static function is_portal_singular() {
+		if ( ! is_singular() ) {
+			return false;
+		}
+		global $post;
+		return $post && has_shortcode( (string) $post->post_content, 'sazan_crm' );
+	}
+
+	/** سروِ manifest.json و service worker از طریق پارامترِ szc_pwa. */
+	public static function maybe_serve_pwa() {
+		if ( ! isset( $_GET['szc_pwa'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+		$what = sanitize_key( wp_unslash( $_GET['szc_pwa'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( 'manifest' === $what ) {
+			header( 'Content-Type: application/manifest+json; charset=utf-8' );
+			echo wp_json_encode( self::manifest_data() ); // phpcs:ignore WordPress.Security.EscapeOutput
+			exit;
+		}
+		if ( 'sw' === $what ) {
+			header( 'Content-Type: application/javascript; charset=utf-8' );
+			header( 'Service-Worker-Allowed: ' . self::home_path() );
+			echo self::sw_js(); // phpcs:ignore WordPress.Security.EscapeOutput
+			exit;
+		}
+	}
+
+	protected static function manifest_data() {
+		return array(
+			'name'             => 'سازان CRM',
+			'short_name'       => 'سازان CRM',
+			'lang'             => 'fa',
+			'dir'              => 'rtl',
+			'start_url'        => self::page_url(),
+			'scope'            => self::home_path(),
+			'display'          => 'standalone',
+			'orientation'      => 'portrait',
+			'background_color' => '#0e1319',
+			'theme_color'      => '#0f9fb3',
+			'icons'            => array(
+				array( 'src' => SZC_URL . 'assets/icons/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any' ),
+				array( 'src' => SZC_URL . 'assets/icons/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any' ),
+				array( 'src' => SZC_URL . 'assets/icons/icon-maskable.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable' ),
+			),
+		);
+	}
+
+	protected static function sw_js() {
+		$ver    = SZC_VERSION;
+		$start  = wp_json_encode( self::page_url() );
+		$assets = wp_json_encode( array_values( array_filter( array(
+			SZC_URL . 'assets/css/portal.css',
+			SZC_URL . 'assets/js/admin.js',
+			SZC_URL . 'assets/js/portal.js',
+			SZC_URL . 'assets/fonts/YekanBakhFaNumVF.ttf',
+		) ) ) );
+		return <<<JS
+/* سازان CRM — Service Worker v{$ver} */
+var CACHE='szc-crm-{$ver}';
+var START={$start};
+var ASSETS={$assets};
+self.addEventListener('install',function(e){self.skipWaiting();e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(ASSETS).catch(function(){});}));});
+self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return k!==CACHE?caches.delete(k):null;}));}).then(function(){return self.clients.claim();}));});
+self.addEventListener('fetch',function(e){
+  var r=e.request; if(r.method!=='GET'){return;}
+  if(r.mode==='navigate'){ e.respondWith(fetch(r).catch(function(){return caches.match(r).then(function(m){return m||caches.match(START);});})); return; }
+  if(/\.(css|js|ttf|woff2?|png|svg|jpe?g)$/.test(new URL(r.url).pathname)){
+    e.respondWith(caches.match(r).then(function(m){return m||fetch(r).then(function(res){var cp=res.clone();caches.open(CACHE).then(function(c){c.put(r,cp);});return res;}).catch(function(){return m;});}));
+  }
+});
+self.addEventListener('notificationclick',function(e){e.notification.close();e.waitUntil(self.clients.matchAll({type:'window'}).then(function(cl){for(var i=0;i<cl.length;i++){if('focus' in cl[i]){return cl[i].focus();}}if(self.clients.openWindow){return self.clients.openWindow(START);}}));});
+JS;
+	}
+
+	/** تگ‌های PWA در <head> برگه‌ی پورتال. */
+	public static function pwa_head() {
+		if ( ! self::is_portal_singular() ) {
+			return;
+		}
+		$manifest = add_query_arg( 'szc_pwa', 'manifest', home_url( '/' ) );
+		$icon     = SZC_URL . 'assets/icons/icon-192.png';
+		echo "\n<link rel=\"manifest\" href=\"" . esc_url( $manifest ) . "\">\n";
+		echo '<meta name="theme-color" content="#0f9fb3">' . "\n";
+		echo '<meta name="mobile-web-app-capable" content="yes">' . "\n";
+		echo '<meta name="apple-mobile-web-app-capable" content="yes">' . "\n";
+		echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">' . "\n";
+		echo '<meta name="apple-mobile-web-app-title" content="سازان CRM">' . "\n";
+		echo '<link rel="apple-touch-icon" href="' . esc_url( $icon ) . "\">\n";
 	}
 
 	/** بارگذاری AJAXِ یک نما (SPA). خروجی: html فرگمنت. */
@@ -137,6 +238,8 @@ class SZC_Portal {
 			'ajax'  => admin_url( 'admin-ajax.php' ),
 			'nonce' => wp_create_nonce( 'szc_admin' ),
 			'base'  => self::page_url(),
+			'sw'    => add_query_arg( 'szc_pwa', 'sw', home_url( '/' ) ),
+			'scope' => self::home_path(),
 		) );
 	}
 
@@ -202,6 +305,10 @@ class SZC_Portal {
 				<input type="search" name="s" placeholder="جستجوی نام یا شماره…" value="<?php echo isset( $_GET['s'] ) ? esc_attr( wp_unslash( $_GET['s'] ) ) : ''; // phpcs:ignore ?>">
 			</form>
 			<div class="szc-p-user">
+				<button type="button" class="szc-p-themebtn" data-theme-toggle aria-label="حالت روشن/تاریک" title="حالت روشن/تاریک">
+					<span class="szc-p-theme-sun"><?php echo szc_icon( 'sun' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+					<span class="szc-p-theme-moon"><?php echo szc_icon( 'moon' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+				</button>
 				<span class="szc-p-avatar"><?php echo get_avatar( $u->ID, 34 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
 				<span class="szc-p-uname"><?php echo esc_html( $u->display_name ); ?></span>
 				<a class="szc-p-logout" href="<?php echo esc_url( wp_logout_url( self::page_url() ) ); ?>" aria-label="خروج"><?php echo szc_icon( 'log-out' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
@@ -284,6 +391,30 @@ class SZC_Portal {
 		ob_start(); ?>
 		<h1 class="szc-p-h1">داشبورد</h1>
 
+		<div class="szc-p-pwabar" data-overdue="<?php echo (int) count( $due ); ?>" hidden>
+			<button type="button" class="szc-p-btn szc-p-btn-primary" data-pwa-install hidden><?php echo szc_icon( 'smartphone' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>نصب روی گوشی</span></button>
+			<button type="button" class="szc-p-btn" data-notify-enable hidden><?php echo szc_icon( 'bell' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>فعال‌سازی اعلان پیگیری</span></button>
+		</div>
+
+		<div class="szc-p-goal" data-goal-calls="<?php echo (int) $calls; ?>">
+			<div class="szc-p-goal-ring" data-goal-ring>
+				<svg viewBox="0 0 44 44" class="szc-p-goal-svg" aria-hidden="true">
+					<circle class="szc-p-goal-bg" cx="22" cy="22" r="19"></circle>
+					<circle class="szc-p-goal-fg" cx="22" cy="22" r="19" data-goal-fg></circle>
+				</svg>
+				<span class="szc-p-goal-pct" data-goal-pct><?php echo esc_html( szc_fa_digits( 0 ) ); ?>٪</span>
+			</div>
+			<div class="szc-p-goal-info">
+				<span class="szc-p-goal-title">هدف تماس امروز</span>
+				<span class="szc-p-goal-nums"><b data-goal-done><?php echo esc_html( szc_fa_digits( $calls ) ); ?></b> از <span data-goal-target><?php echo esc_html( szc_fa_digits( 30 ) ); ?></span> تماس</span>
+				<div class="szc-p-goal-edit">
+					<button type="button" class="szc-p-linkbtn" data-goal-dec>−</button>
+					<span>تغییر هدف</span>
+					<button type="button" class="szc-p-linkbtn" data-goal-inc>＋</button>
+				</div>
+			</div>
+		</div>
+
 		<div class="szc-p-stats">
 			<?php
 			echo self::stat_card( 'کل مخاطبین', szc_fa_digits( $total ), 'users' );
@@ -349,6 +480,23 @@ class SZC_Portal {
 
 	/* ---------- فهرست مخاطبین ---------- */
 
+	/** رنگِ نماینده‌ی یک مرحله (برای نوارِ رنگیِ کارتِ مخاطب). */
+	protected static function stage_color( $key ) {
+		$neg = array( 'not_interested' => '#94a3b8', 'wrong' => '#ef4444', 'lost' => '#94a3b8', 'blacklist' => '#334155' );
+		if ( isset( $neg[ $key ] ) ) {
+			return $neg[ $key ];
+		}
+		$funnel = SZC_Settings::funnel_stage_keys();
+		$i      = array_search( $key, $funnel, true );
+		$pal    = array( '#3b82f6', '#0ea5e9', '#06b6d4', '#14b8a6', '#10b981', '#22c55e', '#16a34a' );
+		if ( $i === false ) {
+			return '#0f9fb3';
+		}
+		$n   = max( 1, count( $funnel ) - 1 );
+		$idx = (int) round( $i / $n * ( count( $pal ) - 1 ) );
+		return $pal[ max( 0, min( count( $pal ) - 1, $idx ) ) ];
+	}
+
 	/** رندر بازگشتیِ درختِ پوشه‌ها. */
 	protected static function folder_tree_html( $nodes, $active ) {
 		if ( ! $nodes ) {
@@ -377,18 +525,35 @@ class SZC_Portal {
 		$search = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : ''; // phpcs:ignore
 		$stage  = isset( $_GET['stage'] ) ? sanitize_key( wp_unslash( $_GET['stage'] ) ) : ''; // phpcs:ignore
 		$prio   = isset( $_GET['priority'] ) ? sanitize_key( wp_unslash( $_GET['priority'] ) ) : ''; // phpcs:ignore
+		$due    = isset( $_GET['due'] ) ? sanitize_key( wp_unslash( $_GET['due'] ) ) : ''; // phpcs:ignore
+		$sort   = isset( $_GET['sort'] ) ? sanitize_key( wp_unslash( $_GET['sort'] ) ) : 'recent'; // phpcs:ignore
 		$group  = isset( $_GET['group'] ) ? absint( $_GET['group'] ) : 0; // phpcs:ignore
 		$page   = isset( $_GET['pn'] ) ? max( 1, absint( $_GET['pn'] ) ) : 1; // phpcs:ignore
 
+		$sortmap = array(
+			'recent'   => array( 'updated_at', 'DESC', 'جدیدترین' ),
+			'name'     => array( 'first_name', 'ASC', 'نام (الفبا)' ),
+			'priority' => array( 'priority', 'ASC', 'اولویت' ),
+			'oldcall'  => array( 'last_contacted_at', 'ASC', 'قدیمی‌ترین تماس' ),
+		);
+		if ( ! isset( $sortmap[ $sort ] ) ) { $sort = 'recent'; }
+		$so = $sortmap[ $sort ];
+
 		$res = SZC_Contacts::query( array(
-			'search' => $search, 'stage' => $stage, 'priority' => $prio, 'group' => $group,
-			'owner' => $owner, 'page' => $page, 'per_page' => 25,
+			'search' => $search, 'stage' => $stage, 'priority' => $prio, 'group' => $group, 'due' => $due,
+			'owner' => $owner, 'page' => $page, 'per_page' => 25, 'orderby' => $so[0], 'order' => $so[1],
 		) );
 		$stages    = SZC_Settings::stages();
 		$prios     = SZC_Settings::priorities();
 		$templates = SZC_Templates::all();
 		$pages     = max( 1, (int) ceil( $res['total'] / $res['per_page'] ) );
 		$title     = $group ? SZC_Groups::name( $group ) : 'مخاطبین';
+
+		// پارامترهای پایدارِ فیلتر برای ساخت لینک‌ها (چیپ‌ها، صفحه‌بندی، بارگذاری بیشتر).
+		$keep = array_filter( array( 's' => $search, 'stage' => $stage, 'group' => $group, 'sort' => ( $sort !== 'recent' ? $sort : '' ) ) );
+		$chip_url = function ( $p, $d = '' ) use ( $keep ) {
+			return self::url( 'contacts', array_filter( array_merge( $keep, array( 'priority' => $p, 'due' => $d ) ), 'strlen' ) );
+		};
 
 		ob_start(); ?>
 		<div class="szc-p-folderlayout">
@@ -404,23 +569,30 @@ class SZC_Portal {
 			<div class="szc-p-contactsmain">
 				<div class="szc-p-listhead">
 					<h1 class="szc-p-h1"><?php echo esc_html( $title ); ?> <span class="szc-p-count"><?php echo esc_html( szc_fa_digits( $res['total'] ) ); ?></span></h1>
-					<a class="szc-p-btn szc-p-btn-primary" href="<?php echo esc_url( self::url( 'add' ) ); ?>"><?php echo szc_icon( 'user-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>افزودن مخاطب</span></a>
+					<a class="szc-p-btn szc-p-btn-primary" data-view="add" href="<?php echo esc_url( self::url( 'add' ) ); ?>"><?php echo szc_icon( 'user-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>افزودن مخاطب</span></a>
 				</div>
 
 				<form class="szc-p-filters" method="get" action="<?php echo esc_url( self::page_url() ); ?>">
 					<input type="hidden" name="szc_view" value="contacts">
 					<?php if ( $group ) : ?><input type="hidden" name="group" value="<?php echo (int) $group; ?>"><?php endif; ?>
-					<input type="search" name="s" placeholder="جستجو…" value="<?php echo esc_attr( $search ); ?>">
-					<select name="stage">
+					<input type="search" name="s" placeholder="جستجوی زنده…" value="<?php echo esc_attr( $search ); ?>" data-live-search autocomplete="off">
+					<select name="stage" data-autosubmit>
 						<option value="">همه‌ی مراحل</option>
 						<?php foreach ( $stages as $k => $lbl ) : ?><option value="<?php echo esc_attr( $k ); ?>" <?php selected( $stage, $k ); ?>><?php echo esc_html( $lbl ); ?></option><?php endforeach; ?>
 					</select>
-					<select name="priority">
-						<option value="">همه‌ی اولویت‌ها</option>
-						<?php foreach ( $prios as $k => $m ) : ?><option value="<?php echo esc_attr( $k ); ?>" <?php selected( $prio, $k ); ?>><?php echo esc_html( $m['label'] ); ?></option><?php endforeach; ?>
+					<select name="sort" data-autosubmit title="مرتب‌سازی">
+						<?php foreach ( $sortmap as $sk => $sv ) : ?><option value="<?php echo esc_attr( $sk ); ?>" <?php selected( $sort, $sk ); ?>><?php echo esc_html( $sv[2] ); ?></option><?php endforeach; ?>
 					</select>
 					<button class="szc-p-btn" type="submit">فیلتر</button>
 				</form>
+
+				<div class="szc-p-chips" role="tablist">
+					<a class="szc-p-fchip<?php echo ( ! $prio && ! $due ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( $chip_url( '', '' ) ); ?>">همه</a>
+					<?php foreach ( $prios as $pk => $pmv ) : ?>
+						<a class="szc-p-fchip<?php echo $prio === $pk ? ' is-active' : ''; ?>" style="--c:<?php echo esc_attr( $pmv['color'] ); ?>" href="<?php echo esc_url( $chip_url( $pk, '' ) ); ?>"><span class="szc-p-fchip-dot"></span><?php echo esc_html( $pmv['label'] ); ?></a>
+					<?php endforeach; ?>
+					<a class="szc-p-fchip szc-p-fchip-due<?php echo $due === 'overdue' ? ' is-active' : ''; ?>" href="<?php echo esc_url( $chip_url( '', 'overdue' ) ); ?>"><?php echo szc_icon( 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>سررسیده</a>
+				</div>
 
 				<?php if ( $group ) : ?>
 					<div class="szc-p-bulkbar" data-group="<?php echo (int) $group; ?>">
@@ -439,39 +611,28 @@ class SZC_Portal {
 				<?php endif; ?>
 
 				<?php if ( ! $res['items'] ) : ?>
-						<div class="szc-p-empty-state">
-							<span class="szc-p-empty-ico"><?php echo szc_icon( 'users' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
-							<p class="szc-p-empty">مخاطبی یافت نشد.</p>
-							<a class="szc-p-btn szc-p-btn-primary" href="<?php echo esc_url( self::url( 'add' ) ); ?>"><?php echo szc_icon( 'user-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>افزودن مخاطب</span></a>
-						</div>
-					<?php else : ?>
-						<ul class="szc-p-clist">
-							<?php foreach ( $res['items'] as $c ) :
-								$pm    = SZC_Settings::priority_meta( $c->priority );
-								$cname = SZC_Contacts::full_name( $c );
-								?>
-								<li class="szc-p-crow" draggable="true" data-contact="<?php echo (int) $c->id; ?>">
-									<span class="szc-p-grip" title="بکشید و روی یک پوشه رها کنید" aria-hidden="true"><?php echo szc_icon( 'grip' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
-									<a class="szc-p-cmain" draggable="false" href="<?php echo esc_url( self::contact_url( $c->id ) ); ?>">
-										<span class="szc-p-cav" style="--c:<?php echo esc_attr( $pm['color'] ); ?>"><?php echo esc_html( mb_substr( $cname, 0, 1 ) ); ?></span>
-										<span class="szc-p-cbody">
-											<span class="szc-p-cname"><?php echo esc_html( $cname ); ?><?php echo $c->opt_out ? ' <span class="szc-p-tag szc-p-tag-red">لغو پیامک</span>' : ''; ?></span>
-											<span class="szc-p-csub">
-												<span class="szc-p-cnum" dir="ltr"><?php echo esc_html( szc_fa_digits( $c->mobile ) ); ?></span>
-												<span class="szc-p-stage"><?php echo esc_html( SZC_Settings::stage_label( $c->stage ) ); ?></span>
-												<span class="szc-p-prio" style="--c:<?php echo esc_attr( $pm['color'] ); ?>"><?php echo esc_html( $pm['label'] ); ?></span>
-											</span>
-										</span>
-									</a>
-									<a draggable="false" class="szc-p-callbtn" href="tel:<?php echo esc_attr( $c->mobile ); ?>" title="تماس با <?php echo esc_attr( $cname ); ?>" aria-label="تماس"><?php echo szc_icon( 'phone' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
-								</li>
-							<?php endforeach; ?>
+					<div class="szc-p-empty-state">
+						<span class="szc-p-empty-ico"><?php echo szc_icon( 'users' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+						<p class="szc-p-empty">مخاطبی یافت نشد.</p>
+						<a class="szc-p-btn szc-p-btn-primary" data-view="add" href="<?php echo esc_url( self::url( 'add' ) ); ?>"><?php echo szc_icon( 'user-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>افزودن مخاطب</span></a>
+					</div>
+				<?php else : ?>
+					<div class="szc-p-listwrap">
+						<ul class="szc-p-clist" data-list>
+							<?php foreach ( $res['items'] as $c ) { echo self::contact_row_html( $c ); } // phpcs:ignore WordPress.Security.EscapeOutput ?>
 						</ul>
+						<?php echo self::alpha_index_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+					</div>
+
+					<?php if ( $page < $pages ) :
+						$next = self::url( 'contacts', array_filter( array_merge( $keep, array( 'priority' => $prio, 'due' => $due, 'pn' => $page + 1 ) ), 'strlen' ) ); ?>
+						<a class="szc-p-loadmore" data-loadmore data-next-page="<?php echo (int) ( $page + 1 ); ?>" data-total-pages="<?php echo (int) $pages; ?>" href="<?php echo esc_url( $next ); ?>"><?php echo szc_icon( 'repeat' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>بارگذاری بیشتر</span></a>
+					<?php endif; ?>
 
 					<?php if ( $pages > 1 ) : ?>
 						<div class="szc-p-pager">
 							<?php for ( $i = 1; $i <= $pages; $i++ ) :
-								$url = self::url( 'contacts', array_filter( array( 's' => $search, 'stage' => $stage, 'priority' => $prio, 'group' => $group, 'pn' => $i ) ) );
+								$url = self::url( 'contacts', array_filter( array_merge( $keep, array( 'priority' => $prio, 'due' => $due, 'pn' => $i ) ), 'strlen' ) );
 								?>
 								<a class="<?php echo $i === $page ? 'is-active' : ''; ?>" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( szc_fa_digits( $i ) ); ?></a>
 							<?php endfor; ?>
@@ -479,9 +640,53 @@ class SZC_Portal {
 					<?php endif; ?>
 				<?php endif; ?>
 			</div>
+
+			<a class="szc-p-fab" data-view="add" href="<?php echo esc_url( self::url( 'add' ) ); ?>" aria-label="افزودن مخاطب" title="افزودن مخاطب"><?php echo szc_icon( 'user-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
 		</div>
 		<?php
 		return ob_get_clean();
+	}
+
+	/** یک ردیفِ کارتِ مخاطب (چهره‌ی لغزنده برای Swipe + نوارِ رنگیِ مرحله). */
+	protected static function contact_row_html( $c ) {
+		$pm    = SZC_Settings::priority_meta( $c->priority );
+		$cname = SZC_Contacts::full_name( $c );
+		$sc    = self::stage_color( $c->stage );
+		ob_start(); ?>
+		<li class="szc-p-crow" draggable="true" data-contact="<?php echo (int) $c->id; ?>" data-mobile="<?php echo esc_attr( $c->mobile ); ?>" data-name="<?php echo esc_attr( $cname ); ?>" style="--stage-c:<?php echo esc_attr( $sc ); ?>;--c:<?php echo esc_attr( $pm['color'] ); ?>">
+			<div class="szc-p-swipeback" aria-hidden="true">
+				<a class="szc-p-swa szc-p-swa-follow" href="<?php echo esc_url( self::contact_url( $c->id ) ); ?>"><?php echo szc_icon( 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>پیگیری</span></a>
+				<a class="szc-p-swa szc-p-swa-sms" href="<?php echo esc_url( self::contact_url( $c->id ) ); ?>"><?php echo szc_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>پیامک</span></a>
+			</div>
+			<div class="szc-p-cface">
+				<span class="szc-p-grip" title="بکشید و روی یک پوشه رها کنید" aria-hidden="true"><?php echo szc_icon( 'grip' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+				<a class="szc-p-cmain" draggable="false" href="<?php echo esc_url( self::contact_url( $c->id ) ); ?>">
+					<span class="szc-p-cav"><?php echo esc_html( mb_substr( $cname, 0, 1 ) ); ?></span>
+					<span class="szc-p-cbody">
+						<span class="szc-p-cname"><?php echo esc_html( $cname ); ?><?php echo $c->opt_out ? ' <span class="szc-p-tag szc-p-tag-red">لغو پیامک</span>' : ''; ?></span>
+						<span class="szc-p-csub">
+							<span class="szc-p-cnum" dir="ltr"><?php echo esc_html( szc_fa_digits( $c->mobile ) ); ?></span>
+							<span class="szc-p-stage"><?php echo esc_html( SZC_Settings::stage_label( $c->stage ) ); ?></span>
+							<span class="szc-p-prio"><?php echo esc_html( $pm['label'] ); ?></span>
+						</span>
+					</span>
+				</a>
+				<a draggable="false" class="szc-p-callbtn" data-call href="tel:<?php echo esc_attr( $c->mobile ); ?>" title="تماس با <?php echo esc_attr( $cname ); ?>" aria-label="تماس"><?php echo szc_icon( 'phone' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
+			</div>
+		</li>
+		<?php
+		return ob_get_clean();
+	}
+
+	/** ایندکسِ حروفِ الفبا (پرش سریع در فهرست، مثلِ اپ مخاطبین). */
+	protected static function alpha_index_html() {
+		$letters = array( 'آ','ا','ب','پ','ت','ث','ج','چ','ح','خ','د','ذ','ر','ز','س','ش','ص','ط','ع','ف','ق','ک','گ','ل','م','ن','و','ه','ی' );
+		$out = '<nav class="szc-p-alpha" aria-label="پرش الفبایی">';
+		foreach ( $letters as $l ) {
+			$out .= '<button type="button" class="szc-p-alpha-l" data-letter="' . esc_attr( $l ) . '">' . esc_html( $l ) . '</button>';
+		}
+		$out .= '</nav>';
+		return $out;
 	}
 
 	/* ---------- پرونده‌ی مخاطب ---------- */
@@ -525,7 +730,10 @@ class SZC_Portal {
 					</div>
 				</div>
 				<div class="szc-p-cquick">
+					<?php $wa = '98' . ltrim( preg_replace( '/\D+/', '', (string) $c->mobile ), '0' ); ?>
 					<a class="szc-p-callbig" href="tel:<?php echo esc_attr( $c->mobile ); ?>"><?php echo szc_icon( 'phone' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>تماس</span></a>
+					<a class="szc-p-wabtn" href="https://wa.me/<?php echo esc_attr( $wa ); ?>" target="_blank" rel="noopener" title="واتساپ" aria-label="واتساپ"><?php echo szc_icon( 'whatsapp' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
+					<a class="szc-p-tgbtn" href="tg://resolve?phone=<?php echo esc_attr( $wa ); ?>" title="تلگرام" aria-label="تلگرام"><?php echo szc_icon( 'telegram' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
 					<select data-szc-act="set_field" data-field="stage" class="szc-p-sel">
 						<?php foreach ( $stages as $k => $lbl ) : ?><option value="<?php echo esc_attr( $k ); ?>" <?php selected( $c->stage, $k ); ?>><?php echo esc_html( $lbl ); ?></option><?php endforeach; ?>
 					</select>
@@ -658,6 +866,15 @@ class SZC_Portal {
 							<?php endif; ?>
 						</section>
 					<?php endif; ?>
+
+					<section class="szc-p-card">
+						<h2 class="szc-p-h2"><?php echo szc_icon( 'merge' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>ادغام تکراری</span></h2>
+						<p class="szc-p-muted">اگر همین مخاطب رکوردِ تکراری دارد، موبایلِ رکورد دوم را وارد کنید تا در این مخاطب ادغام و سپس حذف شود.</p>
+						<div class="szc-p-row">
+							<input type="text" dir="ltr" data-merge-mobile placeholder="۰۹...">
+							<button class="szc-p-btn" data-szc-act="merge">ادغام</button>
+						</div>
+					</section>
 
 					<section class="szc-p-card">
 						<h2 class="szc-p-h2"><?php echo szc_icon( 'history' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>تاریخچه</span></h2>

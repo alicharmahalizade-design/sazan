@@ -39,10 +39,17 @@
 	}
 
 	/* ---------- بارگذاری یک نما با AJAX ---------- */
+	function skeletonHtml() {
+		var row = '<div class="szc-p-skel"><div class="szc-p-skel-av"></div><div class="szc-p-skel-lines"><div class="szc-p-skel-line"></div><div class="szc-p-skel-line sm"></div></div></div>';
+		return '<div class="szc-p-skel-list">' + row + row + row + row + row + row + '</div>';
+	}
+
 	function loadView(view, params, push) {
 		var m = main();
 		if (!m) return;
+		var prev = m.innerHTML;
 		m.classList.add('is-loading');
+		m.innerHTML = skeletonHtml();
 		var d = new FormData();
 		d.append('action', 'szc_portal_view');
 		d.append('nonce', CFG.nonce || '');
@@ -62,10 +69,11 @@
 					var top = qs('.szc-portal.is-fullscreen .szc-p-main');
 					if (top) top.scrollTop = 0;
 				} else {
+					m.innerHTML = prev;
 					toast((res && res.data && res.data.msg) || 'خطا در بارگذاری.', 'err');
 				}
 			})
-			.catch(function () { m.classList.remove('is-loading'); toast('خطای ارتباط با سرور.', 'err'); });
+			.catch(function () { m.classList.remove('is-loading'); m.innerHTML = prev; toast('خطای ارتباط با سرور.', 'err'); });
 	}
 
 	function reloadCurrent() { loadView(current.view, current.params, false); }
@@ -342,10 +350,301 @@
 		}
 	};
 
+	/* ==================== حالت تاریکِ دستی ==================== */
+	function applyTheme(t) {
+		var root = qs('.szc-portal');
+		if (!root) return;
+		if (t === 'dark' || t === 'light') { root.setAttribute('data-theme', t); }
+		else { root.removeAttribute('data-theme'); }
+	}
+	(function () { var t = null; try { t = localStorage.getItem('szc_theme'); } catch (e) {} if (t) applyTheme(t); })();
+	document.addEventListener('click', function (e) {
+		var b = e.target.closest('[data-theme-toggle]');
+		if (!b || !b.closest('.szc-portal')) return;
+		var root = qs('.szc-portal');
+		var cur = root.getAttribute('data-theme');
+		var sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
+		var eff = cur ? cur : (sysDark ? 'dark' : 'light');
+		var next = eff === 'dark' ? 'light' : 'dark';
+		applyTheme(next);
+		try { localStorage.setItem('szc_theme', next); } catch (e) {}
+	});
+
+	/* ==================== ارسالِ خودکارِ فرمِ فیلتر (select ها) ==================== */
+	document.addEventListener('change', function (e) {
+		var s = e.target.closest('[data-autosubmit]');
+		if (!s || !s.closest('.szc-portal')) return;
+		var f = s.closest('form');
+		if (!f) return;
+		var params = {};
+		new FormData(f).forEach(function (v, k) { if (k !== 'szc_view' && v !== '') params[k] = v; });
+		loadView('contacts', params, true);
+	});
+
+	/* ==================== جستجوی زنده (به‌روزرسانیِ بخشی، بدون از دست رفتنِ فوکوس) ==================== */
+	function partialContacts(params, push) {
+		var cur = qs('.szc-p-contactsmain');
+		if (!cur) { loadView('contacts', params, push); return; }
+		cur.classList.add('is-loading');
+		var d = new FormData();
+		d.append('action', 'szc_portal_view');
+		d.append('nonce', CFG.nonce || '');
+		d.append('view', 'contacts');
+		Object.keys(params || {}).forEach(function (k) { d.append('params[' + k + ']', params[k]); });
+		fetch(CFG.ajax || '', { method: 'POST', credentials: 'same-origin', body: d })
+			.then(function (r) { return r.json(); })
+			.then(function (res) {
+				cur.classList.remove('is-loading');
+				if (!res || !res.success) return;
+				var tmp = document.createElement('div');
+				tmp.innerHTML = res.data.html || '';
+				var nu = tmp.querySelector('.szc-p-contactsmain');
+				if (!nu) return;
+				var active = document.activeElement;
+				var wasSearch = active && active.getAttribute && active.getAttribute('data-live-search') !== null && active.hasAttribute('data-live-search');
+				cur.innerHTML = nu.innerHTML;
+				current = { view: 'contacts', params: params || {} };
+				if (push !== false) history.pushState({ szc: true, view: 'contacts', params: params || {} }, '', viewUrl('contacts', params));
+				if (wasSearch) {
+					var ni = cur.querySelector('[data-live-search]');
+					if (ni) { ni.focus(); try { var v = ni.value; ni.setSelectionRange(v.length, v.length); } catch (e) {} }
+				}
+				enhance();
+			})
+			.catch(function () { cur.classList.remove('is-loading'); });
+	}
+	var liveTimer = null;
+	document.addEventListener('input', function (e) {
+		var inp = e.target.closest('[data-live-search]');
+		if (!inp || !inp.closest('.szc-portal')) return;
+		clearTimeout(liveTimer);
+		liveTimer = setTimeout(function () {
+			var f = inp.closest('form');
+			if (!f) return;
+			var params = {};
+			new FormData(f).forEach(function (v, k) { if (k !== 'szc_view' && v !== '') params[k] = v; });
+			partialContacts(params, true);
+		}, 350);
+	});
+
+	/* ==================== هدفِ روزانه‌ی تماس ==================== */
+	function goalTarget() { var v = 30; try { v = parseInt(localStorage.getItem('szc_call_goal') || '30', 10); } catch (e) {} return v > 0 ? v : 30; }
+	function updateGoalRing() {
+		var el = qs('.szc-p-goal');
+		if (!el) return;
+		var done = parseInt(el.getAttribute('data-goal-calls') || '0', 10);
+		var target = goalTarget();
+		var pct = target > 0 ? Math.max(0, Math.min(100, Math.round(done / target * 100))) : 0;
+		var C = 2 * Math.PI * 19;
+		var fg = el.querySelector('[data-goal-fg]');
+		if (fg) fg.style.strokeDashoffset = String(C * (1 - pct / 100));
+		var p = el.querySelector('[data-goal-pct]'); if (p) p.textContent = faD(pct) + '٪';
+		var t = el.querySelector('[data-goal-target]'); if (t) t.textContent = faD(target);
+		var d = el.querySelector('[data-goal-done]'); if (d) d.textContent = faD(done);
+		el.classList.toggle('is-done', done >= target);
+	}
+	document.addEventListener('click', function (e) {
+		var inc = e.target.closest('[data-goal-inc]'), dec = e.target.closest('[data-goal-dec]');
+		if (!inc && !dec) return;
+		var t = goalTarget() + (inc ? 5 : -5); if (t < 5) t = 5;
+		try { localStorage.setItem('szc_call_goal', String(t)); } catch (e2) {}
+		updateGoalRing();
+	});
+
+	/* ==================== ایندکسِ الفبایی ==================== */
+	function normFa(s) { return (s || '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/^\s+/, ''); }
+	function flashLetter(letter) {
+		var f = qs('.szc-p-alpha-flash');
+		if (!f) { f = document.createElement('div'); f.className = 'szc-p-alpha-flash'; document.body.appendChild(f); }
+		f.textContent = letter;
+		f.classList.add('is-show');
+		clearTimeout(f.__t); f.__t = setTimeout(function () { f.classList.remove('is-show'); }, 500);
+	}
+	document.addEventListener('click', function (e) {
+		var l = e.target.closest('.szc-p-alpha-l');
+		if (!l || !l.closest('.szc-portal')) return;
+		var letter = normFa(l.getAttribute('data-letter'));
+		var rows = document.querySelectorAll('.szc-p-clist .szc-p-crow');
+		var target = null;
+		for (var i = 0; i < rows.length; i++) {
+			var nm = normFa(rows[i].getAttribute('data-name'));
+			if (nm && nm.charAt(0) === letter) { target = rows[i]; break; }
+		}
+		if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); flashLetter(l.getAttribute('data-letter')); }
+	});
+
+	/* ==================== بارگذاری بیشتر / اسکرول بی‌نهایت ==================== */
+	function loadMore(b) {
+		if (!b || b.classList.contains('is-loading')) return;
+		b.classList.add('is-loading');
+		var link = parseLink(b.href) || { params: {} };
+		var d = new FormData();
+		d.append('action', 'szc_portal_view');
+		d.append('nonce', CFG.nonce || '');
+		d.append('view', 'contacts');
+		Object.keys(link.params).forEach(function (k) { d.append('params[' + k + ']', link.params[k]); });
+		fetch(CFG.ajax || '', { method: 'POST', credentials: 'same-origin', body: d })
+			.then(function (r) { return r.json(); })
+			.then(function (res) {
+				if (res && res.success) {
+					var tmp = document.createElement('div');
+					tmp.innerHTML = res.data.html || '';
+					var newList = tmp.querySelector('.szc-p-clist');
+					var list = qs('.szc-p-clist');
+					if (newList && list) { while (newList.firstElementChild) { list.appendChild(newList.firstElementChild); } }
+					var newMore = tmp.querySelector('[data-loadmore]');
+					if (newMore) { b.setAttribute('href', newMore.getAttribute('href')); b.classList.remove('is-loading'); }
+					else { b.remove(); }
+				} else { b.classList.remove('is-loading'); }
+			})
+			.catch(function () { b.classList.remove('is-loading'); });
+	}
+	document.addEventListener('click', function (e) {
+		var b = e.target.closest('[data-loadmore]');
+		if (!b || !b.closest('.szc-portal')) return;
+		e.preventDefault();
+		loadMore(b);
+	});
+	var moreObserver = ('IntersectionObserver' in window) ? new IntersectionObserver(function (ents) {
+		ents.forEach(function (en) { if (en.isIntersecting) loadMore(en.target); });
+	}, { rootMargin: '300px' }) : null;
+
+	/* ==================== Swipe روی کارتِ مخاطب ==================== */
+	(function () {
+		var OPEN = -128, cur = null, startX = 0, startY = 0, base = 0, active = false, moved = 0;
+		function closeAll(except) {
+			document.querySelectorAll('.szc-p-crow.is-swiped').forEach(function (r) { if (r !== except) r.classList.remove('is-swiped'); });
+		}
+		document.addEventListener('touchstart', function (e) {
+			var face = e.target.closest('.szc-p-cface');
+			var row = face && face.closest('.szc-p-crow');
+			if (!row || !row.closest('.szc-portal')) { closeAll(null); cur = null; return; }
+			if (e.target.closest('.szc-p-callbtn')) { cur = null; return; }
+			cur = row; startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+			base = row.classList.contains('is-swiped') ? OPEN : 0; active = false; moved = 0;
+			closeAll(row);
+		}, { passive: true });
+		document.addEventListener('touchmove', function (e) {
+			if (!cur) return;
+			var mx = e.touches[0].clientX - startX, my = e.touches[0].clientY - startY;
+			if (!active) {
+				if (Math.abs(mx) > 10 && Math.abs(mx) > Math.abs(my)) active = true;
+				else if (Math.abs(my) > 10) { cur = null; return; }
+				else return;
+			}
+			var t = Math.max(OPEN, Math.min(0, base + mx)); moved = t;
+			var face = cur.querySelector('.szc-p-cface');
+			if (face) { face.style.transition = 'none'; face.style.transform = 'translateX(' + t + 'px)'; }
+		}, { passive: true });
+		function end() {
+			if (!cur) return;
+			var face = cur.querySelector('.szc-p-cface');
+			if (face) { face.style.transition = ''; face.style.transform = ''; }
+			if (moved <= OPEN / 2) cur.classList.add('is-swiped'); else cur.classList.remove('is-swiped');
+			cur = null; active = false;
+		}
+		document.addEventListener('touchend', end);
+		document.addEventListener('touchcancel', end);
+	})();
+
+	/* ==================== شیتِ ثبتِ نتیجه‌ی تماس (پس از تماس) ==================== */
+	var pendingCall = null, sheetEl = null, backdropEl = null;
+	var OUTCOMES = [['answered', 'پاسخ داد'], ['no_answer', 'پاسخ نداد'], ['busy', 'مشغول'], ['callback', 'درخواست تماس مجدد'], ['wrong', 'شماره اشتباه'], ['not_interested', 'بی‌علاقه']];
+	function ensureSheet() {
+		if (sheetEl) return;
+		backdropEl = document.createElement('div'); backdropEl.className = 'szc-p-sheet-backdrop';
+		sheetEl = document.createElement('div'); sheetEl.className = 'szc-p-sheet';
+		document.body.appendChild(backdropEl); document.body.appendChild(sheetEl);
+		backdropEl.addEventListener('click', closeSheet);
+	}
+	function closeSheet() { if (sheetEl) sheetEl.classList.remove('is-show'); if (backdropEl) backdropEl.classList.remove('is-show'); }
+	function openCallSheet(pc) {
+		ensureSheet();
+		var opts = OUTCOMES.map(function (o) { return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join('');
+		sheetEl.innerHTML = '<div class="szc-p-sheet-grab"></div>'
+			+ '<h3>نتیجه‌ی تماس با ' + (pc.name ? pc.name.replace(/[<>&]/g, '') : 'مخاطب') + '</h3>'
+			+ '<p class="szc-p-muted">نتیجه‌ی تماس را ثبت کنید تا در تاریخچه بماند.</p>'
+			+ '<select data-cs-outcome>' + opts + '</select>'
+			+ '<textarea data-cs-note rows="2" placeholder="یادداشت تماس (اختیاری)"></textarea>'
+			+ '<label class="szc-p-check" style="margin-bottom:12px"><input type="checkbox" data-cs-sms> ارسال پیامک تشکر</label>'
+			+ '<div class="szc-p-btnrow"><button class="szc-p-btn szc-p-btn-primary" data-cs-save data-id="' + pc.id + '">ثبت تماس</button><button class="szc-p-btn" data-cs-cancel>بعداً</button></div>';
+		backdropEl.classList.add('is-show');
+		requestAnimationFrame(function () { sheetEl.classList.add('is-show'); });
+	}
+	document.addEventListener('click', function (e) {
+		if (e.target.closest('[data-cs-cancel]')) { closeSheet(); return; }
+		var save = e.target.closest('[data-cs-save]');
+		if (!save) return;
+		var d = new FormData();
+		d.append('contact', save.getAttribute('data-id'));
+		d.append('outcome', (sheetEl.querySelector('[data-cs-outcome]') || {}).value || 'answered');
+		d.append('note', (sheetEl.querySelector('[data-cs-note]') || {}).value || '');
+		var sms = sheetEl.querySelector('[data-cs-sms]');
+		d.append('sms', sms && sms.checked ? '1' : '0');
+		d.append('template', '0');
+		save.disabled = true;
+		d.append('action', 'szc_log_call'); d.append('nonce', CFG.nonce || '');
+		fetch(CFG.ajax || '', { method: 'POST', credentials: 'same-origin', body: d })
+			.then(function (r) { return r.json(); })
+			.then(function (res) { closeSheet(); if (window.SZC_PORTAL && SZC_PORTAL.handleRes) SZC_PORTAL.handleRes(res); })
+			.catch(function () { closeSheet(); toast('خطای ارتباط با سرور.', 'err'); });
+	});
+	document.addEventListener('click', function (e) {
+		var cb = e.target.closest('.szc-p-callbtn[data-call]');
+		if (!cb || !cb.closest('.szc-portal')) return;
+		var row = cb.closest('[data-contact]');
+		if (row) pendingCall = { id: row.getAttribute('data-contact'), name: row.getAttribute('data-name') || '' };
+	});
+	document.addEventListener('visibilitychange', function () {
+		if (document.visibilityState === 'visible' && pendingCall) { var pc = pendingCall; pendingCall = null; setTimeout(function () { openCallSheet(pc); }, 300); }
+	});
+
+	/* ==================== PWA: نصب، سرویس‌ورکر، اعلان ==================== */
+	if ('serviceWorker' in navigator && CFG.sw) {
+		window.addEventListener('load', function () { navigator.serviceWorker.register(CFG.sw, { scope: CFG.scope || '/' }).catch(function () {}); });
+	}
+	var deferredPrompt = null, notified = false;
+	window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; showPwaBar(); });
+	function showPwaBar() {
+		var bar = qs('.szc-p-pwabar');
+		if (!bar) return;
+		var inst = bar.querySelector('[data-pwa-install]'), noti = bar.querySelector('[data-notify-enable]');
+		var show = false;
+		if (deferredPrompt && inst) { inst.hidden = false; show = true; }
+		if (noti && 'Notification' in window && Notification.permission === 'default') { noti.hidden = false; show = true; }
+		bar.hidden = !show;
+	}
+	function maybeNotifyOverdue() {
+		if (notified || !('Notification' in window) || Notification.permission !== 'granted') return;
+		var bar = qs('.szc-p-pwabar'); if (!bar) return;
+		var n = parseInt(bar.getAttribute('data-overdue') || '0', 10);
+		if (n > 0) { notified = true; try { new Notification('سازان CRM', { body: 'شما ' + faD(n) + ' پیگیری سررسیده دارید.' }); } catch (e) {} }
+	}
+	document.addEventListener('click', function (e) {
+		var inst = e.target.closest('[data-pwa-install]');
+		if (inst && deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function () { deferredPrompt = null; inst.hidden = true; showPwaBar(); }); return; }
+		var noti = e.target.closest('[data-notify-enable]');
+		if (noti && 'Notification' in window) { Notification.requestPermission().then(function (p) { noti.hidden = true; showPwaBar(); if (p === 'granted') maybeNotifyOverdue(); }); }
+	});
+
+	/* ==================== اجرای مجددِ بهبودها پس از هر رندر ==================== */
+	function enhance() {
+		updateGoalRing();
+		showPwaBar();
+		maybeNotifyOverdue();
+		var lm = qs('[data-loadmore]');
+		if (lm && moreObserver) moreObserver.observe(lm);
+	}
+	(function () {
+		var m = main();
+		if (m && 'MutationObserver' in window) { new MutationObserver(function () { enhance(); }).observe(m, { childList: true }); }
+	})();
+
 	/* ---------- وضعیت اولیه در تاریخچه ---------- */
 	(function () {
 		var root = qs('.szc-portal');
 		if (!root) return;
+		enhance();
 		if (root.classList.contains('is-fullscreen')) { document.body.classList.add('szc-portal-lock'); }
 		var active = document.querySelector('.szc-p-navlink.is-active');
 		current.view = active ? (active.getAttribute('data-view') || 'dashboard') : 'dashboard';
