@@ -234,12 +234,15 @@ class SZC_Portal {
 	protected static function bottomnav_html( $active ) {
 		$main = array( 'dashboard', 'dialer', 'contacts', 'followups', 'reports' );
 		$all  = self::nav_items();
+		// برچسبِ کوتاه برای تب‌بارِ باریکِ موبایل (برچسبِ بلندِ ساید‌بار دست‌نخورده می‌ماند).
+		$short = array( 'dialer' => 'تماس‌ها' );
 		ob_start(); ?>
 		<nav class="szc-p-bottomnav">
-			<?php foreach ( $main as $key ) : if ( ! isset( $all[ $key ] ) ) { continue; } ?>
+			<?php foreach ( $main as $key ) : if ( ! isset( $all[ $key ] ) ) { continue; }
+				$label = isset( $short[ $key ] ) ? $short[ $key ] : $all[ $key ][0]; ?>
 				<a class="szc-p-bnitem<?php echo $active === $key ? ' is-active' : ''; ?>" data-view="<?php echo esc_attr( $key ); ?>" href="<?php echo esc_url( self::url( $key ) ); ?>">
 					<span class="szc-p-bnico"><?php echo szc_icon( $all[ $key ][1] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
-					<span class="szc-p-bnlbl"><?php echo esc_html( $all[ $key ][0] ); ?></span>
+					<span class="szc-p-bnlbl"><?php echo esc_html( $label ); ?></span>
 				</a>
 			<?php endforeach; ?>
 		</nav>
