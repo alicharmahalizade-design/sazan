@@ -350,6 +350,31 @@
 		}
 	};
 
+	/* ==================== ورود کارشناسان با رمز ==================== */
+	document.addEventListener('submit', function (e) {
+		var f = e.target.closest('[data-login-form]');
+		if (!f) return;
+		e.preventDefault();
+		var pass = (f.querySelector('[data-login-pass]') || {}).value || '';
+		var nonce = (f.querySelector('[data-login-nonce]') || {}).value || '';
+		var msg = f.querySelector('[data-login-msg]');
+		var btn = f.querySelector('.szc-p-login-btn');
+		function say(t, ok) { if (msg) { msg.textContent = t; msg.className = 'szc-p-login-msg' + (ok ? ' is-ok' : ' is-err'); } }
+		if (!pass) { say('رمز را وارد کنید.'); return; }
+		if (btn) btn.disabled = true;
+		var d = new FormData();
+		d.append('action', 'szc_portal_login');
+		d.append('nonce', nonce);
+		d.append('pass', pass);
+		fetch(CFG.ajax || '', { method: 'POST', credentials: 'same-origin', body: d })
+			.then(function (r) { return r.json(); })
+			.then(function (res) {
+				if (res && res.success) { say('خوش آمدید…', true); location.href = (res.data && res.data.redirect) || location.href; }
+				else { if (btn) btn.disabled = false; say((res && res.data && res.data.msg) || 'خطا رخ داد.'); }
+			})
+			.catch(function () { if (btn) btn.disabled = false; say('خطای ارتباط با سرور.'); });
+	});
+
 	/* ==================== حالت تاریکِ دستی ==================== */
 	function applyTheme(t) {
 		var root = qs('.szc-portal');

@@ -31,6 +31,7 @@ class SZC_Settings {
 		return array(
 			'managers'       => array(), // نقش مدیر: همه‌ی سرنخ‌ها را می‌بیند
 			'agents'         => array(), // نقش کارشناس: فقط سرنخ‌های خودش
+			'pass_login'     => 1,       // ورود سریع کارشناسان با رمز (بدون صفحه‌ی ورود وردپرس)
 			'max_per_run'    => 80,      // سقف ارسال در هر اجرای صف (هر ۵ دقیقه)
 			'max_per_day'    => 0,       // سقف ارسال روزانه (۰ = نامحدود)
 			'sms_enabled'    => 0,
@@ -107,6 +108,50 @@ class SZC_Settings {
 	public static function scope_owner( $uid = 0 ) {
 		$uid = $uid ? (int) $uid : get_current_user_id();
 		return self::is_manager( $uid ) ? 0 : $uid;
+	}
+
+	/* ==================== ورود سریعِ کارشناسان با رمز ==================== */
+
+	const PASS_META = '_szc_portal_pass';
+
+	/** آیا ورود با رمز فعال است؟ */
+	public static function pass_login_enabled() {
+		return ! empty( self::get( 'pass_login' ) );
+	}
+
+	/** تنظیمِ رمزِ ورودِ پورتال برای یک کاربر (هش‌شده). */
+	public static function set_portal_pass( $uid, $pass ) {
+		$pass = (string) $pass;
+		if ( $pass === '' ) {
+			return;
+		}
+		update_user_meta( (int) $uid, self::PASS_META, wp_hash_password( $pass ) );
+	}
+
+	public static function clear_portal_pass( $uid ) {
+		delete_user_meta( (int) $uid, self::PASS_META );
+	}
+
+	public static function has_portal_pass( $uid ) {
+		return (bool) get_user_meta( (int) $uid, self::PASS_META, true );
+	}
+
+	/**
+	 * تطبیقِ رمزِ واردشده با کاربرانِ مجاز. خروجی: شناسه‌ی کاربر یا 0.
+	 * برای امنیت، همه‌ی کاربران بررسی می‌شوند (بدون افشای این‌که کدام کاربر).
+	 */
+	public static function verify_portal_pass( $pass ) {
+		$pass = (string) $pass;
+		if ( $pass === '' ) {
+			return 0;
+		}
+		foreach ( self::allowed_user_ids() as $uid ) {
+			$hash = get_user_meta( (int) $uid, self::PASS_META, true );
+			if ( $hash && wp_check_password( $pass, $hash, $uid ) ) {
+				return (int) $uid;
+			}
+		}
+		return 0;
 	}
 
 	/** کاربرانی که می‌توان سرنخ را به آن‌ها تخصیص داد ([id => display_name]). */

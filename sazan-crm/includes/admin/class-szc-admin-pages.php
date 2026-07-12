@@ -349,6 +349,34 @@ class SZC_Admin_Pages {
 					</td></tr>
 				</tbody></table>
 
+				<h2>ورود کارشناسان با رمز</h2>
+				<table class="form-table"><tbody>
+					<tr><th>فعال‌سازی</th><td>
+						<label><input type="checkbox" name="pass_login" value="1" <?php checked( ! empty( $s['pass_login'] ) ); ?>> کارشناسان بتوانند فقط با «رمز» و بدون صفحه‌ی ورود وردپرس وارد پورتال شوند</label>
+						<p class="description">صفحه‌ی پورتال برای بازدیدکننده‌ی واردنشده یک کادر رمز نشان می‌دهد؛ کارشناس رمز خود را می‌زند و مستقیم وارد بخش خودش می‌شود.</p>
+					</td></tr>
+					<?php $allowed = SZC_Settings::allowed_user_ids(); if ( $allowed ) : ?>
+						<tr><th>رمزِ کاربران</th><td>
+							<table class="widefat striped" style="max-width:600px">
+								<thead><tr><th>کاربر</th><th>وضعیت رمز</th><th>تعیین/تغییر رمز</th><th>حذف</th></tr></thead>
+								<tbody>
+								<?php foreach ( $allowed as $uid ) : $u = get_userdata( $uid ); if ( ! $u ) { continue; } $has = SZC_Settings::has_portal_pass( $uid ); ?>
+									<tr>
+										<td><?php echo esc_html( $u->display_name . ' (' . $u->user_login . ')' ); ?></td>
+										<td><?php echo $has ? '<span style="color:#16a34a;font-weight:700">تنظیم‌شده</span>' : '<span style="color:#94a3b8">ندارد</span>'; ?></td>
+										<td><input type="text" name="agent_pass[<?php echo (int) $uid; ?>]" value="" autocomplete="off" placeholder="<?php echo $has ? 'رمز جدید…' : 'رمز…'; ?>" style="width:160px"></td>
+										<td><?php if ( $has ) : ?><label><input type="checkbox" name="agent_pass_clear[<?php echo (int) $uid; ?>]" value="1"> حذف</label><?php endif; ?></td>
+									</tr>
+								<?php endforeach; ?>
+								</tbody>
+							</table>
+							<p class="description">خالی گذاشتنِ کادر = بدون تغییر. رمز به‌صورت هش‌شده ذخیره می‌شود و در جدول قابل‌مشاهده نیست.</p>
+						</td></tr>
+					<?php else : ?>
+						<tr><th>رمزِ کاربران</th><td><p class="description">ابتدا کارشناس/مدیر را در بخش بالا انتخاب و «ذخیره» کنید، سپس این‌جا برایشان رمز بگذارید.</p></td></tr>
+					<?php endif; ?>
+				</tbody></table>
+
 				<h2>پنل پیامک (فراز/آی‌پی‌پنل)</h2>
 				<table class="form-table"><tbody>
 					<tr><th>فعال‌سازی</th><td><label><input type="checkbox" name="sms_enabled" value="1" <?php checked( ! empty( $s['sms_enabled'] ) ); ?>> ارسال پیامک فعال باشد</label></td></tr>
@@ -442,6 +470,7 @@ class SZC_Admin_Pages {
 		$new = array(
 			'managers'         => array_map( 'intval', (array) ( $p['managers'] ?? array() ) ),
 			'agents'           => array_map( 'intval', (array) ( $p['agents'] ?? array() ) ),
+			'pass_login'       => empty( $p['pass_login'] ) ? 0 : 1,
 			'max_per_run'      => max( 1, absint( $p['max_per_run'] ?? 80 ) ),
 			'max_per_day'      => max( 0, absint( $p['max_per_day'] ?? 0 ) ),
 			'sms_enabled'      => empty( $p['sms_enabled'] ) ? 0 : 1,
@@ -469,6 +498,20 @@ class SZC_Admin_Pages {
 		}
 		$new['outcome_templates'] = $omap;
 		SZC_Settings::save( $new );
+
+		// رمزِ ورودِ پورتال برای هر کاربر (تعیین/تغییر و حذف).
+		foreach ( (array) ( $p['agent_pass'] ?? array() ) as $uid => $pw ) {
+			$pw = (string) $pw;
+			if ( $pw !== '' ) {
+				SZC_Settings::set_portal_pass( (int) $uid, $pw );
+			}
+		}
+		foreach ( (array) ( $p['agent_pass_clear'] ?? array() ) as $uid => $v ) {
+			if ( $v ) {
+				SZC_Settings::clear_portal_pass( (int) $uid );
+			}
+		}
+
 		wp_safe_redirect( self::url( 'szc-settings', array( 'msg' => 1 ) ) );
 		exit;
 	}

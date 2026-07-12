@@ -44,6 +44,25 @@ body.szc-portal-lock{overflow:hidden}
 .szc-p-login{padding:48px 24px;text-align:center;color:var(--c-text2);font-size:15px}
 .szc-p-login a{color:var(--c-accent);font-weight:700}
 
+/* ===================== فرمِ ورود با رمز ===================== */
+.szc-portal--login{display:flex;align-items:center;justify-content:center;min-height:520px;padding:24px 16px}
+.szc-p-loginbox{width:100%;max-width:360px;background:var(--c-card);border:1px solid var(--c-line);border-radius:var(--r-lg);padding:30px 24px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:var(--c-shadow-lg);text-align:center;display:flex;flex-direction:column;gap:0}
+.szc-p-login-logo{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;margin:0 auto 14px;border-radius:20px;background:linear-gradient(135deg,var(--c-accent),var(--c-accent2));color:#fff}
+.szc-p-login-logo .szc-ico{width:32px;height:32px}
+.szc-p-login-title{margin:0 0 4px;font-size:20px;font-weight:800}
+.szc-p-login-sub{margin:0 0 20px;font-size:13.5px;color:var(--c-text2)}
+.szc-p-login-field{display:flex;align-items:center;gap:8px;background:var(--c-bg);border:1px solid var(--c-line);border-radius:13px;padding:0 14px;margin-bottom:12px}
+.szc-p-login-field:focus-within{border-color:var(--c-accent);box-shadow:0 0 0 3px var(--c-accent-soft)}
+.szc-p-login-ico{display:flex;color:var(--c-text2)}
+.szc-p-login-ico .szc-ico{width:19px;height:19px}
+.szc-p-login-field input{flex:1;min-width:0;border:0;background:transparent;padding:13px 4px;font:inherit;font-size:15px;color:var(--c-text);outline:none;text-align:center;letter-spacing:2px}
+.szc-p-login-btn{width:100%;justify-content:center;padding:13px;font-size:15px}
+.szc-p-login-msg{min-height:20px;margin-top:10px;font-size:13px;font-weight:700}
+.szc-p-login-msg.is-err{color:var(--c-danger)}
+.szc-p-login-msg.is-ok{color:var(--c-ok)}
+.szc-p-login-admin{display:inline-block;margin-top:10px;color:var(--c-text2);font-size:12px}
+.szc-p-login-admin:hover{color:var(--c-accent)}
+
 @media (prefers-color-scheme:dark){
 	.szc-portal{--c-bg:#0e1319;--c-card:#191f27;--c-line:#28303a;--c-line2:#212832;--c-text:#e9eef3;--c-text2:#95a2b0;--c-accent-soft:rgba(15,159,179,.2);--c-shadow:0 6px 22px rgba(0,0,0,.35);--c-shadow-lg:0 14px 40px rgba(0,0,0,.5)}
 }

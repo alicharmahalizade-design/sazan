@@ -21,6 +21,8 @@ class SZC_Portal {
 		add_action( 'admin_init', array( __CLASS__, 'lock_admin' ) );
 		add_action( 'after_setup_theme', array( __CLASS__, 'maybe_hide_admin_bar' ) );
 		add_action( 'wp_ajax_szc_portal_view', array( __CLASS__, 'ajax_view' ) );
+		add_action( 'wp_ajax_nopriv_szc_portal_login', array( __CLASS__, 'ajax_login' ) );
+		add_action( 'wp_ajax_szc_portal_login', array( __CLASS__, 'ajax_login' ) );
 		add_action( 'init', array( __CLASS__, 'maybe_serve_pwa' ) );
 		add_action( 'wp_head', array( __CLASS__, 'pwa_head' ), 1 );
 	}
@@ -137,6 +139,57 @@ JS;
 		$html   = self::render_view( $view );
 		self::$rendering = false;
 		wp_send_json_success( array( 'html' => $html, 'view' => $view ) );
+	}
+
+	/* ==================== ورودِ سریعِ کارشناسان با رمز ==================== */
+
+	/** تأییدِ رمز و ورودِ کارشناس (تنظیمِ کوکیِ ورودِ وردپرس برای همان کاربر). */
+	public static function ajax_login() {
+		if ( ! SZC_Settings::pass_login_enabled() ) {
+			wp_send_json_error( array( 'msg' => 'ورود با رمز غیرفعال است.' ), 403 );
+		}
+		check_ajax_referer( 'szc_portal_login', 'nonce' );
+		$pass = isset( $_POST['pass'] ) ? (string) wp_unslash( $_POST['pass'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+
+		// محدودسازیِ ساده‌ی نرخِ تلاش (ضدّ حدسِ رمز) بر پایه‌ی IP.
+		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '0';
+		$key = 'szc_login_try_' . md5( $ip );
+		$try = (int) get_transient( $key );
+		if ( $try >= 8 ) {
+			wp_send_json_error( array( 'msg' => 'تلاش‌های زیاد. چند دقیقه بعد دوباره امتحان کنید.' ), 429 );
+		}
+
+		$uid = SZC_Settings::verify_portal_pass( $pass );
+		if ( ! $uid ) {
+			set_transient( $key, $try + 1, 10 * MINUTE_IN_SECONDS );
+			wp_send_json_error( array( 'msg' => 'رمز نادرست است.' ) );
+		}
+		delete_transient( $key );
+		wp_set_current_user( $uid );
+		wp_set_auth_cookie( $uid, true );
+		wp_send_json_success( array( 'redirect' => self::page_url(), 'msg' => 'خوش آمدید' ) );
+	}
+
+	/** فرمِ ورود با رمز (برای بازدیدکننده‌ی واردنشده). */
+	protected static function login_form_html() {
+		ob_start(); ?>
+		<div class="szc-portal szc-portal--login" dir="rtl">
+			<form class="szc-p-loginbox" data-login-form>
+				<span class="szc-p-login-logo"><?php echo szc_icon( 'idcard' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+				<h1 class="szc-p-login-title">پنل فروش سازان</h1>
+				<p class="szc-p-login-sub">برای ورود، رمز کارشناسی خود را وارد کنید.</p>
+				<div class="szc-p-login-field">
+					<span class="szc-p-login-ico"><?php echo szc_icon( 'user' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+					<input type="password" data-login-pass placeholder="رمز ورود" autocomplete="current-password" enterkeyhint="go">
+				</div>
+				<input type="hidden" data-login-nonce value="<?php echo esc_attr( wp_create_nonce( 'szc_portal_login' ) ); ?>">
+				<button type="submit" class="szc-p-btn szc-p-btn-primary szc-p-login-btn"><?php echo szc_icon( 'log-out' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>ورود</span></button>
+				<div class="szc-p-login-msg" data-login-msg></div>
+				<a class="szc-p-login-admin" href="<?php echo esc_url( wp_login_url( self::page_url() ) ); ?>">ورود مدیر (وردپرس)</a>
+			</form>
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
 	/* ==================== صفحه و URL ==================== */
@@ -259,6 +312,9 @@ JS;
 
 	public static function shortcode( $atts = array() ) {
 		if ( ! is_user_logged_in() ) {
+			if ( SZC_Settings::pass_login_enabled() ) {
+				return self::login_form_html();
+			}
 			return '<div class="szc-portal"><div class="szc-p-login">برای ورود به پنل فروش ابتدا وارد حساب کاربری شوید. <a href="' . esc_url( wp_login_url( self::page_url() ) ) . '">ورود</a></div></div>';
 		}
 		if ( ! SZC_Settings::can_access() ) {
