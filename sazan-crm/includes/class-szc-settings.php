@@ -138,7 +138,11 @@ class SZC_Settings {
 
 	/**
 	 * تطبیقِ رمزِ واردشده با کاربرانِ مجاز. خروجی: شناسه‌ی کاربر یا 0.
-	 * برای امنیت، همه‌ی کاربران بررسی می‌شوند (بدون افشای این‌که کدام کاربر).
+	 *
+	 * دو مسیر پذیرفته می‌شود (هرکدام مطابقت کند): (۱) رمزِ اختصاصیِ پورتال (متای هش‌شده)،
+	 * (۲) رمزِ حسابِ وردپرسِ همان کاربر — تا اگر رمزِ اختصاصی ست نشده باشد هم ورود کار کند
+	 * (مثلاً کارشناسی که با «ساخت کارشناس جدید» ساخته شده و رمزِ حسابش همان رمز است).
+	 * برای امنیت، همه‌ی کاربرانِ مجاز بررسی می‌شوند (بدون افشای این‌که کدام کاربر).
 	 */
 	public static function verify_portal_pass( $pass ) {
 		$pass = (string) $pass;
@@ -146,9 +150,14 @@ class SZC_Settings {
 			return 0;
 		}
 		foreach ( self::allowed_user_ids() as $uid ) {
-			$hash = get_user_meta( (int) $uid, self::PASS_META, true );
+			$uid  = (int) $uid;
+			$hash = get_user_meta( $uid, self::PASS_META, true );
 			if ( $hash && wp_check_password( $pass, $hash, $uid ) ) {
-				return (int) $uid;
+				return $uid;
+			}
+			$u = get_userdata( $uid );
+			if ( $u && ! empty( $u->user_pass ) && wp_check_password( $pass, $u->user_pass, $uid ) ) {
+				return $uid;
 			}
 		}
 		return 0;

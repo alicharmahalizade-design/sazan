@@ -367,10 +367,12 @@
 		d.append('nonce', nonce);
 		d.append('pass', pass);
 		fetch(CFG.ajax || '', { method: 'POST', credentials: 'same-origin', body: d })
-			.then(function (r) { return r.json(); })
+			.then(function (r) { return r.json().catch(function () { return null; }); })
 			.then(function (res) {
-				if (res && res.success) { say('خوش آمدید…', true); location.href = (res.data && res.data.redirect) || location.href; }
-				else { if (btn) btn.disabled = false; say((res && res.data && res.data.msg) || 'خطا رخ داد.'); }
+				if (res && res.success) { say('خوش آمدید…', true); location.href = (res.data && res.data.redirect) || location.href; return; }
+				if (btn) btn.disabled = false;
+				if (res && typeof res === 'object' && res.data && res.data.msg) { say(res.data.msg); }
+				else { say('نشست منقضی شده؛ صفحه را تازه کنید و دوباره امتحان کنید.'); }
 			})
 			.catch(function () { if (btn) btn.disabled = false; say('خطای ارتباط با سرور.'); });
 	});
