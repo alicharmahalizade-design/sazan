@@ -738,9 +738,47 @@
 		start();
 	}
 
+	/* ===== خدمات ما سازان (sazan-services) ===== */
+	function initServices( el ) {
+		var box = null;
+		if ( el && el.classList && el.classList.contains( 'sazan-services' ) ) { box = el; }
+		else if ( el && el.querySelector ) { box = el.querySelector( '.sazan-services' ); }
+		if ( ! box || box.dataset.szInit === '1' ) { return; }
+		box.dataset.szInit = '1';
+
+		var cards = Array.prototype.slice.call( box.querySelectorAll( '.svc-card' ) );
+
+		// اسپات‌لایتِ دنبال‌کننده‌ی موس
+		if ( box.classList.contains( 'has-spot' ) && window.matchMedia && window.matchMedia( '(pointer:fine)' ).matches ) {
+			cards.forEach( function( c ) {
+				c.addEventListener( 'mousemove', function( e ) {
+					var r = c.getBoundingClientRect();
+					c.style.setProperty( '--svc-mx', ( ( e.clientX - r.left ) / r.width * 100 ).toFixed( 1 ) + '%' );
+					c.style.setProperty( '--svc-my', ( ( e.clientY - r.top ) / r.height * 100 ).toFixed( 1 ) + '%' );
+				} );
+			} );
+		}
+
+		// ورودِ پلکانی هنگام دیده‌شدن
+		var reduce = window.matchMedia && window.matchMedia( '(prefers-reduced-motion:reduce)' ).matches;
+		if ( ! reduce && 'IntersectionObserver' in window ) {
+			box.classList.add( 'svc-anim' );
+			var io = new IntersectionObserver( function( entries ) {
+				entries.forEach( function( en ) {
+					if ( en.isIntersecting ) {
+						cards.forEach( function( c ) { c.classList.add( 'is-in' ); } );
+						io.disconnect();
+					}
+				} );
+			}, { threshold: 0.15 } );
+			io.observe( box );
+		}
+	}
+
 	function initAll( root ) {
 		var r = root || document;
 		r.querySelectorAll( '.sazan-prodslider' ).forEach( initProdSlider );
+		r.querySelectorAll( '.sazan-services' ).forEach( initServices );
 		r.querySelectorAll( '.sazan-courses' ).forEach( initCourses );
 		r.querySelectorAll( '.sazan-courses.skin-lux' ).forEach( initCarousel );
 		r.querySelectorAll( '.sazan-podcast' ).forEach( initPodcast );
@@ -765,6 +803,7 @@
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-hero.default', function( $s ) { initHero( $s[0] ); } );
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-hero-cats.default', function( $s ) { initHeroFrame( $s[0] ); } );
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-product-slider.default', function( $s ) { initProdSlider( $s[0] ); } );
+				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-services.default', function( $s ) { initServices( $s[0] ); } );
 			}
 		} );
 	}

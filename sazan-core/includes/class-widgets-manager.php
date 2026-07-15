@@ -39,6 +39,7 @@ final class Widgets_Manager {
 		'marquee/class-sazan-marquee.php'   => '\Sazan\Widgets\Marquee',
 		'courses/class-sazan-courses.php'   => '\Sazan\Widgets\Courses',
 		'features/class-sazan-features.php' => '\Sazan\Widgets\Features',
+		'services/class-sazan-services.php' => '\Sazan\Widgets\Services',
 		'about/class-sazan-about.php'       => '\Sazan\Widgets\About',
 		'cta/class-sazan-cta.php'           => '\Sazan\Widgets\CTA',
 		'calendar/class-sazan-calendar.php' => '\Sazan\Widgets\Calendar',
