@@ -1948,7 +1948,7 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .sazan-services{
 	--svc-accent:#00B6F1; --svc-accent2:#0090c4; --svc-bg:#0a161f; --svc-bg2:#12283a;
 	--svc-card:rgba(255,255,255,.05); --svc-text:#fff; --svc-mut:#9fb2c0; --svc-bd:rgba(255,255,255,.12);
-	--svc-radius:20px; --svc-blur:14px;
+	--svc-radius:20px; --svc-blur:14px; --svc-cardw:300px;
 	direction:rtl; font-family:inherit; color:var(--svc-text);
 }
 .sazan-services *{ box-sizing:border-box; }
@@ -1976,10 +1976,10 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .svc-sub{ margin:0; color:var(--svc-mut); font-size:15px; line-height:1.95; }
 
 /* شبکه */
-.svc-grid{ position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.svc-grid{ position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:22px; justify-items:center; }
 
 /* کارت */
-.svc-card{ position:relative; overflow:hidden; padding:30px 26px; border-radius:var(--svc-radius);
+.svc-card{ position:relative; width:100%; max-width:var(--svc-cardw,none); overflow:hidden; padding:28px 24px; border-radius:var(--svc-radius);
 	background:var(--svc-card); border:1px solid var(--svc-bd);
 	transition:transform .3s cubic-bezier(.22,1,.36,1), border-color .3s, box-shadow .3s; }
 .sazan-services.is-glass .svc-card{ -webkit-backdrop-filter:blur(var(--svc-blur)); backdrop-filter:blur(var(--svc-blur));

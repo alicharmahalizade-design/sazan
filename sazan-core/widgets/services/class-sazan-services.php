@@ -118,6 +118,13 @@ class Services extends Widget_Base {
 			'selectors' => array( '{{WRAPPER}} .sazan-services' => '--svc-blur: {{SIZE}}{{UNIT}};' ),
 		) );
 		$this->add_control( 'spotlight', array( 'label' => esc_html__( '🖱️ اسپات‌لایتِ دنبال‌کننده‌ی موس', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes', 'separator' => 'before' ) );
+		$this->add_responsive_control( 'card_w', array(
+			'label' => esc_html__( 'حداکثر پهنای کارت (باریک‌تر)', 'sazan-core' ), 'type' => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ), 'range' => array( 'px' => array( 'min' => 220, 'max' => 460 ) ),
+			'default' => array( 'unit' => 'px', 'size' => 300 ), 'separator' => 'before',
+			'selectors' => array( '{{WRAPPER}} .sazan-services' => '--svc-cardw: {{SIZE}}{{UNIT}};' ),
+			'description' => esc_html__( 'کوچک‌ترش کنید تا کارت‌ها باریک‌تر و جمع‌وجورتر شوند (در ستون وسط‌چین می‌مانند).', 'sazan-core' ),
+		) );
 		$this->add_responsive_control( 'radius', array(
 			'label' => esc_html__( 'گردی گوشه‌ی کارت', 'sazan-core' ), 'type' => Controls_Manager::SLIDER,
 			'size_units' => array( 'px' ), 'range' => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
