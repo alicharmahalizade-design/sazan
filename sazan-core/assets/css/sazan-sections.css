@@ -1657,15 +1657,38 @@ body.sz-hero-modal-open{ overflow:hidden; }
 	display:flex; box-shadow:0 40px 90px -50px rgba(0,0,0,.8); }
 .sps-content{ height:var(--sps-h); margin:auto; width:100%; max-width:1050px; display:flex; align-items:center; position:relative; }
 
-/* بلوک رنگی + واترمارک (سمت) */
-.sps-shape{ height:100%; width:50%; position:absolute; top:0; left:0; display:flex; align-items:center;
-	background-image:linear-gradient(-45deg, var(--sps-shape2) 0%, var(--sps-shape1) 100%);
+/* بلوک رنگی «صحنه» + واترمارک (سمت) */
+.sps-shape{ height:100%; width:50%; position:absolute; top:0; left:0; display:flex; align-items:center; overflow:hidden;
+	background:
+		radial-gradient(85% 70% at 70% 34%, rgba(255,255,255,.20), transparent 58%),
+		radial-gradient(70% 60% at 22% 92%, rgba(4,12,20,.30), transparent 60%),
+		linear-gradient(-45deg, var(--sps-shape2) 0%, var(--sps-shape1) 100%);
 	box-shadow:0 30px 139px 0 rgba(10,22,31,.26); border-radius:var(--sps-radius); padding:45px 40px; }
-.sps-shape img{ object-fit:contain; width:510px; max-width:none; display:block; opacity:.2;
+/* هاله‌ی حلقه‌ای پشتِ سوژه */
+.sps-shape::before{ content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+	background:
+		radial-gradient(circle at 64% 50%, transparent 0 118px, rgba(255,255,255,.14) 119px 121px, transparent 122px),
+		radial-gradient(circle at 64% 50%, transparent 0 172px, rgba(255,255,255,.09) 173px 175px, transparent 176px),
+		radial-gradient(circle at 64% 50%, transparent 0 232px, rgba(255,255,255,.06) 233px 235px, transparent 236px); }
+/* حباب‌های نرمِ نور (bokeh) — فضا را پُر می‌کند بدون شلوغی */
+.sps-shape::after{ content:""; position:absolute; inset:0; pointer-events:none; z-index:0; filter:blur(1px);
+	background:
+		radial-gradient(circle at 16% 22%, rgba(255,255,255,.16), transparent 11%),
+		radial-gradient(circle at 30% 82%, rgba(255,255,255,.10), transparent 9%),
+		radial-gradient(circle at 88% 30%, rgba(255,255,255,.09), transparent 8%),
+		radial-gradient(circle at 78% 88%, rgba(255,255,255,.07), transparent 7%),
+		radial-gradient(circle at 8% 60%, rgba(255,255,255,.06), transparent 6%); }
+.sps-shape img{ object-fit:contain; width:510px; max-width:none; display:block; opacity:.16; z-index:1;
 	transform:rotate(-90deg) translateY(-50%); position:absolute; left:10px; object-position:left center; }
 
-/* تصویر شناور محصول */
+/* پوسترِ شناور + نورِ صحنه پشتِ آن */
 .sps-float{ position:absolute; z-index:3; width:500px; left:25%; transform:translateX(-45%) translate3d(var(--sps-px,0px),var(--sps-py,0px),0); transition:transform .2s ease-out; max-height:520px; height:100%; pointer-events:none; }
+.sps-float::before{ content:""; position:absolute; left:48%; top:50%; width:118%; padding-bottom:118%; transform:translate(-50%,-50%);
+	border-radius:50%; z-index:-1; filter:blur(8px);
+	background:radial-gradient(circle, rgba(255,255,255,.22), rgba(0,182,241,.14) 40%, transparent 68%); }
+/* کفِ نور زیرِ پای سوژه */
+.sps-float::after{ content:""; position:absolute; left:48%; bottom:8%; width:70%; height:46px; transform:translateX(-50%);
+	border-radius:50%; z-index:-1; filter:blur(10px); background:radial-gradient(closest-side, rgba(4,12,20,.55), transparent); }
 .sps-float__item{ display:flex; align-items:center; position:absolute; top:50%; right:0;
 	transform:translateY(-50%) translateX(-130px); opacity:0; transition:opacity .4s, transform .5s; }
 .sps-float__item.is-active{ opacity:1; transform:translateY(-50%) translateX(0); transition-delay:.25s; }
@@ -1693,7 +1716,7 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .sps-item.is-active .sps-inner > *:nth-child(5){ transition-delay:.83s; }
 
 .sps-title{ margin:0 0 8px; font-weight:900; font-size:clamp(22px,2.7vw,38px); line-height:1.2; letter-spacing:1px; }
-.sps-price{ display:inline-block; font-size:clamp(24px,2.6vw,38px); font-weight:800; }
+.sps-price{ display:inline-block; font-size:clamp(24px,2.6vw,38px); font-weight:800; text-shadow:0 2px 26px rgba(0,182,241,.25); }
 .sps-price .sps-pre{ font-style:normal; font-size:60%; margin-inline-end:4px; opacity:.9; }
 .sps-price sup{ font-size:52%; top:-.7em; margin-inline-start:4px; opacity:.85; }
 
@@ -1703,9 +1726,9 @@ body.sz-hero-modal-open{ overflow:hidden; }
 
 /* چیپ‌های مشخصات دوره */
 .sps-chips{ display:flex; flex-wrap:wrap; gap:9px; }
-.sps-chip{ display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; letter-spacing:.3px;
-	padding:7px 13px; border-radius:50px; white-space:nowrap; color:var(--sps-text);
-	border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.06); }
+.sps-chip{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; letter-spacing:.2px;
+	padding:6px 12px; border-radius:50px; white-space:nowrap; color:var(--sps-text);
+	border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.055); }
 .sps-chip__ic{ color:var(--sps-accent); flex-shrink:0; }
 .sps-chip__t{ opacity:.95; }
 
@@ -1744,13 +1767,13 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .sps-prev.is-disabled, .sps-next.is-disabled{ opacity:.35; cursor:not-allowed; pointer-events:none; }
 
 /* ===== شمارش معکوس ===== */
-.sps-countdown{ margin-top:22px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-.sps-countdown__lbl{ font-weight:700; letter-spacing:1px; font-size:14px; opacity:.9; }
-.sps-countdown__boxes{ display:flex; gap:10px; direction:ltr; }
-.sps-cd-box{ min-width:56px; text-align:center; padding:9px 8px 6px; border-radius:12px;
-	background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter:blur(6px); }
-.sps-cd-box b{ display:block; font-size:22px; font-weight:900; line-height:1; color:var(--sps-text); font-variant-numeric:tabular-nums; }
-.sps-cd-box i{ display:block; margin-top:4px; font-size:10px; font-style:normal; font-weight:700; letter-spacing:.5px; color:var(--sps-mut); }
+.sps-countdown{ margin-top:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.sps-countdown__lbl{ font-weight:700; letter-spacing:1px; font-size:13px; opacity:.85; }
+.sps-countdown__boxes{ display:flex; gap:8px; direction:ltr; }
+.sps-cd-box{ min-width:48px; text-align:center; padding:7px 7px 5px; border-radius:11px;
+	background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(6px); }
+.sps-cd-box b{ display:block; font-size:19px; font-weight:900; line-height:1; color:var(--sps-text); font-variant-numeric:tabular-nums; }
+.sps-cd-box i{ display:block; margin-top:4px; font-size:9.5px; font-style:normal; font-weight:700; letter-spacing:.3px; color:var(--sps-mut); }
 .sps-cd-box.is-accent b{ color:var(--sps-accent); }
 .sps-countdown.is-ended .sps-countdown__boxes{ display:none; }
 .sps-countdown__done{ display:none; font-weight:800; color:var(--sps-accent); font-size:15px; }
@@ -1789,7 +1812,7 @@ body.sz-hero-modal-open{ overflow:hidden; }
 
 /* نوارِ ظرفیت */
 .sps-cap{ margin-top:14px; }
-.sps-cap__track{ height:8px; border-radius:50px; background:rgba(255,255,255,.12); overflow:hidden; }
+.sps-cap__track{ height:6px; border-radius:50px; background:rgba(255,255,255,.12); overflow:hidden; }
 .sps-cap__fill{ display:block; height:100%; width:var(--sps-cap,0%); border-radius:50px;
 	background:linear-gradient(90deg,var(--sps-accent2),var(--sps-accent)); }
 .sps-item.is-active .sps-cap__fill{ animation:sps-capgrow 1.1s cubic-bezier(.22,1,.36,1) both; }
