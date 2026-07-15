@@ -791,6 +791,16 @@ class Product_Slider extends Widget_Base {
 		}
 
 		echo '</div>'; // wrp
+
+		/* ناوبریِ نقطه‌ای (به‌ویژه برای موبایل) — JS پُر می‌کند */
+		if ( count( $items ) > 1 ) {
+			echo '<div class="sps-dots">';
+			echo '<button type="button" class="sps-dot-nav sps-dot-prev" aria-label="' . esc_attr__( 'قبلی', 'sazan-core' ) . '"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>';
+			echo '<span class="sps-dots__list"></span>';
+			echo '<button type="button" class="sps-dot-nav sps-dot-next" aria-label="' . esc_attr__( 'بعدی', 'sazan-core' ) . '"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>';
+			echo '</div>';
+		}
+
 		echo '</div>'; // slider
 
 		/* پاپ‌آپِ ویدیو (یک نمونه برای کلِ ویجت) */

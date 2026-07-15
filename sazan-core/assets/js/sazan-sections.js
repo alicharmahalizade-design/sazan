@@ -603,12 +603,34 @@
 		var speed = parseInt( box.getAttribute( 'data-speed' ), 10 ) || 6000;
 		var idx = 0, timer = null, n = items.length;
 
+		// نقطه‌های ناوبری (به‌ویژه موبایل)
+		var dotsList = box.querySelector( '.sps-dots__list' );
+		var dots = [];
+		if ( dotsList && n > 1 ) {
+			for ( var k = 0; k < n; k++ ) {
+				( function( k ) {
+					var d = document.createElement( 'button' );
+					d.type = 'button'; d.className = 'sps-dot';
+					d.setAttribute( 'aria-label', String( k + 1 ) );
+					d.addEventListener( 'click', function() { go( k ); start(); } );
+					dotsList.appendChild( d ); dots.push( d );
+				} )( k );
+			}
+		}
+		var dprev = box.querySelector( '.sps-dot-prev' );
+		var dnext = box.querySelector( '.sps-dot-next' );
+		if ( dprev ) { dprev.addEventListener( 'click', function() { prevSlide(); start(); } ); }
+		if ( dnext ) { dnext.addEventListener( 'click', function() { nextSlide(); start(); } ); }
+
 		function paint() {
 			items.forEach( function( it, i ) { it.classList.toggle( 'is-active', i === idx ); } );
 			floats.forEach( function( f, i ) { f.classList.toggle( 'is-active', i === idx ); } );
+			dots.forEach( function( d, i ) { d.classList.toggle( 'is-active', i === idx ); } );
 			if ( ! loop ) {
 				if ( prev ) { prev.classList.toggle( 'is-disabled', idx === 0 ); }
 				if ( next ) { next.classList.toggle( 'is-disabled', idx === n - 1 ); }
+				if ( dprev ) { dprev.classList.toggle( 'is-disabled', idx === 0 ); }
+				if ( dnext ) { dnext.classList.toggle( 'is-disabled', idx === n - 1 ); }
 			}
 		}
 		function go( i ) {
@@ -757,6 +779,34 @@
 					c.style.setProperty( '--svc-my', ( ( e.clientY - r.top ) / r.height * 100 ).toFixed( 1 ) + '%' );
 				} );
 			} );
+		}
+
+		// کاروسلِ موبایل: نقطه‌های صفحه‌بندی + ردیابیِ اسکرول
+		if ( box.classList.contains( 'mob-carousel' ) ) {
+			var grid = box.querySelector( '.svc-grid' );
+			var dotsWrap = box.querySelector( '.svc-dots' );
+			if ( grid && dotsWrap && cards.length > 1 ) {
+				var svcDots = [];
+				cards.forEach( function( c, i ) {
+					var d = document.createElement( 'button' );
+					d.type = 'button'; d.className = 'svc-dot'; d.setAttribute( 'aria-label', String( i + 1 ) );
+					d.addEventListener( 'click', function() { c.scrollIntoView( { behavior: 'smooth', inline: 'start', block: 'nearest' } ); } );
+					dotsWrap.appendChild( d ); svcDots.push( d );
+				} );
+				svcDots[0].classList.add( 'is-active' );
+				var setActive = function() {
+					var step = Math.abs( ( cards[1].offsetLeft - cards[0].offsetLeft ) ) || cards[0].offsetWidth || 1;
+					var ai = Math.round( Math.abs( grid.scrollLeft ) / step );
+					ai = Math.max( 0, Math.min( cards.length - 1, ai ) );
+					svcDots.forEach( function( d, i ) { d.classList.toggle( 'is-active', i === ai ); } );
+				};
+				var rafId;
+				grid.addEventListener( 'scroll', function() {
+					if ( rafId ) { cancelAnimationFrame( rafId ); }
+					rafId = requestAnimationFrame( setActive );
+				}, { passive: true } );
+				window.addEventListener( 'resize', setActive );
+			}
 		}
 
 		// ورودِ پلکانی هنگام دیده‌شدن

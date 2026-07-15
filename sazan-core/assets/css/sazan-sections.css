@@ -1798,6 +1798,19 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .sps-next{ right:0; transform:translate(50%,-50%); }
 .sps-prev.is-disabled, .sps-next.is-disabled{ opacity:.35; cursor:not-allowed; pointer-events:none; }
 
+/* ناوبریِ نقطه‌ای (پیش‌فرض روی دسکتاپ پنهان؛ در موبایل جایگزینِ فلش‌های بزرگ می‌شود) */
+.sps-dots{ display:none; align-items:center; justify-content:center; gap:14px; }
+.sps-dots__list{ display:inline-flex; align-items:center; gap:7px; }
+.sps-dot{ width:8px; height:8px; padding:0; border:none; border-radius:50px; cursor:pointer;
+	background:rgba(255,255,255,.28); transition:width .3s, background .3s; }
+.sps-dot:hover{ background:rgba(255,255,255,.55); }
+.sps-dot.is-active{ width:24px; background:linear-gradient(90deg, var(--sps-accent2), var(--sps-accent)); }
+.sps-dot-nav{ display:inline-grid; place-items:center; width:40px; height:40px; border-radius:50%; cursor:pointer; flex-shrink:0;
+	color:var(--sps-text); background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16);
+	-webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); transition:transform .2s, background .2s, color .2s, border-color .2s; }
+.sps-dot-nav:hover{ background:var(--sps-accent); color:#fff; border-color:transparent; transform:translateY(-1px); }
+.sps-dot-nav.is-disabled{ opacity:.3; pointer-events:none; }
+
 /* ===== شمارش معکوس ===== */
 .sps-countdown{ margin-top:18px; display:flex; align-items:center; gap:11px; flex-wrap:wrap; }
 .sps-countdown__lbl{ font-weight:700; letter-spacing:.5px; font-size:12.5px; opacity:.8; }
@@ -1948,8 +1961,11 @@ body.sz-hero-modal-open{ overflow:hidden; }
 	.sps-tutor{ text-align:right; }
 	.sps-bottom{ justify-content:center; }
 	.sps-cart, .sps-fav{ flex:1 1 auto; justify-content:center; }
-	.sps-prev, .sps-next{ top:auto; bottom:-26px; }
-	.sps-prev{ left:38%; transform:translate(-50%,0); } .sps-next{ right:38%; transform:translate(50%,0); }
+	/* در موبایل فلش‌های بزرگِ کناری پنهان و ناوبریِ نقطه‌ایِ شیشه‌ای نمایش داده می‌شود */
+	.sps-prev, .sps-next{ display:none; }
+	.sps-dots{ display:flex; width:max-content; max-width:100%; margin:22px auto 4px; padding:8px 12px; border-radius:50px;
+		background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10);
+		-webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); box-shadow:0 14px 34px -20px rgba(0,0,0,.7); }
 }
 /* موبایلِ باریک: عناصرِ کارت جمع‌وجورتر و دکمه‌ها تمام‌عرض */
 @media (max-width:560px){
@@ -2088,11 +2104,21 @@ body.sz-hero-modal-open{ overflow:hidden; }
 		mask-image:linear-gradient(to left, #000 88%, rgba(0,0,0,.25)); }
 	.sazan-services.mob-carousel .svc-grid::-webkit-scrollbar{ display:none; }
 	.sazan-services.mob-carousel .svc-card{
-		flex:0 0 calc(100% / var(--svc-peek,1.3) - 10px); max-width:none;
-		scroll-snap-align:start; scroll-snap-stop:always; padding:28px 24px; }
-	.sazan-services.mob-carousel .svc-ic{ width:66px; height:66px; }
+		flex:0 0 clamp(248px, calc((100% / var(--svc-peek,1.3)) - 12px), 360px); max-width:none;
+		scroll-snap-align:start; scroll-snap-stop:always; padding:24px 22px; }
+	.sazan-services.mob-carousel .svc-ic{ width:56px; height:56px; margin-bottom:14px; }
+	.sazan-services.mob-carousel .svc-card h3{ font-size:18px; line-height:1.4; margin-bottom:8px; overflow-wrap:normal; word-break:normal; }
+	.sazan-services.mob-carousel .svc-card p{ font-size:13.5px; line-height:1.9; margin-bottom:14px;
+		display:-webkit-box; -webkit-line-clamp:3; line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 	.sazan-services.mob-carousel.skin-row .svc-card{ max-width:none; }
+	/* نقطه‌های صفحه‌بندیِ کاروسل */
+	.sazan-services.mob-carousel .svc-dots{ display:flex; justify-content:center; gap:7px; margin-top:18px; }
 }
+.svc-dots{ display:none; }
+.svc-dot{ width:8px; height:8px; padding:0; border:none; border-radius:50px; cursor:pointer;
+	background:rgba(255,255,255,.24); transition:width .3s, background .3s; }
+.svc-dot:hover{ background:rgba(255,255,255,.5); }
+.svc-dot.is-active{ width:22px; background:linear-gradient(90deg, var(--svc-accent2), var(--svc-accent)); }
 @media (prefers-reduced-motion:reduce){
 	.svc-card, .svc-ic, .svc-btn, .svc-glow,
 	.sazan-services.svc-anim .svc-card{ transition:none !important; animation:none !important; opacity:1 !important; transform:none !important; }

@@ -269,6 +269,11 @@ class Services extends Widget_Base {
 		}
 		echo '</div>'; // grid
 
+		/* نقطه‌های صفحه‌بندیِ کاروسلِ موبایل — JS پُر می‌کند */
+		if ( 'yes' === ( $s['mobile_carousel'] ?? 'yes' ) && count( $items ) > 1 ) {
+			echo '<div class="svc-dots" aria-hidden="true"></div>';
+		}
+
 		echo '</div>'; // inner
 		echo '</div>'; // services
 	}
