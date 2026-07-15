@@ -248,6 +248,32 @@ class Product_Slider extends Widget_Base {
 		$this->add_control( 'c_mut', array( 'label' => esc_html__( 'رنگ متن کم‌رنگ', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#8b93a7', 'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-mut: {{VALUE}};' ) ) );
 		$this->end_controls_section();
 
+		/* ==================== استایل: افکت شیشه‌ای (گلس‌مورفیسم) ==================== */
+		$this->start_controls_section( 'sty_glass', array( 'label' => esc_html__( '✨ افکت شیشه‌ای (گلس‌مورفیسم)', 'sazan-core' ), 'tab' => Controls_Manager::TAB_STYLE ) );
+		$this->add_control( 'glass', array(
+			'label' => esc_html__( 'کارت شیشه‌ای (بلر)', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'return_value' => 'yes', 'default' => 'yes',
+			'description' => esc_html__( 'ته‌رنگِ کارت، چیپ‌ها و جعبه‌ها شفاف و مات (frosted glass) می‌شوند.', 'sazan-core' ),
+		) );
+		$this->add_control( 'glass_blur', array(
+			'label' => esc_html__( 'شدتِ بلر', 'sazan-core' ), 'type' => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ), 'range' => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'default' => array( 'unit' => 'px', 'size' => 18 ), 'condition' => array( 'glass' => 'yes' ),
+			'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-blur: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_control( 'glass_tint', array(
+			'label' => esc_html__( 'ته‌رنگِ شیشه', 'sazan-core' ), 'type' => Controls_Manager::COLOR,
+			'default' => 'rgba(13,25,35,0.35)', 'condition' => array( 'glass' => 'yes' ),
+			'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-glass: {{VALUE}};' ),
+			'description' => esc_html__( 'هرچه شفاف‌تر (آلفای کمتر)، شیشه‌ای‌تر؛ برای خواناییِ متن کمی تیره نگه دارید.', 'sazan-core' ),
+		) );
+		$this->add_control( 'glass_border', array(
+			'label' => esc_html__( 'رنگِ لبه‌ی شیشه', 'sazan-core' ), 'type' => Controls_Manager::COLOR,
+			'default' => 'rgba(255,255,255,0.22)', 'condition' => array( 'glass' => 'yes' ),
+			'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-glass-bd: {{VALUE}};' ),
+		) );
+		$this->end_controls_section();
+
 		/* ==================== استایل: ابعاد و تایپوگرافی ==================== */
 		$this->start_controls_section( 'sty_size', array( 'label' => esc_html__( 'ابعاد و تایپوگرافی', 'sazan-core' ), 'tab' => Controls_Manager::TAB_STYLE ) );
 		$this->add_responsive_control( 'height', array(
@@ -513,10 +539,11 @@ class Product_Slider extends Widget_Base {
 		$rtl  = ( 'yes' === $s['rtl'] ) ? ' sps-rtl' : '';
 		$plx  = ( 'yes' === ( $s['parallax'] ?? '' ) ) ? '1' : '0';
 		$kb   = ( 'yes' === ( $s['kenburns'] ?? '' ) ) ? ' is-kb' : '';
+		$gls  = ( 'yes' === ( $s['glass'] ?? 'yes' ) ) ? ' is-glass' : '';
 
 		$timer_on = ( 'yes' === $s['show_timer'] ) && ! empty( $s['timer_deadline'] );
 
-		echo '<div class="sazan-prodslider' . esc_attr( $rtl . $kb ) . '" data-autoplay="' . esc_attr( $auto ) . '" data-speed="' . esc_attr( (int) $ms ) . '" data-loop="' . esc_attr( $loop ) . '" data-parallax="' . esc_attr( $plx ) . '">';
+		echo '<div class="sazan-prodslider' . esc_attr( $rtl . $kb . $gls ) . '" data-autoplay="' . esc_attr( $auto ) . '" data-speed="' . esc_attr( (int) $ms ) . '" data-loop="' . esc_attr( $loop ) . '" data-parallax="' . esc_attr( $plx ) . '">';
 		echo '<div class="sps-wrap"><div class="sps-content">';
 
 		/* بلوک رنگی + واترمارک */

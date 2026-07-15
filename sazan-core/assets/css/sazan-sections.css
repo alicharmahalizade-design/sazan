@@ -1645,6 +1645,7 @@ body.sz-hero-modal-open{ overflow:hidden; }
 	--sps-shape1:#00B6F1; --sps-shape2:#0090c4; /* بلوک رنگیِ پشت (مستقل از رنگ برند) */
 	--sps-card:rgba(9,20,30,.42); --sps-text:#fff; --sps-mut:#8b93a7; --sps-radius:30px; --sps-h:660px;
 	--sps-new:#22c55e; --sps-off:#ef4444;
+	--sps-blur:18px; --sps-glass:rgba(13,25,35,.35); --sps-glass-bd:rgba(255,255,255,.22);
 	direction:ltr; font-family:inherit;
 }
 /* راست‌چینِ متن‌ها بدون آینه‌کردنِ چیدمان (تصویر و بلوک رنگی سرِ جای اصلی می‌مانند) */
@@ -1836,6 +1837,32 @@ body.sz-hero-modal-open{ overflow:hidden; }
 
 /* حالتِ خالی در ادیتور */
 .sps-empty{ padding:40px; text-align:center; color:#8b93a7; border:1px dashed rgba(255,255,255,.2); border-radius:16px; background:rgba(9,20,30,.4); }
+
+/* ===== افکت شیشه‌ای (گلس‌مورفیسم / بلر) ===== */
+.sazan-prodslider.is-glass .sps-tint{
+	background:linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.04)), var(--sps-glass);
+	-webkit-backdrop-filter:blur(var(--sps-blur)) saturate(150%);
+	backdrop-filter:blur(var(--sps-blur)) saturate(150%);
+	box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 0 0 1px var(--sps-glass-bd); }
+.sazan-prodslider.is-glass .sps-card{ box-shadow:0 30px 80px -40px rgba(0,0,0,.75); }
+/* درخششِ لبه‌ی بالای کارت */
+.sazan-prodslider.is-glass .sps-card::after{ content:""; position:absolute; inset:0; border-radius:var(--sps-radius);
+	pointer-events:none; background:radial-gradient(120% 80% at 15% 0%, rgba(255,255,255,.12), transparent 55%); z-index:1; }
+/* چیپ‌ها و جعبه‌ها هم شیشه‌ای می‌شوند */
+.sazan-prodslider.is-glass .sps-chip{ background:rgba(255,255,255,.09); border-color:var(--sps-glass-bd);
+	-webkit-backdrop-filter:blur(calc(var(--sps-blur) * .6)); backdrop-filter:blur(calc(var(--sps-blur) * .6)); }
+.sazan-prodslider.is-glass .sps-cd-box{ background:rgba(255,255,255,.10); border-color:var(--sps-glass-bd);
+	-webkit-backdrop-filter:blur(calc(var(--sps-blur) * .55)); backdrop-filter:blur(calc(var(--sps-blur) * .55)); }
+.sazan-prodslider.is-glass .sps-cap__track{ -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+.sazan-prodslider.is-glass .sps-tutor__ava{ -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); border-color:var(--sps-glass-bd); }
+.sazan-prodslider.is-glass .sps-price__badge{ -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+/* پاپ‌آپِ تیزر هم قابِ شیشه‌ای بگیرد */
+.sps-lightbox.is-glass-lb .sps-lightbox__media{ box-shadow:0 40px 100px -30px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.14); }
+/* اگر مرورگر backdrop-filter نداشت، ته‌رنگِ کدرترِ کارت جایگزین شود (خوانایی) */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+	.sazan-prodslider.is-glass .sps-tint{ background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.03)), rgba(9,20,30,.72); }
+	.sazan-prodslider.is-glass .sps-chip, .sazan-prodslider.is-glass .sps-cd-box{ background:rgba(20,35,46,.72); }
+}
 
 @media (max-width:1200px){ .sps-slider{ width:80%; } .sps-float{ width:430px; left:20%; } .sps-inner{ padding-left:220px; } .sps-prev{ left:-18%; } }
 @media (max-width:992px){

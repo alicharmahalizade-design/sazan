@@ -635,6 +635,7 @@
 		var lb = box.querySelector( '.sps-lightbox' );
 		if ( lb ) {
 			// انتقال به body تا از overflow/transformِ اجداد رها شود (position:fixed مطمئن).
+			if ( box.classList.contains( 'is-glass' ) ) { lb.classList.add( 'is-glass-lb' ); }
 			if ( lb.parentNode !== document.body ) { document.body.appendChild( lb ); }
 			var lbMedia = lb.querySelector( '.sps-lightbox__media' );
 			var lbClose = lb.querySelector( '.sps-lightbox__close' );
