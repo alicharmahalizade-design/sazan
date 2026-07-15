@@ -1,0 +1,208 @@
+/* آزمون سازان — فرانت: تایپ‌فرمی تک‌سوالی، لید، نتیجه، رادار، PDF */
+(function () {
+  'use strict';
+
+  function init(root) {
+    var stage = root.querySelector('.sz-quiz-stage');
+    if (!stage) return;
+
+    // صفحه‌ی نتیجه (لینک پیامک/اشتراک): مستقیم نتیجه را رندر کن
+    var resEl = root.querySelector('.sz-quiz-result-data');
+    if (resEl) {
+      var rd;
+      try { rd = JSON.parse(resEl.textContent); } catch (e) { stage.innerHTML = 'خطا.'; return; }
+      paintResultStandalone(stage, rd);
+      return;
+    }
+
+    var cfgEl = root.querySelector('.sz-quiz-cfg');
+    if (!cfgEl) return;
+    var cfg, quizId = root.getAttribute('data-quiz');
+    try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { stage.innerHTML = 'خطا در بارگذاری.'; return; }
+
+    var answers = {}, step = -1; // -1 = intro
+    var leadFields = cfg.lead || {};
+    var needLead = !!leadFields.required;
+    var totalSteps = cfg.questions.length;
+
+    function h(s) { var d = document.createElement('div'); d.innerHTML = s; return d; }
+    function go(s) { step = s; paint(); }
+
+    function progress() {
+      var done = Math.max(0, step);
+      var pct = totalSteps ? Math.round((done / totalSteps) * 100) : 0;
+      return '<div class="szf-prog"><span style="width:' + pct + '%"></span></div>';
+    }
+
+    function paint() {
+      if (step === -1) return paintIntro();
+      if (step < totalSteps) return paintQuestion(step);
+      if (needLead) return paintLead();
+      return submit();
+    }
+
+    function paintIntro() {
+      var i = cfg.intro || {};
+      stage.innerHTML =
+        '<div class="szf-card szf-intro">' +
+        (i.title ? '<h2>' + escape(i.title) + '</h2>' : '') +
+        (i.desc ? '<div class="szf-desc">' + i.desc + '</div>' : '') +
+        '<button class="szf-btn szf-start">' + escape(i.start_label || 'شروع آزمون') + '</button>' +
+        '</div>';
+      stage.querySelector('.szf-start').onclick = function () { go(0); };
+    }
+
+    function paintQuestion(qi) {
+      var q = cfg.questions[qi];
+      var multi = q.type === 'multi';
+      var html = '<div class="szf-card szf-q">' + progress() +
+        '<div class="szf-qnum">سوال ' + (qi + 1) + ' از ' + totalSteps + '</div>' +
+        '<h3>' + escape(q.text) + '</h3><div class="szf-opts">';
+      var sel = answers[qi];
+      q.opts.forEach(function (label, oi) {
+        var on = multi ? (Array.isArray(sel) && sel.indexOf(oi) > -1) : (sel === oi);
+        html += '<button class="szf-opt' + (on ? ' on' : '') + '" data-oi="' + oi + '">' + escape(label) + '</button>';
+      });
+      html += '</div><div class="szf-nav">' +
+        (qi > 0 ? '<button class="szf-back">قبلی</button>' : '<span></span>') +
+        (multi ? '<button class="szf-next">بعدی</button>' : '') +
+        '</div></div>';
+      stage.innerHTML = html;
+
+      stage.querySelectorAll('.szf-opt').forEach(function (b) {
+        b.onclick = function () {
+          var oi = parseInt(b.getAttribute('data-oi'), 10);
+          if (multi) {
+            var arr = Array.isArray(answers[qi]) ? answers[qi] : [];
+            var idx = arr.indexOf(oi);
+            if (idx > -1) arr.splice(idx, 1); else arr.push(oi);
+            answers[qi] = arr;
+            b.classList.toggle('on');
+          } else {
+            answers[qi] = oi;
+            go(qi + 1); // تک‌گزینه: انتخاب = رفتن به سوال بعد
+          }
+        };
+      });
+      var back = stage.querySelector('.szf-back'); if (back) back.onclick = function () { go(qi - 1); };
+      var next = stage.querySelector('.szf-next'); if (next) next.onclick = function () { go(qi + 1); };
+    }
+
+    function paintLead() {
+      var html = '<div class="szf-card szf-lead">' + progress() +
+        '<h3>برای مشاهده نتیجه، اطلاعات تماس را وارد کنید</h3>';
+      if (leadFields.name) html += inp('name', 'نام و نام خانوادگی', 'text');
+      if (leadFields.mobile) html += inp('mobile', 'شماره موبایل', 'tel');
+      if (leadFields.email) html += inp('email', 'ایمیل', 'email');
+      if (leadFields.company) html += inp('company', 'نام کسب‌وکار', 'text');
+      html += '<div class="szf-err" hidden></div>' +
+        '<div class="szf-nav"><button class="szf-back">قبلی</button><button class="szf-submit szf-btn">مشاهده نتیجه</button></div></div>';
+      stage.innerHTML = html;
+      stage.querySelector('.szf-back').onclick = function () { go(totalSteps - 1); };
+      stage.querySelector('.szf-submit').onclick = submit;
+    }
+
+    function inp(k, label, type) {
+      return '<label class="szf-field">' + label + '<input data-lead="' + k + '" type="' + type + '"></label>';
+    }
+
+    function submit() {
+      var lead = {};
+      stage.querySelectorAll('[data-lead]').forEach(function (el) { lead[el.getAttribute('data-lead')] = el.value.trim(); });
+      var fd = new FormData();
+      fd.append('action', 'sazan_quiz_submit');
+      fd.append('nonce', SazanQuiz.nonce);
+      fd.append('quiz_id', quizId);
+      fd.append('answers', JSON.stringify(answers));
+      fd.append('lead_name', lead.name || '');
+      fd.append('lead_mobile', lead.mobile || '');
+      fd.append('lead_email', lead.email || '');
+      fd.append('lead_company', lead.company || '');
+
+      var btn = stage.querySelector('.szf-submit'); if (btn) { btn.disabled = true; btn.textContent = 'در حال محاسبه…'; }
+
+      fetch(SazanQuiz.ajax, { method: 'POST', credentials: 'same-origin', body: fd })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res.success) { showErr(res.data && res.data.msg || 'خطا'); if (btn) { btn.disabled = false; btn.textContent = 'مشاهده نتیجه'; } return; }
+          paintResult(res.data);
+        })
+        .catch(function () { showErr('خطای ارتباط با سرور.'); if (btn) { btn.disabled = false; btn.textContent = 'مشاهده نتیجه'; } });
+    }
+
+    function showErr(m) {
+      var e = stage.querySelector('.szf-err');
+      if (e) { e.textContent = m; e.hidden = false; } else { alert(m); }
+    }
+
+    function paintResult(d) { paintResultStandalone(stage, d); }
+
+    function escape(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+
+    paint();
+  }
+
+  /* رندر مشترک نتیجه (هم بعد از ارسال، هم در صفحه‌ی توکن) */
+  function paintResultStandalone(stage, d) {
+    function escape(s) { var el = document.createElement('div'); el.textContent = s == null ? '' : s; return el.innerHTML; }
+    var t = d.tier;
+    var html = '<div class="szf-card szf-result" id="szf-report">';
+    html += '<div class="szf-gauge"><svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/>' +
+      '<circle class="fg" cx="60" cy="60" r="52" stroke-dasharray="' + (3.2672 * d.percent) + ' 1000"/></svg>' +
+      '<div class="szf-score"><b>' + d.percent + '</b><span>از ۱۰۰</span></div></div>';
+    if (t) {
+      html += '<h2 class="szf-tier-title">' + escape(t.title) + '</h2>';
+      if (t.message) html += '<p class="szf-tier-msg">' + escape(t.message) + '</p>';
+      if (t.desc) html += '<div class="szf-tier-desc">' + t.desc + '</div>';
+    }
+    if (d.show_radar && d.axes && d.axes.length) {
+      html += '<div class="szf-radar-wrap"><canvas class="szf-radar"></canvas></div>';
+    }
+    if (d.products && d.products.length) {
+      html += '<h3 class="szf-prod-h">پیشنهاد ویژه برای شما</h3><div class="szf-prods">';
+      d.products.forEach(function (p) {
+        html += '<a class="szf-prod" href="' + p.url + '">' +
+          (p.img ? '<img src="' + p.img + '" alt="">' : '') +
+          '<span class="szf-prod-t">' + escape(p.title) + '</span>' +
+          '<span class="szf-prod-p">' + (p.price || '') + '</span></a>';
+      });
+      html += '</div>';
+    }
+    html += '</div>'; // پایان کارت گزارش
+    html += '<div class="szf-result-actions">';
+    if (t && t.cta_url && t.cta_label) html += '<a class="szf-btn" href="' + t.cta_url + '">' + escape(t.cta_label) + '</a>';
+    if (d.show_pdf) html += '<button class="szf-btn szf-ghost szf-pdf">دانلود گزارش PDF</button>';
+    html += '</div>';
+    stage.innerHTML = html;
+
+    if (d.show_radar && d.axes && d.axes.length && window.Chart) {
+      new Chart(stage.querySelector('.szf-radar'), {
+        type: 'radar',
+        data: {
+          labels: d.axes.map(function (a) { return a.label; }),
+          datasets: [{ data: d.axes.map(function (a) { return a.percent; }), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.18)', pointBackgroundColor: '#2563eb' }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 100, ticks: { stepSize: 25 } } } }
+      });
+    }
+    var pdf = stage.querySelector('.szf-pdf');
+    if (pdf) pdf.onclick = function () { makePDF(stage.querySelector('#szf-report')); };
+  }
+
+  /* PDF فارسی: از کارت نتیجه عکس می‌گیریم (رندر مرورگر = فارسی درست) */
+  function makePDF(reportEl) {
+    var jsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if (!reportEl || !window.html2canvas || !jsPDF) { alert('کتابخانه‌ی تولید PDF در دسترس نیست.'); return; }
+    html2canvas(reportEl, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(function (canvas) {
+      var img = canvas.toDataURL('image/jpeg', 0.95);
+      var pdf = new jsPDF('p', 'mm', 'a4');
+      var pw = pdf.internal.pageSize.getWidth();
+      var w = pw - 20, h = canvas.height * w / canvas.width;
+      pdf.addImage(img, 'JPEG', 10, 10, w, h);
+      pdf.save('sazan-report.pdf');
+    }).catch(function () { alert('تولید PDF با خطا مواجه شد.'); });
+  }
+
+  function boot() { document.querySelectorAll('.sz-quiz').forEach(init); }
+  if (document.readyState !== 'loading') boot(); else document.addEventListener('DOMContentLoaded', boot);
+})();

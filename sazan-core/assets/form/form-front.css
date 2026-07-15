@@ -1,0 +1,88 @@
+/* فرم‌ساز سازان — هماهنگ با دیزاین شیشه‌ای تیره RTL سایت */
+.szf{
+  --c:var(--sz-cyan,#00b6f1); --o:var(--sz-accent,#f7941d); --o2:var(--sz-accent2,#d97f12);
+  --card:rgba(255,255,255,.04); --bd:var(--sz-border,#1d3744);
+  --txt:var(--sz-text,#e8f0f4); --mut:var(--sz-muted,#9fb3bf);
+  direction:rtl; color:var(--txt); font-family:inherit;
+  background:linear-gradient(160deg,rgba(0,182,241,.06),rgba(0,0,20,.4));
+  border:1px solid var(--bd); border-radius:var(--sz-radius,18px);
+  padding:28px; backdrop-filter:blur(14px); position:relative; overflow:hidden;
+}
+.szf::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(420px 200px at 90% -10%,rgba(0,182,241,.18),transparent),
+  radial-gradient(360px 200px at 0% 110%,rgba(247,148,29,.14),transparent);}
+.szf>*{position:relative;z-index:1;}
+.szf-empty{color:var(--mut);text-align:center;margin:0;}
+
+.szf-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.szf-full{grid-column:1 / -1;}
+.szf-half{grid-column:span 1;}
+@media(max-width:640px){.szf-grid{grid-template-columns:1fr;}.szf-half{grid-column:1 / -1;}}
+
+.szf-field{display:flex;flex-direction:column;gap:7px;}
+.szf-field>span{font-size:13.5px;color:var(--mut);font-weight:600;}
+.szf-field>span i{color:var(--o);font-style:normal;}
+.szf-field input,.szf-field textarea,.szf-field select{
+  width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--bd);
+  border-radius:12px;padding:12px 14px;color:var(--txt);font-size:15px;font-family:inherit;
+  transition:border-color .2s,box-shadow .2s;
+}
+.szf-field textarea{resize:vertical;min-height:96px;}
+.szf-field select{appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+  background-position:left 18px center,left 13px center;background-size:5px 5px,5px 5px;background-repeat:no-repeat;}
+.szf-field select option{background:#0b1722;color:var(--txt);}
+.szf-field input:focus,.szf-field textarea:focus,.szf-field select:focus{
+  outline:none;border-color:var(--c);box-shadow:0 0 0 3px rgba(0,182,241,.18);}
+.szf-field input::placeholder,.szf-field textarea::placeholder{color:#5f7682;}
+.szf-date-display{cursor:pointer;}
+
+/* تقویم شمسی (مشترک با فرم مشاوره) */
+.szf-cal{margin-top:10px;background:rgba(8,14,28,.96);border:1px solid var(--bd);
+  border-radius:14px;padding:14px;width:300px;max-width:100%;box-shadow:0 18px 50px rgba(0,0,0,.5);}
+.szf-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-weight:700;}
+.szf-nav{background:var(--card);border:1px solid var(--bd);color:var(--txt);width:32px;height:32px;
+  border-radius:9px;cursor:pointer;font-size:18px;line-height:1;}
+.szf-nav:hover{border-color:var(--c);color:var(--c);}
+.szf-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+.szf-dow{font-size:12px;color:var(--mut);padding:4px 0;}
+.szf-day{background:transparent;border:1px solid transparent;border-radius:9px;color:var(--txt);
+  padding:8px 0;cursor:pointer;font-size:14px;transition:.15s;}
+.szf-day:hover:not(:disabled){background:var(--card);border-color:var(--bd);}
+.szf-day.is-today{border-color:var(--o);color:var(--o);}
+.szf-day.is-sel{background:linear-gradient(135deg,var(--c),#0090c4);color:#fff;}
+.szf-day.is-past{opacity:.3;cursor:not-allowed;}
+
+.szf-otp{margin-top:14px;}
+
+.szf-submit{margin-top:22px;width:100%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--o),var(--o2));color:#fff;font-size:16px;font-weight:700;
+  padding:15px;border-radius:13px;font-family:inherit;transition:.2s;
+  box-shadow:0 10px 28px rgba(247,148,29,.32);}
+.szf-submit:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(247,148,29,.45);}
+.szf-submit.is-loading{opacity:.6;pointer-events:none;}
+.szf-submit.is-loading::after{content:"...";}
+
+.szf-msg{margin-top:14px;padding:12px 14px;border-radius:11px;font-size:14px;}
+.szf-msg.is-err{background:rgba(255,77,79,.12);border:1px solid rgba(255,77,79,.4);color:#ff9b9c;}
+.szf-msg:not(.is-err){background:rgba(0,182,241,.1);border:1px solid rgba(0,182,241,.35);color:#9fe3ff;}
+
+.szf-done{text-align:center;padding:30px 10px;color:var(--c);}
+.szf-done-msg{color:var(--txt);font-size:16px;line-height:1.9;margin-top:14px;}
+
+/* ===== مودال پاپ‌آپ ===== */
+.szf-modal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;}
+.szf-modal[hidden]{display:none;}
+.szf-modal-overlay{position:absolute;inset:0;background:rgba(0,4,14,.74);backdrop-filter:blur(4px);}
+.szf-modal-box{position:relative;z-index:1;width:100%;max-width:620px;max-height:92vh;overflow:auto;
+  border-radius:var(--sz-radius,18px);animation:szfPop .28s cubic-bezier(.2,.8,.25,1);}
+.szf-modal-box .szf{border-radius:inherit;}
+.szf-modal-close{position:absolute;top:14px;left:14px;z-index:5;width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--sz-border,#1d3744);background:rgba(255,255,255,.06);color:var(--sz-text,#e8f0f4);
+  font-size:24px;line-height:1;cursor:pointer;transition:.18s;}
+.szf-modal-close:hover{background:var(--sz-accent,#f7941d);border-color:transparent;color:#fff;transform:rotate(90deg);}
+@keyframes szfPop{from{opacity:0;transform:translateY(18px) scale(.97);}to{opacity:1;transform:none;}}
+body.szf-modal-open{overflow:hidden;}
+
+/* دکمه‌ی فراخوان (شورت‌کد پاپ‌آپ) */
+.szf-trigger{cursor:pointer;border:none;font-family:inherit;}
