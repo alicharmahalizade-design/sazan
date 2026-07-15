@@ -1724,6 +1724,11 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .sazan-prodslider.anim-rise  .sps-item{ transform:translateY(56px); }
 .sazan-prodslider.anim-flip{ perspective:1400px; }
 .sazan-prodslider.anim-flip  .sps-item{ transform:rotateY(22deg); transform-origin:80% 50%; }
+/* آیتمِ فعال باید «بنشیند» (تخت شود)؛ ویژگیِ بالاتر تا بر قانونِ ورود غلبه کند */
+.sazan-prodslider.anim-slide .sps-item.is-active,
+.sazan-prodslider.anim-zoom  .sps-item.is-active,
+.sazan-prodslider.anim-rise  .sps-item.is-active,
+.sazan-prodslider.anim-flip  .sps-item.is-active{ transform:none; }
 .sps-card{ height:100%; display:flex; align-items:center; width:100%; overflow:hidden; position:relative; border-radius:var(--sps-radius); }
 .sps-cover{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:var(--sps-radius); }
 .sps-tint{ position:absolute; inset:0; border-radius:var(--sps-radius); pointer-events:none;
@@ -1918,24 +1923,40 @@ body.sz-hero-modal-open{ overflow:hidden; }
 
 @media (max-width:1200px){ .sps-slider{ width:80%; } .sps-float{ width:430px; left:20%; } .sps-inner{ padding-left:220px; } .sps-prev{ left:-18%; } }
 @media (max-width:992px){
-	.sps-content{ flex-direction:column; height:auto; padding:28px 0 40px; }
-	.sps-content .sps-shape{ position:relative; width:92% !important; height:240px; left:50%; transform:translateX(-50%); align-items:flex-start; }
+	.sazan-prodslider{ max-width:100%; overflow:hidden; }
+	.sps-content{ flex-direction:column; height:auto; padding:28px 14px 42px; }
+	.sps-content .sps-shape{ position:relative; width:92% !important; height:240px; left:auto; transform:none; align-items:flex-start; }
 	.sps-shape img{ transform:none; position:relative; left:auto; width:100%; height:100%; object-position:top center; margin:auto; }
-	.sps-content .sps-float{ position:relative; left:50%; width:360px !important; height:300px; margin-top:-150px;
-		transform:translateX(-50%) translate(var(--sps-ox,0px),var(--sps-oy,0px)); }
+	.sps-content .sps-float{ position:relative; left:auto; width:80% !important; max-width:340px; height:300px; margin:-150px auto 0;
+		transform:translate(var(--sps-ox,0px),var(--sps-oy,0px)); }
 	.sps-content .sps-float__item img{ max-height:290px !important; }
 	.sps-vtext{ display:none; }
-	.sps-slider{ position:relative; top:0; transform:none; left:50%; transform:translateX(-50%); width:88%; height:auto; margin-top:20px; }
+	.sps-slider{ position:relative; top:0; left:auto; transform:none; width:100%; max-width:460px; margin:20px auto 0; height:auto; }
 	.sps-item{ position:absolute; } .sps-item.is-active{ position:relative; transform:none; }
-	.sps-inner{ padding:26px 40px 40px; text-align:center; }
-	.sps-ctr{ justify-content:center; }
+	.sps-inner{ padding:34px 22px 34px; text-align:center; }
+	/* چیدمانِ چیپ‌ها + گیج به‌صورتِ ستونی تا در موبایل سرریز نشود */
+	.sps-ctr{ flex-direction:column; align-items:center; gap:14px; margin-top:16px; }
+	.sps-hr{ display:none; }
+	.sps-labels{ width:100%; }
 	.sps-chips, .sps-rating, .sps-pricerow, .sps-tutor, .sps-countdown{ justify-content:center; }
 	.sps-tutor{ text-align:right; }
 	.sps-bottom{ justify-content:center; }
-	.sps-cart, .sps-fav{ flex:1 1 auto; }
+	.sps-cart, .sps-fav{ flex:1 1 auto; justify-content:center; }
 	.sps-prev, .sps-next{ top:auto; bottom:-26px; }
 	.sps-prev{ left:38%; transform:translate(-50%,0); } .sps-next{ right:38%; transform:translate(50%,0); }
-	.sps-title br{ display:none; }
+}
+/* موبایلِ باریک: عناصرِ کارت جمع‌وجورتر و دکمه‌ها تمام‌عرض */
+@media (max-width:560px){
+	.sps-title{ font-size:clamp(20px,6vw,26px); }
+	.sps-price{ font-size:clamp(22px,6.5vw,30px); }
+	.sps-inner{ padding:40px 16px 30px; }
+	.sps-countdown{ gap:8px; }
+	.sps-countdown__lbl{ width:100%; text-align:center; }
+	.sps-cd-box{ min-width:40px; padding:6px 7px 4px; }
+	.sps-cd-box b{ font-size:15px; }
+	.sps-bottom{ flex-direction:column; gap:12px; }
+	.sps-cart, .sps-fav{ width:100%; }
+	.sps-ribbon{ font-size:11.5px; padding:6px 12px 6px 11px; top:14px; }
 }
 @media (prefers-reduced-motion:reduce){
 	.sps-inner > *, .sps-float__item, .sps-item, .sps-gauge__fg,
@@ -2036,8 +2057,17 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .sazan-services.svc-anim .svc-card.is-in{ opacity:1; transform:none;
 	transition:opacity .6s ease, transform .6s cubic-bezier(.22,1,.36,1); transition-delay:calc(var(--svc-i,0) * .07s); }
 
+/* ریسپانسیو: چیدمانِ ستون‌ها به‌صورتِ fallback (کنترلِ «تعداد ستون» المنتور بر این‌ها اولویت دارد) */
+@media (max-width:900px){ .sazan-services .svc-grid{ grid-template-columns:repeat(2,1fr); } }
 @media (max-width:992px){ .svc-inner{ padding:40px 22px; } }
-@media (max-width:600px){ .svc-inner{ padding:32px 18px; } .svc-card{ padding:26px 22px; } }
+@media (max-width:600px){
+	.sazan-services .svc-grid{ grid-template-columns:1fr; }
+	.svc-inner{ padding:30px 16px; }
+	.svc-card{ padding:26px 22px; max-width:420px; }
+	.svc-head{ margin-bottom:30px; }
+	/* طرحِ ردیفی در موبایل هم آیکن کنارِ متن می‌ماند و مرتب است */
+	.sazan-services.skin-row .svc-card{ max-width:460px; }
+}
 @media (prefers-reduced-motion:reduce){
 	.svc-card, .svc-ic, .svc-btn, .svc-glow,
 	.sazan-services.svc-anim .svc-card{ transition:none !important; animation:none !important; opacity:1 !important; transform:none !important; }
