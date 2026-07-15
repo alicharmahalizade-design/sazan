@@ -32,6 +32,16 @@ class Services extends Widget_Base {
 
 		/* ==================== محتوا: سرتیتر ==================== */
 		$this->start_controls_section( 'sec_head', array( 'label' => esc_html__( 'سرتیتر', 'sazan-core' ) ) );
+		$this->add_control( 'skin', array(
+			'label' => esc_html__( '🎨 طرح نمایش', 'sazan-core' ), 'type' => Controls_Manager::SELECT, 'default' => 'cards',
+			'options' => array(
+				'cards' => esc_html__( 'کارتی (پیش‌فرض)', 'sazan-core' ),
+				'row'   => esc_html__( 'ردیفی/افقی (آیکن کنارِ متن)', 'sazan-core' ),
+				'top'   => esc_html__( 'مینیمالِ وسط‌چین (خطِ رنگیِ بالا)', 'sazan-core' ),
+			),
+			'description' => esc_html__( 'برای طرحِ «ردیفی» ۱ تا ۲ ستون بهتر است.', 'sazan-core' ),
+			'separator' => 'after',
+		) );
 		$this->add_control( 'show_head', array( 'label' => esc_html__( 'نمایش سرتیتر', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
 		$this->add_control( 'kicker', array( 'label' => esc_html__( 'برچسب بالا (کیکر)', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => 'OUR SERVICES', 'condition' => array( 'show_head' => 'yes' ) ) );
 		$this->add_control( 'title', array( 'label' => esc_html__( 'عنوان', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'خدمات ما', 'sazan-core' ), 'condition' => array( 'show_head' => 'yes' ) ) );
@@ -184,7 +194,8 @@ class Services extends Widget_Base {
 		$items = array_values( (array) ( $s['items'] ?? array() ) );
 		if ( empty( $items ) ) { return; }
 
-		$cls = 'sazan-services';
+		$skin = in_array( ( $s['skin'] ?? 'cards' ), array( 'cards', 'row', 'top' ), true ) ? $s['skin'] : 'cards';
+		$cls  = 'sazan-services skin-' . $skin;
 		if ( 'yes' === ( $s['scene'] ?? 'yes' ) )     { $cls .= ' has-scene'; }
 		if ( 'yes' === ( $s['bokeh'] ?? 'yes' ) )     { $cls .= ' has-bokeh'; }
 		if ( 'yes' === ( $s['glass'] ?? 'yes' ) )     { $cls .= ' is-glass'; }
@@ -224,6 +235,7 @@ class Services extends Widget_Base {
 			}
 			echo '</span>';
 
+			echo '<div class="svc-body">';
 			if ( ! empty( $it['title'] ) ) { echo '<h3>' . esc_html( $it['title'] ) . '</h3>'; }
 			if ( ! empty( $it['desc'] ) )  { echo '<p>' . esc_html( $it['desc'] ) . '</p>'; }
 
@@ -234,6 +246,7 @@ class Services extends Widget_Base {
 				echo '<a class="svc-btn" href="' . esc_url( $href ) . '"' . $target . $nofollow . '>' . esc_html( $it['btn_text'] )
 					. '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
+			echo '</div>'; // body
 
 			echo '</article>';
 		}

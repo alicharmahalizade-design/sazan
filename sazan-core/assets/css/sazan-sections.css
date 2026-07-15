@@ -2016,6 +2016,21 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .svc-btn svg{ transition:transform .2s; }
 .svc-card:hover .svc-btn{ gap:11px; color:var(--svc-text); }
 
+/* ===== طرحِ ردیفی/افقی (skin-row): آیکن کنارِ متن ===== */
+.sazan-services.skin-row .svc-card{ display:flex; align-items:flex-start; gap:16px; max-width:none; padding:24px 22px; }
+.sazan-services.skin-row .svc-ic{ margin-bottom:0; flex-shrink:0; width:56px; height:56px; }
+.sazan-services.skin-row .svc-body{ flex:1 1 auto; min-width:0; }
+.sazan-services.skin-row .svc-card h3{ margin-bottom:7px; font-size:18px; }
+.sazan-services.skin-row .svc-card p{ margin-bottom:12px; }
+
+/* ===== طرحِ مینیمالِ وسط‌چین (skin-top): خطِ رنگیِ بالا ===== */
+.sazan-services.skin-top .svc-card{ text-align:center; padding-top:34px; }
+.sazan-services.skin-top .svc-ic{ margin-inline:auto; }
+.sazan-services.skin-top .svc-btn{ justify-content:center; width:100%; }
+.sazan-services.skin-top .svc-card::before{ content:""; position:absolute; top:0; inset-inline:0; height:3px; z-index:2;
+	background:linear-gradient(90deg, var(--svc-accent2), var(--svc-accent)); }
+.sazan-services.skin-top .svc-card::after{ background:radial-gradient(90% 55% at 50% 0%, rgba(255,255,255,.10), transparent 55%); }
+
 /* ورودِ پلکانیِ کارت‌ها (وقتی JS فعال است) */
 .sazan-services.svc-anim .svc-card{ opacity:0; transform:translateY(24px); }
 .sazan-services.svc-anim .svc-card.is-in{ opacity:1; transform:none;
