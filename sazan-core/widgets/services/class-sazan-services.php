@@ -39,7 +39,7 @@ class Services extends Widget_Base {
 				'row'   => esc_html__( 'ردیفی/افقی (آیکن کنارِ متن)', 'sazan-core' ),
 				'top'   => esc_html__( 'مینیمالِ وسط‌چین (خطِ رنگیِ بالا)', 'sazan-core' ),
 			),
-			'description' => esc_html__( 'برای طرحِ «ردیفی» ۱ تا ۲ ستون بهتر است.', 'sazan-core' ),
+			'description' => esc_html__( 'طرحِ «ردیفی» در ۲ و ۳ ستون هم تمیز است (تعدادِ ستون را از بخشِ «خدمات» تنظیم کنید).', 'sazan-core' ),
 			'separator' => 'after',
 		) );
 		$this->add_control( 'show_head', array( 'label' => esc_html__( 'نمایش سرتیتر', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
