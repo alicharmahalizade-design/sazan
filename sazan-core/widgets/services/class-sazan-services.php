@@ -102,6 +102,21 @@ class Services extends Widget_Base {
 			'default' => array( 'unit' => 'px', 'size' => 22 ),
 			'selectors' => array( '{{WRAPPER}} .svc-grid' => 'gap: {{SIZE}}{{UNIT}};' ),
 		) );
+
+		$this->add_control( 'hd_mobile', array( 'label' => esc_html__( '📱 حالت موبایل', 'sazan-core' ), 'type' => Controls_Manager::HEADING, 'separator' => 'before' ) );
+		$this->add_control( 'mobile_carousel', array(
+			'label' => esc_html__( 'اسکرولِ افقیِ کارت‌ها در موبایل', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'label_on' => esc_html__( 'روشن', 'sazan-core' ), 'label_off' => esc_html__( 'خاموش', 'sazan-core' ),
+			'return_value' => 'yes', 'default' => 'yes',
+			'description' => esc_html__( 'در موبایل کارت‌ها به‌صورتِ افقی اسکرول می‌خورند (با پیک‌خوردنِ کارتِ بعدی).', 'sazan-core' ),
+		) );
+		$this->add_control( 'mobile_peek', array(
+			'label' => esc_html__( 'تعدادِ کارتِ نمایان (موبایل)', 'sazan-core' ), 'type' => Controls_Manager::SLIDER,
+			'range' => array( 'px' => array( 'min' => 1.05, 'max' => 2.5, 'step' => 0.05 ) ),
+			'default' => array( 'size' => 1.3 ), 'condition' => array( 'mobile_carousel' => 'yes' ),
+			'selectors' => array( '{{WRAPPER}} .sazan-services' => '--svc-peek: {{SIZE}};' ),
+			'description' => esc_html__( 'مثلاً ۱٫۳ یعنی یک کارت کامل + یک‌سومِ کارتِ بعدی دیده شود.', 'sazan-core' ),
+		) );
 		$this->end_controls_section();
 
 		/* ==================== استایل: رنگ‌ها ==================== */
@@ -194,12 +209,14 @@ class Services extends Widget_Base {
 		$items = array_values( (array) ( $s['items'] ?? array() ) );
 		if ( empty( $items ) ) { return; }
 
-		$skin = in_array( ( $s['skin'] ?? 'cards' ), array( 'cards', 'row', 'top' ), true ) ? $s['skin'] : 'cards';
+		$skin = $s['skin'] ?? 'cards';
+		if ( ! in_array( $skin, array( 'cards', 'row', 'top' ), true ) ) { $skin = 'cards'; }
 		$cls  = 'sazan-services skin-' . $skin;
 		if ( 'yes' === ( $s['scene'] ?? 'yes' ) )     { $cls .= ' has-scene'; }
 		if ( 'yes' === ( $s['bokeh'] ?? 'yes' ) )     { $cls .= ' has-bokeh'; }
 		if ( 'yes' === ( $s['glass'] ?? 'yes' ) )     { $cls .= ' is-glass'; }
 		if ( 'yes' === ( $s['spotlight'] ?? 'yes' ) ) { $cls .= ' has-spot'; }
+		if ( 'yes' === ( $s['mobile_carousel'] ?? 'yes' ) ) { $cls .= ' mob-carousel'; }
 
 		echo '<div class="' . esc_attr( $cls ) . '">';
 		echo '<div class="svc-inner">';

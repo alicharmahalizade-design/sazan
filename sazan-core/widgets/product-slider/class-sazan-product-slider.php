@@ -276,6 +276,18 @@ class Product_Slider extends Widget_Base {
 			'default' => array( 'unit' => 'px', 'size' => 0 ),
 			'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-oy: {{SIZE}}px;' ),
 		) );
+		$this->add_control( 'hd_mobile', array( 'label' => esc_html__( '📱 موبایل', 'sazan-core' ), 'type' => Controls_Manager::HEADING, 'separator' => 'before' ) );
+		$this->add_control( 'mobile_shape', array(
+			'label' => esc_html__( 'نمایشِ بلوکِ آبیِ صحنه در موبایل', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'label_on' => esc_html__( 'روشن', 'sazan-core' ), 'label_off' => esc_html__( 'خاموش', 'sazan-core' ),
+			'return_value' => 'yes', 'default' => 'yes',
+		) );
+		$this->add_control( 'mobile_poster', array(
+			'label' => esc_html__( 'نمایشِ پوستر/عکس در موبایل', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'label_on' => esc_html__( 'روشن', 'sazan-core' ), 'label_off' => esc_html__( 'خاموش', 'sazan-core' ),
+			'return_value' => 'yes', 'default' => 'yes',
+			'description' => esc_html__( 'برای موبایل می‌توانید فقط کارت را نگه دارید (پوستر و بلوکِ آبی پنهان شوند).', 'sazan-core' ),
+		) );
 		$this->end_controls_section();
 
 		/* ==================== محتوا: شمارش معکوس ==================== */
@@ -606,8 +618,11 @@ class Product_Slider extends Widget_Base {
 		$kb   = ( 'yes' === ( $s['kenburns'] ?? '' ) ) ? ' is-kb' : '';
 		$gls  = ( 'yes' === ( $s['glass'] ?? 'yes' ) ) ? ' is-glass' : '';
 		$bok  = ( 'yes' === ( $s['stage_bokeh'] ?? 'yes' ) ) ? ' has-bokeh' : '';
-		$anim = in_array( ( $s['anim'] ?? 'fade' ), array( 'fade', 'slide', 'zoom', 'rise', 'flip' ), true ) ? $s['anim'] : 'fade';
+		$anim = $s['anim'] ?? 'fade';
+		if ( ! in_array( $anim, array( 'fade', 'slide', 'zoom', 'rise', 'flip' ), true ) ) { $anim = 'fade'; }
 		$anim = ' anim-' . $anim;
+		if ( 'yes' !== ( $s['mobile_shape'] ?? 'yes' ) )  { $anim .= ' hide-shape-mob'; }
+		if ( 'yes' !== ( $s['mobile_poster'] ?? 'yes' ) ) { $anim .= ' hide-poster-mob'; }
 
 		$timer_on = ( 'yes' === $s['show_timer'] ) && ! empty( $s['timer_deadline'] );
 
@@ -661,7 +676,8 @@ class Product_Slider extends Widget_Base {
 
 			/* ربانِ گوشه */
 			if ( ! empty( $it['ribbon_text'] ) ) {
-				$rst = in_array( ( $it['ribbon_style'] ?? 'hot' ), array( 'new', 'off', 'hot' ), true ) ? $it['ribbon_style'] : 'hot';
+				$rst = $it['ribbon_style'] ?? 'hot';
+				if ( ! in_array( $rst, array( 'new', 'off', 'hot' ), true ) ) { $rst = 'hot'; }
 				echo '<span class="sps-ribbon sps-ribbon--' . esc_attr( $rst ) . '">' . esc_html( $it['ribbon_text'] ) . '</span>';
 			}
 
