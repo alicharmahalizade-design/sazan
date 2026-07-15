@@ -1646,6 +1646,8 @@ body.sz-hero-modal-open{ overflow:hidden; }
 	--sps-card:rgba(9,20,30,.42); --sps-text:#fff; --sps-mut:#8b93a7; --sps-radius:30px; --sps-h:660px;
 	--sps-new:#22c55e; --sps-off:#ef4444;
 	--sps-blur:18px; --sps-glass:rgba(13,25,35,.35); --sps-glass-bd:rgba(255,255,255,.22);
+	--sps-ox:0px; --sps-oy:0px;
+	--sps-arrow-bg:#fff; --sps-arrow-ic:#1a2530; --sps-arrow-hbg:var(--sps-accent); --sps-arrow-hic:#fff;
 	direction:ltr; font-family:inherit;
 }
 /* راست‌چینِ متن‌ها بدون آینه‌کردنِ چیدمان (تصویر و بلوک رنگی سرِ جای اصلی می‌مانند) */
@@ -1658,7 +1660,7 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .sps-content{ height:var(--sps-h); margin:auto; width:100%; max-width:1050px; display:flex; align-items:center; position:relative; }
 
 /* بلوک رنگی «صحنه» + واترمارک (سمت) */
-.sps-shape{ height:100%; width:50%; position:absolute; top:0; left:0; display:flex; align-items:center; overflow:hidden;
+.sps-shape{ height:100%; width:42%; position:absolute; top:0; left:0; display:flex; align-items:center; overflow:hidden;
 	background:
 		radial-gradient(85% 70% at 70% 34%, rgba(255,255,255,.20), transparent 58%),
 		radial-gradient(70% 60% at 22% 92%, rgba(4,12,20,.30), transparent 60%),
@@ -1670,19 +1672,34 @@ body.sz-hero-modal-open{ overflow:hidden; }
 		radial-gradient(circle at 64% 50%, transparent 0 118px, rgba(255,255,255,.14) 119px 121px, transparent 122px),
 		radial-gradient(circle at 64% 50%, transparent 0 172px, rgba(255,255,255,.09) 173px 175px, transparent 176px),
 		radial-gradient(circle at 64% 50%, transparent 0 232px, rgba(255,255,255,.06) 233px 235px, transparent 236px); }
-/* حباب‌های نرمِ نور (bokeh) — فضا را پُر می‌کند بدون شلوغی */
-.sps-shape::after{ content:""; position:absolute; inset:0; pointer-events:none; z-index:0; filter:blur(1px);
+/* حباب‌های نرمِ نور (bokeh) — فقط وقتی has-bokeh باشد */
+.sazan-prodslider.has-bokeh .sps-shape::after{ content:""; position:absolute; inset:0; pointer-events:none; z-index:0; filter:blur(1px);
 	background:
 		radial-gradient(circle at 16% 22%, rgba(255,255,255,.16), transparent 11%),
 		radial-gradient(circle at 30% 82%, rgba(255,255,255,.10), transparent 9%),
 		radial-gradient(circle at 88% 30%, rgba(255,255,255,.09), transparent 8%),
 		radial-gradient(circle at 78% 88%, rgba(255,255,255,.07), transparent 7%),
 		radial-gradient(circle at 8% 60%, rgba(255,255,255,.06), transparent 6%); }
+
+/* پرتوهای نور (god rays) از بالای صحنه پشتِ سوژه */
+.sps-rays{ position:absolute; inset:0; pointer-events:none; z-index:0; opacity:.55; mix-blend-mode:screen;
+	background:conic-gradient(from 178deg at 62% -8%,
+		transparent 0deg, rgba(255,255,255,.10) 5deg, transparent 11deg,
+		transparent 17deg, rgba(255,255,255,.07) 22deg, transparent 28deg,
+		transparent 34deg, rgba(255,255,255,.11) 39deg, transparent 45deg,
+		transparent 52deg, rgba(255,255,255,.06) 57deg, transparent 63deg);
+	-webkit-mask-image:linear-gradient(to bottom, #000 4%, rgba(0,0,0,.35) 55%, transparent 82%);
+	mask-image:linear-gradient(to bottom, #000 4%, rgba(0,0,0,.35) 55%, transparent 82%); }
+
+/* متنِ عمودیِ کم‌رنگِ کنارِ لبه */
+.sps-vtext{ position:absolute; z-index:1; top:50%; inset-inline-start:16px; transform:translateY(-50%);
+	writing-mode:vertical-rl; text-orientation:mixed; letter-spacing:6px; font-weight:800; font-size:13px;
+	text-transform:uppercase; color:rgba(255,255,255,.16); white-space:nowrap; user-select:none; }
 .sps-shape img{ object-fit:contain; width:510px; max-width:none; display:block; opacity:.16; z-index:1;
 	transform:rotate(-90deg) translateY(-50%); position:absolute; left:10px; object-position:left center; }
 
 /* پوسترِ شناور + نورِ صحنه پشتِ آن */
-.sps-float{ position:absolute; z-index:3; width:500px; left:25%; transform:translateX(-45%) translate3d(var(--sps-px,0px),var(--sps-py,0px),0); transition:transform .2s ease-out; max-height:520px; height:100%; pointer-events:none; }
+.sps-float{ position:absolute; z-index:3; width:500px; left:25%; transform:translateX(-45%) translate(var(--sps-ox,0px),var(--sps-oy,0px)) translate3d(var(--sps-px,0px),var(--sps-py,0px),0); transition:transform .2s ease-out; max-height:520px; height:100%; pointer-events:none; }
 .sps-float::before{ content:""; position:absolute; left:48%; top:50%; width:118%; padding-bottom:118%; transform:translate(-50%,-50%);
 	border-radius:50%; z-index:-1; filter:blur(8px);
 	background:radial-gradient(circle, rgba(255,255,255,.22), rgba(0,182,241,.14) 40%, transparent 68%); }
@@ -1698,8 +1715,15 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .sps-slider{ width:75%; height:85%; border-radius:var(--sps-radius); box-shadow:0 28px 79px 0 rgba(10,22,31,.35);
 	position:absolute; top:50%; right:0; transform:translateY(-50%); }
 .sps-wrp{ height:100%; position:relative; }
-.sps-item{ position:absolute; inset:0; height:100%; width:100%; opacity:0; visibility:hidden; transition:opacity .6s ease; }
-.sps-item.is-active{ opacity:1; visibility:visible; position:relative; }
+.sps-item{ position:absolute; inset:0; height:100%; width:100%; opacity:0; visibility:hidden;
+	transition:opacity .6s ease, transform .6s cubic-bezier(.22,1,.36,1); }
+.sps-item.is-active{ opacity:1; visibility:visible; position:relative; transform:none; }
+/* حالت‌های جابه‌جاییِ اسلاید (روی آیتمِ درحال‌ورود اعمال می‌شود) */
+.sazan-prodslider.anim-slide .sps-item{ transform:translateX(64px); }
+.sazan-prodslider.anim-zoom  .sps-item{ transform:scale(.9); }
+.sazan-prodslider.anim-rise  .sps-item{ transform:translateY(56px); }
+.sazan-prodslider.anim-flip{ perspective:1400px; }
+.sazan-prodslider.anim-flip  .sps-item{ transform:rotateY(22deg); transform-origin:80% 50%; }
 .sps-card{ height:100%; display:flex; align-items:center; width:100%; overflow:hidden; position:relative; border-radius:var(--sps-radius); }
 .sps-cover{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:var(--sps-radius); }
 .sps-tint{ position:absolute; inset:0; border-radius:var(--sps-radius); pointer-events:none;
@@ -1743,37 +1767,42 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .sps-inf__num{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:800; }
 .sps-inf__title{ font-weight:700; letter-spacing:1px; font-size:15px; opacity:.92; }
 
-.sps-bottom{ margin-top:18px; display:flex; align-items:center; flex-wrap:wrap; gap:16px; }
-.sps-cart{ display:inline-flex; align-items:center; justify-content:center; box-shadow:0 10px 40px -6px rgba(0,182,241,.55);
-	background-image:linear-gradient(-45deg, var(--sps-accent2) 0%, var(--sps-accent) 100%); border:none; color:#fff;
-	padding:13px 30px; border-radius:50px; min-height:50px; font-weight:800; font-size:14px; letter-spacing:1px;
-	text-decoration:none; cursor:pointer; transition:transform .2s, box-shadow .2s; }
+.sps-bottom{ margin-top:18px; display:flex; align-items:center; flex-wrap:wrap; gap:14px; }
+/* هر دو دکمه هم‌ابعاد و هم‌گردی؛ اصلی پُر، دوم شیشه‌ای/خط‌دار */
+.sps-cart, .sps-fav{ display:inline-flex; align-items:center; justify-content:center; gap:8px;
+	min-height:52px; padding:13px 28px; border-radius:16px; font-weight:800; font-size:14px; letter-spacing:.6px;
+	text-decoration:none; cursor:pointer; box-sizing:border-box; transition:transform .2s, box-shadow .2s, background .2s, border-color .2s, color .2s; }
+.sps-cart{ background-image:linear-gradient(-45deg, var(--sps-accent2) 0%, var(--sps-accent) 100%); border:1.5px solid transparent; color:#fff;
+	box-shadow:0 10px 40px -6px rgba(0,182,241,.55); }
 .sps-cart:hover{ transform:translateY(-2px); box-shadow:0 16px 46px -8px rgba(0,182,241,.7); }
-.sps-fav{ color:var(--sps-mut); background:none; border:none; display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-weight:700; font-size:13px; letter-spacing:1px; text-decoration:none; transition:color .2s; }
-.sps-fav:hover{ color:var(--sps-text); }
+.sps-fav{ color:var(--sps-text); background:rgba(255,255,255,.06); border:1.5px solid var(--sps-glass-bd,rgba(255,255,255,.22));
+	-webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+.sps-fav:hover{ transform:translateY(-2px); background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.42); }
 .sps-fav__ic{ display:inline-grid; place-items:center; }
 .sps-fav__ic svg{ transition:.25s; }
 .sps-fav--toggle.is-fav .sps-fav__ic svg{ fill:var(--sps-accent); stroke:var(--sps-accent); transform:scale(1.15); }
-.sps-fav--toggle.is-fav{ color:var(--sps-text); }
+.sps-fav--toggle.is-fav{ border-color:var(--sps-accent); }
 
 /* فلش‌ها */
 .sps-prev, .sps-next{ z-index:22; display:inline-flex; justify-content:center; align-items:center; border:none;
-	width:61px; height:61px; border-radius:50%; position:absolute; top:50%; cursor:pointer; color:#1a2530;
-	background:#fff; box-shadow:0 18px 40px -12px rgba(0,0,0,.55);
+	width:61px; height:61px; border-radius:50%; position:absolute; top:50%; cursor:pointer; color:var(--sps-arrow-ic,#1a2530);
+	background:var(--sps-arrow-bg,#fff); box-shadow:0 18px 40px -12px rgba(0,0,0,.55);
 	transition:transform .2s, opacity .2s, box-shadow .2s, background .2s, color .2s; }
-.sps-prev:hover, .sps-next:hover{ background:var(--sps-accent); color:#fff; box-shadow:0 20px 44px -12px rgba(0,182,241,.6); }
+.sps-prev:hover, .sps-next:hover{ background:var(--sps-arrow-hbg,var(--sps-accent)); color:var(--sps-arrow-hic,#fff); box-shadow:0 20px 44px -12px rgba(0,182,241,.6); }
 .sps-prev{ left:-26%; transform:translate(-50%,-50%); }
 .sps-next{ right:0; transform:translate(50%,-50%); }
 .sps-prev.is-disabled, .sps-next.is-disabled{ opacity:.35; cursor:not-allowed; pointer-events:none; }
 
 /* ===== شمارش معکوس ===== */
-.sps-countdown{ margin-top:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.sps-countdown__lbl{ font-weight:700; letter-spacing:1px; font-size:13px; opacity:.85; }
-.sps-countdown__boxes{ display:flex; gap:8px; direction:ltr; }
-.sps-cd-box{ min-width:48px; text-align:center; padding:7px 7px 5px; border-radius:11px;
-	background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(6px); }
-.sps-cd-box b{ display:block; font-size:19px; font-weight:900; line-height:1; color:var(--sps-text); font-variant-numeric:tabular-nums; }
-.sps-cd-box i{ display:block; margin-top:4px; font-size:9.5px; font-style:normal; font-weight:700; letter-spacing:.3px; color:var(--sps-mut); }
+.sps-countdown{ margin-top:18px; display:flex; align-items:center; gap:11px; flex-wrap:wrap; }
+.sps-countdown__lbl{ font-weight:700; letter-spacing:.5px; font-size:12.5px; opacity:.8; }
+.sps-countdown__boxes{ display:inline-flex; align-items:stretch; direction:ltr; border-radius:12px; overflow:hidden;
+	background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); }
+.sps-cd-box{ min-width:44px; text-align:center; padding:5px 10px 4px; background:none;
+	border-inline-end:1px solid rgba(255,255,255,.10); }
+.sps-cd-box:last-child{ border-inline-end:none; }
+.sps-cd-box b{ display:block; font-size:16px; font-weight:900; line-height:1.05; color:var(--sps-text); font-variant-numeric:tabular-nums; }
+.sps-cd-box i{ display:block; margin-top:2px; font-size:9px; font-style:normal; font-weight:700; letter-spacing:.2px; color:var(--sps-mut); }
 .sps-cd-box.is-accent b{ color:var(--sps-accent); }
 .sps-countdown.is-ended .sps-countdown__boxes{ display:none; }
 .sps-countdown__done{ display:none; font-weight:800; color:var(--sps-accent); font-size:15px; }
@@ -1874,7 +1903,7 @@ body.sz-hero-modal-open{ overflow:hidden; }
 /* چیپ‌ها و جعبه‌ها هم شیشه‌ای می‌شوند */
 .sazan-prodslider.is-glass .sps-chip{ background:rgba(255,255,255,.09); border-color:var(--sps-glass-bd);
 	-webkit-backdrop-filter:blur(calc(var(--sps-blur) * .6)); backdrop-filter:blur(calc(var(--sps-blur) * .6)); }
-.sazan-prodslider.is-glass .sps-cd-box{ background:rgba(255,255,255,.10); border-color:var(--sps-glass-bd);
+.sazan-prodslider.is-glass .sps-countdown__boxes{ background:rgba(255,255,255,.09); border-color:var(--sps-glass-bd);
 	-webkit-backdrop-filter:blur(calc(var(--sps-blur) * .55)); backdrop-filter:blur(calc(var(--sps-blur) * .55)); }
 .sazan-prodslider.is-glass .sps-cap__track{ -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
 .sazan-prodslider.is-glass .sps-tutor__ava{ -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); border-color:var(--sps-glass-bd); }
@@ -1890,16 +1919,20 @@ body.sz-hero-modal-open{ overflow:hidden; }
 @media (max-width:1200px){ .sps-slider{ width:80%; } .sps-float{ width:430px; left:20%; } .sps-inner{ padding-left:220px; } .sps-prev{ left:-18%; } }
 @media (max-width:992px){
 	.sps-content{ flex-direction:column; height:auto; padding:28px 0 40px; }
-	.sps-shape{ position:relative; width:92%; height:240px; left:50%; transform:translateX(-50%); align-items:flex-start; }
+	.sps-content .sps-shape{ position:relative; width:92% !important; height:240px; left:50%; transform:translateX(-50%); align-items:flex-start; }
 	.sps-shape img{ transform:none; position:relative; left:auto; width:100%; height:100%; object-position:top center; margin:auto; }
-	.sps-float{ position:relative; left:50%; transform:translateX(-50%); width:360px; height:300px; margin-top:-150px; }
+	.sps-content .sps-float{ position:relative; left:50%; width:360px !important; height:300px; margin-top:-150px;
+		transform:translateX(-50%) translate(var(--sps-ox,0px),var(--sps-oy,0px)); }
+	.sps-content .sps-float__item img{ max-height:290px !important; }
+	.sps-vtext{ display:none; }
 	.sps-slider{ position:relative; top:0; transform:none; left:50%; transform:translateX(-50%); width:88%; height:auto; margin-top:20px; }
-	.sps-item{ position:absolute; } .sps-item.is-active{ position:relative; }
+	.sps-item{ position:absolute; } .sps-item.is-active{ position:relative; transform:none; }
 	.sps-inner{ padding:26px 40px 40px; text-align:center; }
 	.sps-ctr{ justify-content:center; }
-	.sps-chips, .sps-rating, .sps-pricerow, .sps-tutor{ justify-content:center; }
+	.sps-chips, .sps-rating, .sps-pricerow, .sps-tutor, .sps-countdown{ justify-content:center; }
 	.sps-tutor{ text-align:right; }
 	.sps-bottom{ justify-content:center; }
+	.sps-cart, .sps-fav{ flex:1 1 auto; }
 	.sps-prev, .sps-next{ top:auto; bottom:-26px; }
 	.sps-prev{ left:38%; transform:translate(-50%,0); } .sps-next{ right:38%; transform:translate(50%,0); }
 	.sps-title br{ display:none; }

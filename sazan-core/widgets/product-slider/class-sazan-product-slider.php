@@ -193,8 +193,35 @@ class Product_Slider extends Widget_Base {
 		$this->end_controls_section();
 
 		/* ==================== محتوا: واترمارک و اسلایدر ==================== */
-		$this->start_controls_section( 'sec_general', array( 'label' => esc_html__( 'واترمارک و اسلایدر', 'sazan-core' ) ) );
-		$this->add_control( 'watermark', array( 'label' => esc_html__( 'لوگو/واترمارک پس‌زمینه', 'sazan-core' ), 'type' => Controls_Manager::MEDIA, 'description' => esc_html__( 'در بلوکِ رنگیِ سمت، کج و کم‌رنگ نمایش داده می‌شود.', 'sazan-core' ) ) );
+		$this->start_controls_section( 'sec_general', array( 'label' => esc_html__( 'صحنه، ناوبری و اسلایدر', 'sazan-core' ) ) );
+
+		/* صحنه (بلوک رنگی) */
+		$this->add_control( 'anim', array(
+			'label' => esc_html__( '🎞️ حالتِ جابه‌جاییِ اسلاید', 'sazan-core' ), 'type' => Controls_Manager::SELECT, 'default' => 'fade',
+			'options' => array(
+				'fade'  => esc_html__( 'محو (کراس‌فِید)', 'sazan-core' ),
+				'slide' => esc_html__( 'سُر خوردن از کنار', 'sazan-core' ),
+				'zoom'  => esc_html__( 'زوم (بزرگ‌شدن)', 'sazan-core' ),
+				'rise'  => esc_html__( 'بالا آمدن از پایین', 'sazan-core' ),
+				'flip'  => esc_html__( 'چرخشِ سه‌بعدی', 'sazan-core' ),
+			),
+		) );
+		$this->add_control( 'stage_rays', array(
+			'label' => esc_html__( '🌟 پرتوهای نور (god rays)', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'return_value' => 'yes', 'default' => 'yes', 'separator' => 'before',
+			'description' => esc_html__( 'پرتوهای نور از بالای صحنه پشتِ سوژه.', 'sazan-core' ),
+		) );
+		$this->add_control( 'stage_bokeh', array(
+			'label' => esc_html__( 'حباب‌های نرمِ نور (bokeh)', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'return_value' => 'yes', 'default' => 'yes',
+		) );
+		$this->add_control( 'stage_text', array(
+			'label' => esc_html__( 'متنِ عمودیِ کنارِ صحنه', 'sazan-core' ), 'type' => Controls_Manager::TEXT,
+			'default' => 'SAZAN ACADEMY', 'separator' => 'before',
+			'description' => esc_html__( 'کم‌رنگ کنارِ لبه‌ی بلوکِ رنگی. خالی = بدون متن.', 'sazan-core' ),
+		) );
+		$this->add_control( 'watermark', array( 'label' => esc_html__( 'لوگو/واترمارک پس‌زمینه', 'sazan-core' ), 'type' => Controls_Manager::MEDIA, 'separator' => 'before', 'description' => esc_html__( 'در بلوکِ رنگیِ سمت، کج و کم‌رنگ نمایش داده می‌شود.', 'sazan-core' ) ) );
+
 		$this->add_control( 'show_arrows', array( 'label' => esc_html__( 'نمایش فلش‌ها', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes', 'separator' => 'before' ) );
 		$this->add_control( 'loop', array( 'label' => esc_html__( 'حلقه‌ای (بی‌انتها)', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => '' ) );
 		$this->add_control( 'autoplay', array( 'label' => esc_html__( 'پخش خودکار', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => '' ) );
@@ -216,6 +243,38 @@ class Product_Slider extends Widget_Base {
 			'label' => esc_html__( 'متن‌ها راست‌چین', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
 			'return_value' => 'yes', 'default' => 'yes',
 			'description' => esc_html__( 'فقط متن‌ها راست‌چین می‌شوند؛ تصویر و بلوک رنگی سرِ جای اصلی (سمت چپ) می‌مانند.', 'sazan-core' ),
+		) );
+		$this->end_controls_section();
+
+		/* ==================== محتوا: پوستر و صحنه (ابعاد و جابه‌جایی) ==================== */
+		$this->start_controls_section( 'sec_poster', array( 'label' => esc_html__( 'پوستر و صحنه (ابعاد و جابه‌جایی)', 'sazan-core' ) ) );
+		$this->add_control( 'shape_w', array(
+			'label' => esc_html__( 'پهنای بلوکِ رنگی (صحنه) — دسکتاپ', 'sazan-core' ), 'type' => Controls_Manager::SLIDER,
+			'size_units' => array( '%' ), 'range' => array( '%' => array( 'min' => 25, 'max' => 60 ) ),
+			'default' => array( 'unit' => '%', 'size' => 42 ),
+			'selectors' => array( '{{WRAPPER}} .sps-content .sps-shape' => 'width: {{SIZE}}%;' ),
+			'description' => esc_html__( 'کوچک‌ترش کنید تا پوستر و کارت بیشتر دیده شوند. (در موبایل خودکار تمام‌عرض می‌شود.)', 'sazan-core' ),
+		) );
+		$this->add_control( 'poster_size', array(
+			'label' => esc_html__( '🔍 اندازه‌ی پوستر — دسکتاپ', 'sazan-core' ), 'type' => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ), 'range' => array( 'px' => array( 'min' => 280, 'max' => 720 ) ),
+			'default' => array( 'unit' => 'px', 'size' => 500 ), 'separator' => 'before',
+			'selectors' => array(
+				'{{WRAPPER}} .sps-content .sps-float' => 'width: {{SIZE}}px;',
+				'{{WRAPPER}} .sps-content .sps-float__item img' => 'max-height: {{SIZE}}px;',
+			),
+		) );
+		$this->add_responsive_control( 'poster_x', array(
+			'label' => esc_html__( '↔️ جابه‌جاییِ افقیِ پوستر', 'sazan-core' ), 'type' => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ), 'range' => array( 'px' => array( 'min' => -400, 'max' => 400 ) ),
+			'default' => array( 'unit' => 'px', 'size' => 0 ),
+			'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-ox: {{SIZE}}px;' ),
+		) );
+		$this->add_responsive_control( 'poster_y', array(
+			'label' => esc_html__( '↕️ جابه‌جاییِ عمودیِ پوستر', 'sazan-core' ), 'type' => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ), 'range' => array( 'px' => array( 'min' => -300, 'max' => 300 ) ),
+			'default' => array( 'unit' => 'px', 'size' => 0 ),
+			'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-oy: {{SIZE}}px;' ),
 		) );
 		$this->end_controls_section();
 
@@ -246,6 +305,12 @@ class Product_Slider extends Widget_Base {
 		$this->add_control( 'c_card', array( 'label' => esc_html__( 'ته‌رنگِ کارت (روی عکس)', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => 'rgba(9,20,30,0.42)', 'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-card: {{VALUE}};' ) ) );
 		$this->add_control( 'c_text', array( 'label' => esc_html__( 'رنگ متن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-text: {{VALUE}};' ) ) );
 		$this->add_control( 'c_mut', array( 'label' => esc_html__( 'رنگ متن کم‌رنگ', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#8b93a7', 'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-mut: {{VALUE}};' ) ) );
+
+		$this->add_control( 'hd_arrows', array( 'label' => esc_html__( 'فلش‌های ناوبری', 'sazan-core' ), 'type' => Controls_Manager::HEADING, 'separator' => 'before' ) );
+		$this->add_control( 'c_arrow_bg', array( 'label' => esc_html__( 'پس‌زمینه‌ی فلش', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-arrow-bg: {{VALUE}};' ) ) );
+		$this->add_control( 'c_arrow_ic', array( 'label' => esc_html__( 'رنگ آیکنِ فلش', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1a2530', 'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-arrow-ic: {{VALUE}};' ) ) );
+		$this->add_control( 'c_arrow_hbg', array( 'label' => esc_html__( 'پس‌زمینه‌ی فلش (هاور)', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '', 'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-arrow-hbg: {{VALUE}};' ), 'description' => esc_html__( 'خالی = رنگ برند.', 'sazan-core' ) ) );
+		$this->add_control( 'c_arrow_hic', array( 'label' => esc_html__( 'رنگ آیکنِ فلش (هاور)', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-prodslider' => '--sps-arrow-hic: {{VALUE}};' ) ) );
 		$this->end_controls_section();
 
 		/* ==================== استایل: افکت شیشه‌ای (گلس‌مورفیسم) ==================== */
@@ -540,16 +605,26 @@ class Product_Slider extends Widget_Base {
 		$plx  = ( 'yes' === ( $s['parallax'] ?? '' ) ) ? '1' : '0';
 		$kb   = ( 'yes' === ( $s['kenburns'] ?? '' ) ) ? ' is-kb' : '';
 		$gls  = ( 'yes' === ( $s['glass'] ?? 'yes' ) ) ? ' is-glass' : '';
+		$bok  = ( 'yes' === ( $s['stage_bokeh'] ?? 'yes' ) ) ? ' has-bokeh' : '';
+		$anim = in_array( ( $s['anim'] ?? 'fade' ), array( 'fade', 'slide', 'zoom', 'rise', 'flip' ), true ) ? $s['anim'] : 'fade';
+		$anim = ' anim-' . $anim;
 
 		$timer_on = ( 'yes' === $s['show_timer'] ) && ! empty( $s['timer_deadline'] );
 
-		echo '<div class="sazan-prodslider' . esc_attr( $rtl . $kb . $gls ) . '" data-autoplay="' . esc_attr( $auto ) . '" data-speed="' . esc_attr( (int) $ms ) . '" data-loop="' . esc_attr( $loop ) . '" data-parallax="' . esc_attr( $plx ) . '">';
+		echo '<div class="sazan-prodslider' . esc_attr( $rtl . $kb . $gls . $bok . $anim ) . '" data-autoplay="' . esc_attr( $auto ) . '" data-speed="' . esc_attr( (int) $ms ) . '" data-loop="' . esc_attr( $loop ) . '" data-parallax="' . esc_attr( $plx ) . '">';
 		echo '<div class="sps-wrap"><div class="sps-content">';
 
-		/* بلوک رنگی + واترمارک */
+		/* بلوک رنگی «صحنه»: پرتوهای نور + واترمارک + متنِ عمودی */
 		echo '<div class="sps-shape">';
+		if ( 'yes' === ( $s['stage_rays'] ?? 'yes' ) ) {
+			echo '<span class="sps-rays" aria-hidden="true"></span>';
+		}
 		if ( ! empty( $s['watermark']['url'] ) ) {
 			echo '<img src="' . esc_url( $s['watermark']['url'] ) . '" alt="" loading="lazy">';
+		}
+		$stext = trim( (string) ( $s['stage_text'] ?? '' ) );
+		if ( '' !== $stext ) {
+			echo '<span class="sps-vtext" aria-hidden="true">' . esc_html( $stext ) . '</span>';
 		}
 		echo '</div>';
 
