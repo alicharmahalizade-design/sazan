@@ -20,7 +20,6 @@ class SZC_Admin {
 			'send_sms'      => 'send_sms',
 			'schedule_sms'  => 'schedule_sms',
 			'custom_sms'    => 'custom_sms',
-			'send_msg'      => 'send_msg',
 			'del_activity'  => 'del_activity',
 			'del_contact'   => 'del_contact',
 			'add_contact'   => 'add_contact',
@@ -396,8 +395,6 @@ class SZC_Admin {
 		$blocked     = SZC_Blacklist::is_blocked( $c->mobile );
 		$customs     = SZC_Settings::custom_fields();
 		$cmeta       = SZC_Contacts::get_meta( $c );
-		$bale_on     = class_exists( 'SZC_Messaging' ) && SZC_Messaging::enabled( 'bale' );
-		$rubika_on   = class_exists( 'SZC_Messaging' ) && SZC_Messaging::enabled( 'rubika' );
 		?>
 		<div class="wrap szc-wrap szc-single" data-contact="<?php echo (int) $c->id; ?>">
 			<a href="<?php echo esc_url( self::url( 'szc-contacts' ) ); ?>" class="szc-back">‹ بازگشت به لیست</a>
@@ -425,8 +422,6 @@ class SZC_Admin {
 							<label>ایمیل<input type="email" dir="ltr" data-f="email" value="<?php echo esc_attr( $c->email ); ?>"></label>
 							<label>منبع<input type="text" data-f="source" value="<?php echo esc_attr( $c->source ); ?>"></label>
 							<label>برچسب‌ها<input type="text" data-f="tags" value="<?php echo esc_attr( $c->tags ); ?>" placeholder="با ویرگول جدا کنید"></label>
-							<label>شناسه‌ی بله<input type="text" dir="ltr" data-f="bale_id" value="<?php echo esc_attr( $c->bale_id ?? '' ); ?>" placeholder="chat_id یا نام‌کاربری"></label>
-							<label>شناسه‌ی روبیکا<input type="text" dir="ltr" data-f="rubika_id" value="<?php echo esc_attr( $c->rubika_id ?? '' ); ?>" placeholder="chat_id یا نام‌کاربری"></label>
 							<?php foreach ( $customs as $cf ) : ?>
 								<label><?php echo esc_html( $cf['label'] ); ?><input type="text" data-cf="<?php echo esc_attr( $cf['key'] ); ?>" value="<?php echo esc_attr( $cmeta[ $cf['key'] ] ?? '' ); ?>"></label>
 							<?php endforeach; ?>
@@ -485,16 +480,7 @@ class SZC_Admin {
 								</label>
 								<div class="szc-actions">
 									<button class="button" data-szc-act="custom_sms">ارسال پیامکِ دلخواه</button>
-									<?php if ( $bale_on ) : ?><button class="button szc-btn-bale" data-szc-act="send_channel" data-channel="bale">ارسال با بله</button><?php endif; ?>
-									<?php if ( $rubika_on ) : ?><button class="button szc-btn-rubika" data-szc-act="send_channel" data-channel="rubika">ارسال با روبیکا</button><?php endif; ?>
 								</div>
-								<?php if ( $bale_on || $rubika_on ) : ?>
-									<p class="szc-muted">دکمه‌های بله/روبیکا از «متنِ دلخواه» و در نبودِ آن از «قالبِ انتخاب‌شده» استفاده می‌کنند و به شناسه‌ی همان پیام‌رسانِ مخاطب (بالا) می‌فرستند.</p>
-									<div class="szc-actions">
-										<?php $blk = SZC_Messaging::open_link( $c, 'bale' ); if ( $bale_on && $blk ) : ?><a class="button button-small" href="<?php echo esc_url( $blk ); ?>" target="_blank" rel="noopener">باز کردن در بله ↗</a><?php endif; ?>
-										<?php $rlk = SZC_Messaging::open_link( $c, 'rubika' ); if ( $rubika_on && $rlk ) : ?><a class="button button-small" href="<?php echo esc_url( $rlk ); ?>" target="_blank" rel="noopener">باز کردن در روبیکا ↗</a><?php endif; ?>
-									</div>
-								<?php endif; ?>
 								<?php if ( $c->opt_out ) : ?><p class="szc-muted">این مخاطب لغو دریافت پیام دارد؛ ارسال انجام نمی‌شود.</p><?php endif; ?>
 						<?php endif; ?>
 					</div>
@@ -645,8 +631,6 @@ class SZC_Admin {
 					<label>شهر<input type="text" data-f="city"></label>
 					<label>ایمیل<input type="email" dir="ltr" data-f="email"></label>
 					<label>منبع<input type="text" data-f="source"></label>
-						<label>شناسه‌ی بله<input type="text" dir="ltr" data-f="bale_id" placeholder="chat_id یا نام‌کاربری"></label>
-						<label>شناسه‌ی روبیکا<input type="text" dir="ltr" data-f="rubika_id" placeholder="chat_id یا نام‌کاربری"></label>
 					<label>اولویت
 						<select data-f="priority">
 							<?php foreach ( $prios as $k => $m ) : ?>
@@ -703,7 +687,7 @@ class SZC_Admin {
 	}
 
 	protected static function posted_fields() {
-		$fields = array( 'first_name', 'last_name', 'mobile', 'job', 'company', 'city', 'email', 'source', 'tags', 'bale_id', 'rubika_id', 'priority', 'stage' );
+		$fields = array( 'first_name', 'last_name', 'mobile', 'job', 'company', 'city', 'email', 'source', 'tags', 'priority', 'stage' );
 		$out    = array();
 		foreach ( $fields as $f ) {
 			if ( isset( $_POST[ $f ] ) ) {
@@ -845,51 +829,6 @@ class SZC_Admin {
 		}
 		SZC_Activity::log( (int) $c->id, 'sms', array( 'outcome' => 'sent', 'body' => $text ) );
 		wp_send_json_success( array( 'msg' => 'پیامک دلخواه ارسال شد ✓', 'reload' => true ) );
-	}
-
-	/**
-	 * ارسالِ فوریِ یک پیام به مخاطب از طریقِ کانالِ پیام‌رسان (بله/روبیکا).
-	 * پیام از قالبِ انتخابی یا متنِ آزاد ساخته می‌شود.
-	 */
-	public static function ajax_send_msg() {
-		self::guard();
-		$c       = self::req_contact();
-		$channel = isset( $_POST['channel'] ) ? sanitize_key( $_POST['channel'] ) : '';
-		if ( ! in_array( $channel, array( 'bale', 'rubika' ), true ) ) {
-			wp_send_json_error( array( 'msg' => 'کانالِ نامعتبر.' ) );
-		}
-		if ( ! class_exists( 'SZC_Messaging' ) || ! SZC_Messaging::enabled( $channel ) ) {
-			wp_send_json_error( array( 'msg' => 'کانالِ ' . SZC_Messaging::channel_label( $channel ) . ' فعال نیست.' ) );
-		}
-		if ( $c->opt_out ) {
-			wp_send_json_error( array( 'msg' => 'این مخاطب لغو دریافت پیام دارد.' ) );
-		}
-		if ( SZC_Messaging::contact_peer( $c, $channel ) === '' ) {
-			wp_send_json_error( array( 'msg' => 'ابتدا شناسه‌ی ' . SZC_Messaging::channel_label( $channel ) . 'ِ این مخاطب را ثبت و ذخیره کنید.' ) );
-		}
-
-		// متنِ پیام: از متنِ آزاد یا قالب.
-		$text = isset( $_POST['text'] ) ? trim( (string) wp_unslash( $_POST['text'] ) ) : '';
-		if ( $text === '' ) {
-			$tid = isset( $_POST['template'] ) ? absint( $_POST['template'] ) : 0;
-			$tpl = $tid ? SZC_Templates::get( $tid ) : null;
-			if ( ! $tpl ) {
-				wp_send_json_error( array( 'msg' => 'قالب یا متنی برای ارسال انتخاب نشده است.' ) );
-			}
-			$text = $tpl->body;
-		}
-		$text = SZC_Templates::fill( wp_strip_all_tags( $text ), SZC_Contacts::vars( $c ) );
-		$res  = SZC_Messaging::send_to_contact( $channel, $c, $text );
-
-		SZC_Activity::log( (int) $c->id, 'sms', array(
-			'outcome' => ! empty( $res['ok'] ) ? 'sent' : 'failed',
-			'body'    => '[' . SZC_Messaging::channel_label( $channel ) . '] ' . $text,
-			'meta'    => array( 'channel' => $channel, 'response' => $res['msg'] ?? '' ),
-		) );
-		if ( empty( $res['ok'] ) ) {
-			wp_send_json_error( array( 'msg' => $res['msg'] ?? 'ارسال ناموفق بود.' ) );
-		}
-		wp_send_json_success( array( 'msg' => 'پیام از طریقِ ' . SZC_Messaging::channel_label( $channel ) . ' ارسال شد ✓', 'reload' => true ) );
 	}
 
 	public static function ajax_add_followup() {

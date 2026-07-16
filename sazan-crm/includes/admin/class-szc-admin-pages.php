@@ -324,20 +324,16 @@ class SZC_Admin_Pages {
 		$managers  = SZC_Settings::manager_ids();
 		$agents    = SZC_Settings::agent_ids();
 		$sms_ok    = SZC_SMS::enabled();
-		$bale_ok   = class_exists( 'SZC_Messaging' ) && SZC_Messaging::enabled( 'bale' );
-		$rubika_ok = class_exists( 'SZC_Messaging' ) && SZC_Messaging::enabled( 'rubika' );
 
 		$tabs = array(
 			'access'     => array( 'دسترسی و نقش‌ها', 'users' ),
 			'login'      => array( 'ورودِ کارشناسان', 'idcard' ),
 			'sms'        => array( 'پنل پیامک', 'mail' ),
-			'messengers' => array( 'بله و روبیکا', 'send' ),
 			'auto'       => array( 'اتوماسیون پیامک', 'sparkles' ),
 			'remind'     => array( 'یادآوری‌ها', 'bell' ),
 		);
 		$status = array(
 			'sms'        => $sms_ok,
-			'messengers' => ( $bale_ok || $rubika_ok ),
 		);
 		?>
 		<div class="wrap szc-wrap szc-settings">
@@ -348,8 +344,6 @@ class SZC_Admin_Pages {
 				</div>
 				<div class="szc-settings-badges">
 					<span class="szc-pill <?php echo $sms_ok ? 'is-on' : 'is-off'; ?>">پیامک: <?php echo $sms_ok ? 'فعال' : 'غیرفعال'; ?></span>
-					<span class="szc-pill <?php echo $bale_ok ? 'is-on' : 'is-off'; ?>">بله: <?php echo $bale_ok ? 'فعال' : 'غیرفعال'; ?></span>
-					<span class="szc-pill <?php echo $rubika_ok ? 'is-on' : 'is-off'; ?>">روبیکا: <?php echo $rubika_ok ? 'فعال' : 'غیرفعال'; ?></span>
 				</div>
 			</div>
 
@@ -507,36 +501,6 @@ class SZC_Admin_Pages {
 					</div>
 				</div>
 
-				<!-- ===== بله و روبیکا ===== -->
-				<div class="szc-tabpane" data-pane="messengers" hidden>
-					<div class="szc-scard szc-scard--bale">
-						<div class="szc-scard-h"><h2><?php echo szc_icon( 'bale' ); // phpcs:ignore WordPress.Security.EscapeOutput ?> پیام‌رسانِ بله</h2><p>با ساختِ یک «بات» در بله و واردکردنِ توکنِ آن، می‌توانید برای مخاطبینی که شناسه‌ی بله دارند پیام بفرستید (تکی و همگانی).</p></div>
-						<div class="szc-field szc-field--toggle">
-							<label>فعال‌سازیِ بله</label>
-							<div class="szc-field-c">
-								<label class="szc-switch"><input type="checkbox" name="bale_enabled" value="1" <?php checked( ! empty( $s['bale_enabled'] ) ); ?>><span></span></label>
-								<p class="szc-hint">توکنِ بات را از @BotFather در بله دریافت کنید.</p>
-							</div>
-						</div>
-						<div class="szc-field"><label>توکنِ بات</label><div class="szc-field-c"><input type="text" name="bale_token" value="<?php echo esc_attr( $s['bale_token'] ); ?>" dir="ltr" autocomplete="off" placeholder="123:ABC..."></div></div>
-						<div class="szc-field"><label>آدرس پایه (اختیاری)</label><div class="szc-field-c"><input type="text" name="bale_base" value="<?php echo esc_attr( $s['bale_base'] ); ?>" dir="ltr" placeholder="https://tapi.bale.ai"><p class="szc-hint">پیش‌فرض: <code>https://tapi.bale.ai</code></p></div></div>
-					</div>
-
-					<div class="szc-scard szc-scard--rubika">
-						<div class="szc-scard-h"><h2><?php echo szc_icon( 'rubika' ); // phpcs:ignore WordPress.Security.EscapeOutput ?> پیام‌رسانِ روبیکا</h2><p>با ساختِ یک «بات» در روبیکا و واردکردنِ توکنِ آن، می‌توانید برای مخاطبینی که شناسه‌ی روبیکا دارند پیام بفرستید.</p></div>
-						<div class="szc-field szc-field--toggle">
-							<label>فعال‌سازیِ روبیکا</label>
-							<div class="szc-field-c">
-								<label class="szc-switch"><input type="checkbox" name="rubika_enabled" value="1" <?php checked( ! empty( $s['rubika_enabled'] ) ); ?>><span></span></label>
-								<p class="szc-hint">توکنِ بات را از بخشِ باتِ روبیکا (Rubika Bot) دریافت کنید.</p>
-							</div>
-						</div>
-						<div class="szc-field"><label>توکنِ بات</label><div class="szc-field-c"><input type="text" name="rubika_token" value="<?php echo esc_attr( $s['rubika_token'] ); ?>" dir="ltr" autocomplete="off" placeholder="توکنِ روبیکا"></div></div>
-						<div class="szc-field"><label>آدرس پایه (اختیاری)</label><div class="szc-field-c"><input type="text" name="rubika_base" value="<?php echo esc_attr( $s['rubika_base'] ); ?>" dir="ltr" placeholder="https://botapi.rubika.ir"><p class="szc-hint">پیش‌فرض: <code>https://botapi.rubika.ir</code></p></div></div>
-						<p class="szc-hint">شناسه‌ی بله/روبیکای هر مخاطب را در پرونده‌ی همان مخاطب ثبت کنید. برای ارسالِ همگانی از منوی «ارسال همگانی» استفاده کنید.</p>
-					</div>
-				</div>
-
 				<!-- ===== اتوماسیون ===== -->
 				<div class="szc-tabpane" data-pane="auto" hidden>
 					<div class="szc-scard">
@@ -628,12 +592,6 @@ class SZC_Admin_Pages {
 			'sms_apikey'       => sanitize_text_field( $p['sms_apikey'] ?? '' ),
 			'sms_originator'   => sanitize_text_field( $p['sms_originator'] ?? '' ),
 			'sms_mode'         => ( ( $p['sms_mode'] ?? 'text' ) === 'pattern' ) ? 'pattern' : 'text',
-			'bale_enabled'     => empty( $p['bale_enabled'] ) ? 0 : 1,
-			'bale_token'       => sanitize_text_field( $p['bale_token'] ?? '' ),
-			'bale_base'        => esc_url_raw( $p['bale_base'] ?? '' ),
-			'rubika_enabled'   => empty( $p['rubika_enabled'] ) ? 0 : 1,
-			'rubika_token'     => sanitize_text_field( $p['rubika_token'] ?? '' ),
-			'rubika_base'      => esc_url_raw( $p['rubika_base'] ?? '' ),
 			'send_from'        => min( 23, max( 0, absint( $p['send_from'] ?? 9 ) ) ),
 			'send_to'          => min( 24, max( 1, absint( $p['send_to'] ?? 21 ) ) ),
 			'auto_after_call'  => empty( $p['auto_after_call'] ) ? 0 : 1,
@@ -786,8 +744,6 @@ class SZC_Admin_Pages {
 		$assignees  = $is_manager ? SZC_Settings::assignable_users() : array();
 		$total      = SZC_Contacts::total( SZC_Settings::scope_owner() );
 		$sms_on     = SZC_SMS::enabled();
-		$bale_on    = class_exists( 'SZC_Messaging' ) && SZC_Messaging::enabled( 'bale' );
-		$rubika_on  = class_exists( 'SZC_Messaging' ) && SZC_Messaging::enabled( 'rubika' );
 		$res        = get_transient( 'szc_broadcast_' . get_current_user_id() );
 		if ( $res ) {
 			delete_transient( 'szc_broadcast_' . get_current_user_id() );
@@ -800,12 +756,12 @@ class SZC_Admin_Pages {
 			<?php if ( $res ) : ?>
 				<div class="notice notice-success is-dismissible"><p>
 					<b><?php echo esc_html( szc_fa_digits( $res['queued'] ) ); ?></b> پیام در صفِ ارسال قرار گرفت
-					(<?php echo esc_html( szc_fa_digits( $res['skipped'] ) ); ?> مخاطب رد شد) — کانال: <b><?php echo esc_html( $res['channel_label'] ); ?></b><?php echo $res['scheduled'] ? '، زمان‌بندی: ' . esc_html( $res['scheduled'] ) : '، ارسال از هم‌اکنون'; ?>.
+					(<?php echo esc_html( szc_fa_digits( $res['skipped'] ) ); ?> مخاطب رد شد)<?php echo $res['scheduled'] ? '، زمان‌بندی: ' . esc_html( $res['scheduled'] ) : '، ارسال از هم‌اکنون'; ?>.
 				</p></div>
 			<?php endif; ?>
 
-			<?php if ( ! $sms_on && ! $bale_on && ! $rubika_on ) : ?>
-				<div class="notice notice-warning"><p>هیچ کانالِ ارسالی فعال نیست. ابتدا از <a href="<?php echo esc_url( self::url( 'szc-settings' ) ); ?>">تنظیمات</a> پیامک یا بله/روبیکا را فعال کنید.</p></div>
+			<?php if ( ! $sms_on ) : ?>
+				<div class="notice notice-warning"><p>سرویس پیامک فعال نیست. ابتدا از <a href="<?php echo esc_url( self::url( 'szc-settings' ) ); ?>">تنظیمات</a> پیامک را فعال و کلید/خط را وارد کنید.</p></div>
 			<?php endif; ?>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="szc-broadcast-form" data-nonce="<?php echo esc_attr( wp_create_nonce( 'szc_admin' ) ); ?>">
@@ -841,30 +797,9 @@ class SZC_Admin_Pages {
 							</div>
 						</div>
 
-						<div class="szc-card">
-							<h2>۲) کانالِ ارسال</h2>
-							<div class="szc-channel-pick">
-								<label class="szc-channel <?php echo $sms_on ? '' : 'is-off'; ?>">
-									<input type="radio" name="channel" value="sms" <?php checked( $sms_on ); disabled( ! $sms_on ); ?>>
-									<span class="szc-channel-name">پیامک</span>
-									<span class="szc-channel-note"><?php echo $sms_on ? 'فعال' : 'غیرفعال'; ?></span>
-								</label>
-								<label class="szc-channel <?php echo $bale_on ? '' : 'is-off'; ?>">
-									<input type="radio" name="channel" value="bale" <?php checked( ! $sms_on && $bale_on ); disabled( ! $bale_on ); ?>>
-									<span class="szc-channel-name">بله</span>
-									<span class="szc-channel-note"><?php echo $bale_on ? 'فقط دارندگانِ شناسه‌ی بله' : 'غیرفعال'; ?></span>
-								</label>
-								<label class="szc-channel <?php echo $rubika_on ? '' : 'is-off'; ?>">
-									<input type="radio" name="channel" value="rubika" <?php checked( ! $sms_on && ! $bale_on && $rubika_on ); disabled( ! $rubika_on ); ?>>
-									<span class="szc-channel-name">روبیکا</span>
-									<span class="szc-channel-note"><?php echo $rubika_on ? 'فقط دارندگانِ شناسه‌ی روبیکا' : 'غیرفعال'; ?></span>
-								</label>
-							</div>
-							<p class="szc-muted">برای بله/روبیکا فقط مخاطبینی که شناسه‌ی همان پیام‌رسان را ثبت کرده‌اند پیام می‌گیرند.</p>
-						</div>
 
 						<div class="szc-card">
-							<h2>۳) زمانِ ارسال</h2>
+							<h2>۲) زمانِ ارسال</h2>
 							<div class="szc-seg">
 								<label class="szc-seg-opt"><input type="radio" name="when" value="now" checked> از هم‌اکنون</label>
 								<label class="szc-seg-opt"><input type="radio" name="when" value="schedule"> زمان‌بندی</label>
@@ -878,7 +813,7 @@ class SZC_Admin_Pages {
 
 					<div class="szc-col">
 						<div class="szc-card">
-							<h2>۴) گیرندگان</h2>
+							<h2>۳) گیرندگان</h2>
 							<div class="szc-form2">
 								<label>مرحله
 									<select name="b_stage">
@@ -945,14 +880,10 @@ class SZC_Admin_Pages {
 	public static function handle_broadcast() {
 		self::guard();
 		check_admin_referer( 'szc_broadcast' );
-		$p        = wp_unslash( $_POST );
-		$channel  = in_array( $p['channel'] ?? 'sms', array( 'sms', 'bale', 'rubika' ), true ) ? $p['channel'] : 'sms';
+		$p = wp_unslash( $_POST );
 
-		// کانال باید فعال باشد.
-		$channel_ok = ( $channel === 'sms' ) ? SZC_SMS::enabled()
-			: ( class_exists( 'SZC_Messaging' ) && SZC_Messaging::enabled( $channel ) );
-		if ( ! $channel_ok ) {
-			set_transient( 'szc_broadcast_' . get_current_user_id(), array( 'queued' => 0, 'skipped' => 0, 'channel_label' => self::channel_label( $channel ), 'scheduled' => '' ), 60 );
+		if ( ! SZC_SMS::enabled() ) {
+			set_transient( 'szc_broadcast_' . get_current_user_id(), array( 'queued' => 0, 'skipped' => 0, 'scheduled' => '' ), 60 );
 			wp_safe_redirect( self::url( 'szc-broadcast' ) );
 			exit;
 		}
@@ -972,24 +903,19 @@ class SZC_Admin_Pages {
 
 		if ( ( $p['msg_type'] ?? 'text' ) === 'template' ) {
 			$tid = absint( $p['template_id'] ?? 0 );
-			$r   = SZC_SMS::enqueue_template_bulk( $ids, $tid, $when, $channel );
+			$r   = SZC_SMS::enqueue_template_bulk( $ids, $tid, $when );
 		} else {
 			$text = (string) ( $p['text'] ?? '' );
-			$r    = SZC_SMS::enqueue_text_bulk( $ids, $text, $when, $channel );
+			$r    = SZC_SMS::enqueue_text_bulk( $ids, $text, $when );
 		}
 
 		set_transient( 'szc_broadcast_' . get_current_user_id(), array(
-			'queued'        => (int) $r['queued'],
-			'skipped'       => (int) $r['skipped'],
-			'channel_label' => self::channel_label( $channel ),
-			'scheduled'     => $scheduled_label,
+			'queued'    => (int) $r['queued'],
+			'skipped'   => (int) $r['skipped'],
+			'scheduled' => $scheduled_label,
 		), 60 );
 		wp_safe_redirect( self::url( 'szc-broadcast' ) );
 		exit;
-	}
-
-	protected static function channel_label( $channel ) {
-		return class_exists( 'SZC_Messaging' ) ? SZC_Messaging::channel_label( $channel ) : 'پیامک';
 	}
 
 	/* ==================== اقدام گروهی ==================== */
@@ -1420,7 +1346,7 @@ class SZC_Admin_Pages {
 
 		$out = fopen( 'php://output', 'w' );
 		fwrite( $out, "\xEF\xBB\xBF" ); // BOM برای اکسل فارسی
-		$head = array( 'id', 'نام', 'نام خانوادگی', 'موبایل', 'شغل', 'شرکت', 'شهر', 'ایمیل', 'منبع', 'برچسب‌ها', 'شناسه بله', 'شناسه روبیکا', 'اولویت', 'مرحله', 'کارشناس', 'لغو پیامک', 'آخرین تماس', 'پیگیری بعدی' );
+		$head = array( 'id', 'نام', 'نام خانوادگی', 'موبایل', 'شغل', 'شرکت', 'شهر', 'ایمیل', 'منبع', 'برچسب‌ها', 'اولویت', 'مرحله', 'کارشناس', 'لغو پیامک', 'آخرین تماس', 'پیگیری بعدی' );
 		foreach ( $customs as $cf ) { $head[] = $cf['label']; }
 		fputcsv( $out, $head );
 
@@ -1429,7 +1355,7 @@ class SZC_Admin_Pages {
 			$meta  = SZC_Contacts::get_meta( $c );
 			$line  = array(
 				$c->id, $c->first_name, $c->last_name, $c->mobile, $c->job, $c->company, $c->city, $c->email,
-				$c->source, $c->tags, $c->bale_id, $c->rubika_id, SZC_Settings::priority_meta( $c->priority )['label'], SZC_Settings::stage_label( $c->stage ),
+				$c->source, $c->tags, SZC_Settings::priority_meta( $c->priority )['label'], SZC_Settings::stage_label( $c->stage ),
 				$owner ? $owner->display_name : '', $c->opt_out ? 'بله' : '', $c->last_contacted_at, $c->next_followup_at,
 			);
 			foreach ( $customs as $cf ) { $line[] = $meta[ $cf['key'] ] ?? ''; }

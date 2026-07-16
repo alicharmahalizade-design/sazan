@@ -178,11 +178,10 @@ class SZC_SMS {
 
 	public static function enqueue( $contact_id, $mobile, $message, $send_at, $opts = array() ) {
 		global $wpdb;
-		$o = wp_parse_args( $opts, array( 'pattern_code' => '', 'values' => array(), 'template_id' => 0, 'enrollment_id' => 0, 'channel' => 'sms' ) );
+		$o = wp_parse_args( $opts, array( 'pattern_code' => '', 'values' => array(), 'template_id' => 0, 'enrollment_id' => 0 ) );
 		$wpdb->insert( self::queue_table(), array(
 			'contact_id'     => (int) $contact_id,
 			'mobile'         => szc_normalize_mobile( $mobile ),
-			'channel'        => in_array( $o['channel'], array( 'bale', 'rubika' ), true ) ? $o['channel'] : 'sms',
 			'message'        => (string) $message,
 			'pattern_code'   => (string) $o['pattern_code'],
 			'pattern_values' => wp_json_encode( (array) $o['values'] ),
@@ -239,7 +238,7 @@ class SZC_SMS {
 	 * $when_mysql=null یعنی همین حالا (در جاروب بعدی و در بازه‌ی مجاز ارسال می‌شود).
 	 * خروجی: array( queued, skipped ).
 	 */
-	public static function enqueue_template_bulk( $contact_ids, $template_id, $when_mysql = null, $channel = 'sms' ) {
+	public static function enqueue_template_bulk( $contact_ids, $template_id, $when_mysql = null ) {
 		$tpl = SZC_Templates::get( $template_id );
 		if ( ! $tpl ) {
 			return array( 'queued' => 0, 'skipped' => 0 );
@@ -249,16 +248,15 @@ class SZC_SMS {
 		$skipped = 0;
 		foreach ( (array) $contact_ids as $cid ) {
 			$c = SZC_Contacts::get( $cid );
-			if ( ! $c || ! self::is_sendable( $c->mobile, $c ) || ! self::channel_reachable( $c, $channel ) ) {
+			if ( ! $c || ! self::is_sendable( $c->mobile, $c ) ) {
 				$skipped++;
 				continue;
 			}
 			$r = self::resolve( $tpl, $c );
 			self::enqueue( (int) $c->id, $c->mobile, $r['message'], $when, array(
-				'pattern_code' => $channel === 'sms' ? $r['pattern_code'] : '',
+				'pattern_code' => $r['pattern_code'],
 				'values'       => $r['values'],
 				'template_id'  => (int) $tpl->id,
-				'channel'      => $channel,
 			) );
 			$queued++;
 		}
@@ -270,7 +268,7 @@ class SZC_SMS {
 	 * متن برای هر مخاطب با متغیرهای همان مخاطب پر می‌شود.
 	 * خروجی: array( queued, skipped ).
 	 */
-	public static function enqueue_text_bulk( $contact_ids, $text, $when_mysql = null, $channel = 'sms' ) {
+	public static function enqueue_text_bulk( $contact_ids, $text, $when_mysql = null ) {
 		$text = trim( (string) $text );
 		if ( $text === '' ) {
 			return array( 'queued' => 0, 'skipped' => 0 );
@@ -280,23 +278,15 @@ class SZC_SMS {
 		$skipped = 0;
 		foreach ( (array) $contact_ids as $cid ) {
 			$c = SZC_Contacts::get( $cid );
-			if ( ! $c || ! self::is_sendable( $c->mobile, $c ) || ! self::channel_reachable( $c, $channel ) ) {
+			if ( ! $c || ! self::is_sendable( $c->mobile, $c ) ) {
 				$skipped++;
 				continue;
 			}
 			$body = SZC_Templates::fill( wp_strip_all_tags( $text ), SZC_Contacts::vars( $c ) );
-			self::enqueue( (int) $c->id, $c->mobile, $body, $when, array( 'channel' => $channel ) );
+			self::enqueue( (int) $c->id, $c->mobile, $body, $when );
 			$queued++;
 		}
 		return array( 'queued' => $queued, 'skipped' => $skipped );
-	}
-
-	/** آیا این مخاطب از این کانال قابل‌دسترسی است؟ (برای بله/روبیکا: داشتنِ شناسه). */
-	protected static function channel_reachable( $contact, $channel ) {
-		if ( $channel === 'sms' ) {
-			return true;
-		}
-		return class_exists( 'SZC_Messaging' ) && SZC_Messaging::contact_peer( $contact, $channel ) !== '';
 	}
 
 	public static function cancel_queued_for_contact( $contact_id ) {
@@ -337,8 +327,7 @@ class SZC_SMS {
 	/** جاروب صف: ارسال پیامک‌های سررسیدشده در بازه‌ی مجاز، با سقف در هر اجرا و روزانه. */
 	public static function run_queue() {
 		global $wpdb;
-		$msg_ready = class_exists( 'SZC_Messaging' ) && SZC_Messaging::any_enabled();
-		if ( ( ! self::enabled() && ! $msg_ready ) || ! self::within_window() ) {
+		if ( ! self::enabled() || ! self::within_window() ) {
 			return;
 		}
 		$per_run = max( 1, (int) SZC_Settings::get( 'max_per_run' ) );
@@ -355,31 +344,13 @@ class SZC_SMS {
 			current_time( 'mysql' ), $per_run ) );
 		foreach ( $rows as $row ) {
 			$contact = SZC_Contacts::get( $row->contact_id );
-			$channel = isset( $row->channel ) && in_array( $row->channel, array( 'bale', 'rubika' ), true ) ? $row->channel : 'sms';
 			if ( ( $contact && $contact->opt_out ) || SZC_Blacklist::is_blocked( $row->mobile ) ) {
 				$wpdb->update( self::queue_table(), array( 'status' => 'canceled', 'response' => 'لغو دریافت/لیست سیاه' ), array( 'id' => (int) $row->id ) );
 				continue;
 			}
-
-			if ( $channel !== 'sms' ) {
-				// کانالِ پیام‌رسان (بله/روبیکا): از طریقِ Bot API و شناسه‌ی مخاطب.
-				if ( ! class_exists( 'SZC_Messaging' ) || ! SZC_Messaging::enabled( $channel ) ) {
-					continue; // کانال غیرفعال شد؛ در نوبت بعد دوباره بررسی می‌شود.
-				}
-				$peer = SZC_Messaging::contact_peer( $contact, $channel );
-				if ( $peer === '' ) {
-					$wpdb->update( self::queue_table(), array( 'status' => 'canceled', 'response' => 'شناسه‌ی ' . SZC_Messaging::channel_label( $channel ) . ' موجود نیست' ), array( 'id' => (int) $row->id ) );
-					continue;
-				}
-				$res = SZC_Messaging::send( $channel, $peer, $row->message );
-			} else {
-				if ( ! self::enabled() ) {
-					continue; // پیامک فعلاً غیرفعال؛ در نوبت بعد.
-				}
-				$res = ( $row->pattern_code !== '' && SZC_Settings::get( 'sms_mode' ) === 'pattern' )
-					? self::send_pattern( $row->mobile, $row->pattern_code, json_decode( (string) $row->pattern_values, true ) ?: array() )
-					: self::send_text( $row->mobile, $row->message );
-			}
+			$res = ( $row->pattern_code !== '' && SZC_Settings::get( 'sms_mode' ) === 'pattern' )
+				? self::send_pattern( $row->mobile, $row->pattern_code, json_decode( (string) $row->pattern_values, true ) ?: array() )
+				: self::send_text( $row->mobile, $row->message );
 
 			$ok = ! empty( $res['ok'] );
 			$wpdb->update( self::queue_table(), array(
@@ -392,8 +363,8 @@ class SZC_SMS {
 			if ( $row->contact_id ) {
 				SZC_Activity::log( (int) $row->contact_id, 'sms', array(
 					'outcome' => $ok ? 'sent' : 'failed',
-					'body'    => ( $channel !== 'sms' ? '[' . SZC_Messaging::channel_label( $channel ) . '] ' : '' ) . $row->message,
-					'meta'    => array( 'queue_id' => (int) $row->id, 'channel' => $channel, 'response' => $res['msg'] ?? '' ),
+					'body'    => $row->message,
+					'meta'    => array( 'queue_id' => (int) $row->id, 'response' => $res['msg'] ?? '' ),
 				) );
 			}
 		}

@@ -770,8 +770,6 @@ JS;
 		$blocked     = SZC_Blacklist::is_blocked( $c->mobile );
 		$customs     = SZC_Settings::custom_fields();
 		$cmeta       = SZC_Contacts::get_meta( $c );
-		$bale_on     = class_exists( 'SZC_Messaging' ) && SZC_Messaging::enabled( 'bale' );
-		$rubika_on   = class_exists( 'SZC_Messaging' ) && SZC_Messaging::enabled( 'rubika' );
 
 		ob_start(); ?>
 		<div class="szc-single" data-contact="<?php echo (int) $c->id; ?>">
@@ -792,8 +790,6 @@ JS;
 					<a class="szc-p-callbig" href="tel:<?php echo esc_attr( $c->mobile ); ?>"><?php echo szc_icon( 'phone' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>تماس</span></a>
 					<a class="szc-p-wabtn" href="https://wa.me/<?php echo esc_attr( $wa ); ?>" target="_blank" rel="noopener" title="واتساپ" aria-label="واتساپ"><?php echo szc_icon( 'whatsapp' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
 					<a class="szc-p-tgbtn" href="tg://resolve?phone=<?php echo esc_attr( $wa ); ?>" title="تلگرام" aria-label="تلگرام"><?php echo szc_icon( 'telegram' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
-						<?php $blk = $bale_on ? SZC_Messaging::open_link( $c, 'bale' ) : ''; if ( $blk ) : ?><a class="szc-p-balebtn" href="<?php echo esc_url( $blk ); ?>" target="_blank" rel="noopener" title="بله" aria-label="بله"><?php echo szc_icon( 'bale' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a><?php endif; ?>
-						<?php $rlk = $rubika_on ? SZC_Messaging::open_link( $c, 'rubika' ) : ''; if ( $rlk ) : ?><a class="szc-p-rubikabtn" href="<?php echo esc_url( $rlk ); ?>" target="_blank" rel="noopener" title="روبیکا" aria-label="روبیکا"><?php echo szc_icon( 'rubika' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a><?php endif; ?>
 					<select data-szc-act="set_field" data-field="stage" class="szc-p-sel">
 						<?php foreach ( $stages as $k => $lbl ) : ?><option value="<?php echo esc_attr( $k ); ?>" <?php selected( $c->stage, $k ); ?>><?php echo esc_html( $lbl ); ?></option><?php endforeach; ?>
 					</select>
@@ -864,13 +860,6 @@ JS;
 							<label class="szc-p-cslabel">پیامک دلخواه</label>
 							<textarea data-custom-sms rows="2" placeholder="متن دلخواه… (می‌توانید از %first% و %name% استفاده کنید)"></textarea>
 							<button class="szc-p-btn" data-szc-act="custom_sms">ارسال پیامک دلخواه</button>
-								<?php if ( $bale_on || $rubika_on ) : ?>
-									<div class="szc-p-btnrow" style="margin-top:8px">
-										<?php if ( $bale_on ) : ?><button class="szc-p-btn szc-p-btn-bale" data-szc-act="send_channel" data-channel="bale">ارسال با بله</button><?php endif; ?>
-										<?php if ( $rubika_on ) : ?><button class="szc-p-btn szc-p-btn-rubika" data-szc-act="send_channel" data-channel="rubika">ارسال با روبیکا</button><?php endif; ?>
-									</div>
-									<p class="szc-p-muted">بله/روبیکا از «متنِ دلخواه» یا قالبِ انتخاب‌شده استفاده می‌کنند و به شناسه‌ی همان پیام‌رسانِ مخاطب می‌فرستند.</p>
-								<?php endif; ?>
 						</div>
 						<?php if ( $c->opt_out ) : ?><p class="szc-p-muted">این مخاطب لغو دریافت پیامک دارد.</p><?php endif; ?>
 					</section>
@@ -894,8 +883,6 @@ JS;
 							<label>شهر<input type="text" data-f="city" value="<?php echo esc_attr( $c->city ); ?>"></label>
 							<label>ایمیل<input type="email" dir="ltr" data-f="email" value="<?php echo esc_attr( $c->email ); ?>"></label>
 							<label>منبع<input type="text" data-f="source" value="<?php echo esc_attr( $c->source ); ?>"></label>
-							<?php if ( $bale_on ) : ?><label>شناسه‌ی بله<input type="text" dir="ltr" data-f="bale_id" value="<?php echo esc_attr( $c->bale_id ?? '' ); ?>" placeholder="chat_id یا نام‌کاربری"></label><?php endif; ?>
-							<?php if ( $rubika_on ) : ?><label>شناسه‌ی روبیکا<input type="text" dir="ltr" data-f="rubika_id" value="<?php echo esc_attr( $c->rubika_id ?? '' ); ?>" placeholder="chat_id یا نام‌کاربری"></label><?php endif; ?>
 							<?php foreach ( $customs as $cf ) : ?>
 								<label><?php echo esc_html( $cf['label'] ); ?><input type="text" data-cf="<?php echo esc_attr( $cf['key'] ); ?>" value="<?php echo esc_attr( $cmeta[ $cf['key'] ] ?? '' ); ?>"></label>
 							<?php endforeach; ?>

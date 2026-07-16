@@ -40,13 +40,6 @@ class SZC_Settings {
 			'sms_apikey'     => '',
 			'sms_originator' => '',
 			'sms_mode'       => 'text', // text | pattern
-			// کانال‌های پیام‌رسانِ گفت‌وگومحور (Bot API).
-			'bale_enabled'   => 0,
-			'bale_token'     => '',
-			'bale_base'      => 'https://tapi.bale.ai',
-			'rubika_enabled' => 0,
-			'rubika_token'   => '',
-			'rubika_base'    => 'https://botapi.rubika.ir',
 			'send_from'      => 9,      // ساعت شروع مجاز ارسال
 			'send_to'        => 21,     // ساعت پایان مجاز ارسال
 			'auto_after_call' => 1,

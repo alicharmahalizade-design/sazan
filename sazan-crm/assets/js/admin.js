@@ -153,18 +153,6 @@
 			d.append('text', ta.value);
 			btn.disabled = true;
 			ajax('szc_custom_sms', d, function (r) { handleRes(r, btn); });
-		} else if (act === 'send_channel') {
-			e.preventDefault();
-			var chan = btn.getAttribute('data-channel') || '';
-			var txtEl = document.querySelector('[data-custom-sms]');
-			var tplEl = document.querySelector('[data-sms-template]');
-			var txt = txtEl ? txtEl.value.trim() : '';
-			if (!txt && !tplEl) { msg('متن یا قالبی برای ارسال نیست.', 'err'); return; }
-			d.append('channel', chan);
-			d.append('text', txt);
-			if (tplEl) d.append('template', tplEl.value);
-			btn.disabled = true;
-			ajax('szc_send_msg', d, function (r) { handleRes(r, btn); });
 		} else if (act === 'del_contact') {
 			e.preventDefault();
 			if (!confirm('این مخاطب و همه‌ی سوابقش حذف شود؟')) return;

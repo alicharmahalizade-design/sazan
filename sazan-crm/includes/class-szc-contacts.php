@@ -34,7 +34,6 @@ class SZC_Contacts {
 		$map = array(
 			'first_name' => 'text', 'last_name' => 'text', 'job' => 'text', 'company' => 'text',
 			'city' => 'text', 'source' => 'text', 'tags' => 'text',
-			'bale_id' => 'text', 'rubika_id' => 'text',
 			'email' => 'email', 'note' => 'textarea',
 			'priority' => 'priority', 'stage' => 'stage',
 		);
@@ -68,7 +67,6 @@ class SZC_Contacts {
 		$data = array_merge( array(
 			'first_name' => '', 'last_name' => '', 'job' => '', 'company' => '',
 			'city' => '', 'email' => '', 'source' => '', 'tags' => '', 'note' => '',
-			'bale_id' => '', 'rubika_id' => '',
 			'priority' => 'warm', 'stage' => SZC_Settings::default_stage(),
 		), self::clean( $in ) );
 		$data['mobile']     = $mobile;

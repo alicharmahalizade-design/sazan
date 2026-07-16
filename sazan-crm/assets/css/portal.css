@@ -410,15 +410,11 @@ body.szc-portal-lock{overflow:hidden}
 .szc-p-pwabar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 
 /* ===================== دکمه‌های واتساپ/تلگرام ===================== */
-.szc-p-wabtn,.szc-p-tgbtn,.szc-p-balebtn,.szc-p-rubikabtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:13px;color:#fff}
-.szc-p-wabtn .szc-ico,.szc-p-tgbtn .szc-ico,.szc-p-balebtn .szc-ico,.szc-p-rubikabtn .szc-ico{width:22px;height:22px}
+.szc-p-wabtn,.szc-p-tgbtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:13px;color:#fff}
+.szc-p-wabtn .szc-ico,.szc-p-tgbtn .szc-ico{width:22px;height:22px}
 .szc-p-wabtn{background:#25d366}
 .szc-p-tgbtn{background:#2aabee}
-.szc-p-balebtn{background:#12b76a}
-.szc-p-rubikabtn{background:#7c3aed}
-.szc-p-wabtn:active,.szc-p-tgbtn:active,.szc-p-balebtn:active,.szc-p-rubikabtn:active{transform:scale(.94)}
-.szc-p-btn-bale{border-color:#12b76a;color:#0a8a4f}
-.szc-p-btn-rubika{border-color:#7c3aed;color:#6d28d9}
+.szc-p-wabtn:active,.szc-p-tgbtn:active{transform:scale(.94)}
 
 /* ===================== شیتِ ثبتِ نتیجه‌ی تماس ===================== */
 .szc-p-sheet-backdrop{position:fixed;inset:0;z-index:100003;background:rgba(8,14,20,.5);opacity:0;pointer-events:none;transition:opacity .2s}

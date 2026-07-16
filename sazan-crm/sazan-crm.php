@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: سازان CRM (Sazan CRM)
- * Description: سیستم مدیریت ارتباط با مشتری برای تیم فروش — مخاطبین، ایمپورت انبوه، اولویت‌بندی، یادداشت، ثبت تماس، قالب و اتوماسیون پیامک (فراز/آی‌پی‌پنل)، ارسال همگانی و کانال‌های بله/روبیکا.
+ * Description: سیستم مدیریت ارتباط با مشتری برای تیم فروش — مخاطبین، ایمپورت انبوه، اولویت‌بندی، یادداشت، ثبت تماس، قالب و اتوماسیون پیامک (فراز/آی‌پی‌پنل) و ارسال همگانی.
  * Version: 1.12.0
  * Author: Sazan
  * Text Domain: sazan-crm
@@ -25,7 +25,6 @@ require_once SZC_DIR . 'includes/class-szc-activity.php';
 require_once SZC_DIR . 'includes/class-szc-templates.php';
 require_once SZC_DIR . 'includes/class-szc-blacklist.php';
 require_once SZC_DIR . 'includes/class-szc-sms.php';
-require_once SZC_DIR . 'includes/class-szc-messaging.php';
 require_once SZC_DIR . 'includes/class-szc-sequences.php';
 require_once SZC_DIR . 'includes/class-szc-segments.php';
 require_once SZC_DIR . 'includes/class-szc-reports.php';
