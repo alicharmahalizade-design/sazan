@@ -112,7 +112,7 @@ class SZC_Agents {
 		if ( self::get_by_mobile( $mobile ) ) {
 			return array( 'ok' => false, 'msg' => 'کارشناسی با این موبایل از قبل وجود دارد.' );
 		}
-		$hash = $pass_hash !== '' ? $pass_hash : ( (string) $pass !== '' ? wp_hash_password( (string) $pass ) : '' );
+		$hash = $pass_hash !== '' ? $pass_hash : ( (string) $pass !== '' ? self::hash_password( (string) $pass ) : '' );
 		$now  = current_time( 'mysql' );
 		$wpdb->insert( self::table(), array(
 			'name'       => $name,
@@ -149,8 +149,17 @@ class SZC_Agents {
 			return;
 		}
 		$wpdb->update( self::table(), array(
-			'pass_hash' => wp_hash_password( $pass ), 'updated_at' => current_time( 'mysql' ),
+			'pass_hash' => self::hash_password( $pass ), 'updated_at' => current_time( 'mysql' ),
 		), array( 'id' => (int) $id ) );
+	}
+
+	/**
+	 * هشِ رمزِ کارشناس با تابعِ نیتیوِ PHP (bcrypt).
+	 * برخلافِ wp_check_password، به شناسه‌ی کاربرِ وردپرس وابسته نیست و
+	 * از تداخلِ خطرناکِ شناسه‌ی کارشناس با کاربرِ وردپرس جلوگیری می‌کند.
+	 */
+	public static function hash_password( $pass ) {
+		return password_hash( (string) $pass, PASSWORD_DEFAULT );
 	}
 
 	public static function set_active( $id, $active ) {
@@ -169,10 +178,23 @@ class SZC_Agents {
 	/* ==================== احراز هویت ==================== */
 
 	public static function verify( $agent, $pass ) {
-		if ( ! $agent || (int) $agent->active !== 1 || $agent->pass_hash === '' ) {
+		if ( ! $agent || (int) $agent->active !== 1 ) {
 			return false;
 		}
-		return wp_check_password( (string) $pass, $agent->pass_hash, (int) $agent->id );
+		$hash = (string) $agent->pass_hash;
+		$pass = (string) $pass;
+		if ( $hash === '' || $pass === '' ) {
+			return false;
+		}
+		// هشِ نیتیوِ PHP (کارشناسانِ تازه).
+		if ( $hash[0] === '$' && password_verify( $pass, $hash ) ) {
+			return true;
+		}
+		// سازگاری با هشِ وردپرس (کارشناسانِ مهاجرت‌شده یا نسخه‌های قبلی) — بدونِ user_id.
+		if ( function_exists( 'wp_check_password' ) && wp_check_password( $pass, $hash ) ) {
+			return true;
+		}
+		return false;
 	}
 
 	/** تطبیقِ موبایل+رمز. خروجی: رکوردِ کارشناس یا null. */
