@@ -2123,3 +2123,90 @@ body.sz-hero-modal-open{ overflow:hidden; }
 	.svc-card, .svc-ic, .svc-btn, .svc-glow,
 	.sazan-services.svc-anim .svc-card{ transition:none !important; animation:none !important; opacity:1 !important; transform:none !important; }
 }
+
+/* ============================================================
+   سکشن پادکست سازان (sazan-podcast-section)
+   ============================================================ */
+.sazan-podsec{
+	--pods-panel1:#1c4c8f; --pods-panel2:#163f78; --pods-accent:#2f7be0; --pods-circle:#1573d6;
+	--pods-card:rgba(255,255,255,.06); --pods-bd:rgba(255,255,255,.14);
+	--pods-text:#fff; --pods-mut:#b9cbe6; --pods-side:#123a72;
+	--pods-radius:30px; --pods-sidew:280px;
+	direction:rtl; font-family:inherit;
+}
+.sazan-podsec *{ box-sizing:border-box; }
+.podsec-wrap{ display:flex; align-items:stretch; gap:34px; }
+.sazan-podsec.side-start .podsec-side{ order:-1; }
+.sazan-podsec.side-end .podsec-side{ order:2; }
+
+/* پنلِ آبی + گرید */
+.podsec-panel{ flex:1 1 auto; min-width:0; border-radius:var(--pods-radius);
+	background:linear-gradient(160deg, var(--pods-panel1), var(--pods-panel2));
+	padding:26px; box-shadow:0 40px 90px -50px rgba(10,22,50,.7); }
+.podsec-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+
+/* کارتِ اپیزود: [تصویر | متن | پخش] در RTL */
+.podsec-card{ display:flex; align-items:center; gap:14px; text-decoration:none; cursor:pointer;
+	padding:12px; border-radius:16px; background:var(--pods-card); border:1px solid var(--pods-bd); color:var(--pods-text);
+	transition:transform .3s cubic-bezier(.22,1,.36,1), background .3s, border-color .3s, box-shadow .3s, filter .3s, opacity .3s; }
+.podsec-thumb{ flex-shrink:0; width:70px; height:70px; border-radius:12px; overflow:hidden;
+	background:rgba(255,255,255,.1); display:grid; place-items:center; color:#fff; }
+.podsec-thumb img{ width:100%; height:100%; object-fit:cover; }
+.podsec-thumb__ph svg{ width:34px; height:34px; opacity:.7; }
+.podsec-body{ flex:1 1 auto; min-width:0; }
+.podsec-card h3{ margin:0 0 4px; font-size:17px; font-weight:800; line-height:1.35; color:var(--pods-text);
+	white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.podsec-speaker{ display:block; font-size:13px; color:var(--pods-mut); margin-bottom:9px; }
+.podsec-chips{ display:flex; flex-wrap:wrap; gap:7px; }
+.podsec-chip{ display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; color:var(--pods-mut);
+	background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.08); padding:4px 10px; border-radius:50px; }
+.podsec-chip svg{ color:var(--pods-accent); flex-shrink:0; }
+.podsec-chip b{ font-weight:800; font-variant-numeric:tabular-nums; }
+.podsec-play{ flex-shrink:0; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; color:#fff;
+	background:radial-gradient(circle at 35% 28%, rgba(255,255,255,.28), transparent 60%), var(--pods-accent);
+	box-shadow:0 10px 24px -10px rgba(47,123,224,.9); transition:transform .3s, box-shadow .3s; }
+.podsec-play svg{ width:20px; height:20px; margin-inline-start:2px; }
+.podsec-card:hover .podsec-play{ transform:scale(1.08); box-shadow:0 14px 28px -10px rgba(47,123,224,1); }
+
+/* برجسته‌سازیِ کارتِ هاورشده */
+.podsec-card:hover{ background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.3); transform:translateY(-2px);
+	box-shadow:0 24px 50px -26px rgba(0,0,0,.6); }
+/* افکتِ هاور: بقیه‌ی کارت‌ها بلور و کم‌رنگ می‌شوند */
+.sazan-podsec.has-hoverblur .podsec-grid:hover .podsec-card{ filter:blur(2.5px); opacity:.5; transform:scale(.99); }
+.sazan-podsec.has-hoverblur .podsec-grid:hover .podsec-card:hover{ filter:none; opacity:1; transform:translateY(-2px) scale(1); }
+
+/* بلوکِ کناری */
+.podsec-side{ flex:0 0 var(--pods-sidew); display:flex; flex-direction:column; align-items:center; justify-content:space-between; text-align:center; gap:20px; }
+.podsec-title{ margin:0; align-self:flex-start; font-size:clamp(24px,2.4vw,34px); font-weight:900; color:var(--pods-side); line-height:1.2; }
+.podsec-mic{ position:relative; width:100%; max-width:240px; aspect-ratio:1/1; display:grid; place-items:center; }
+.podsec-mic__circle{ position:absolute; width:76%; height:76%; border-radius:50%; background:var(--pods-circle); box-shadow:0 30px 60px -28px rgba(21,115,214,.75); }
+.podsec-mic__img{ position:relative; z-index:1; max-width:104%; max-height:104%; object-fit:contain; filter:drop-shadow(0 22px 30px rgba(0,0,0,.4)); }
+.podsec-mic__ph{ position:relative; z-index:1; width:76%; height:76%; display:grid; place-items:center; }
+.podsec-all{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; cursor:pointer; color:var(--pods-side);
+	font-weight:800; font-size:15px; padding:12px 26px; border-radius:50px; border:2px solid var(--pods-side); background:transparent;
+	transition:background .25s, color .25s; }
+.podsec-all:hover{ background:var(--pods-side); color:#fff; }
+.podsec-all svg{ transition:transform .2s; }
+.podsec-all:hover svg{ transform:translateX(-3px); }
+.podsec-empty{ grid-column:1/-1; text-align:center; color:var(--pods-mut); padding:30px; }
+
+@media (max-width:900px){
+	.podsec-wrap{ flex-direction:column; gap:22px; }
+	.sazan-podsec.side-start .podsec-side, .sazan-podsec.side-end .podsec-side{ order:-1; }
+	.podsec-side{ flex-basis:auto; width:100%; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; }
+	.podsec-title{ align-self:center; }
+	.podsec-mic{ display:none; }
+}
+@media (max-width:600px){
+	.podsec-grid{ grid-template-columns:1fr; }
+	.podsec-panel{ padding:16px; }
+	.podsec-card h3{ font-size:15.5px; white-space:normal; }
+	.podsec-thumb{ width:60px; height:60px; }
+	.podsec-play{ width:42px; height:42px; }
+	.podsec-title{ font-size:22px; }
+	.podsec-all{ padding:10px 20px; font-size:14px; }
+}
+@media (prefers-reduced-motion:reduce){
+	.podsec-card, .podsec-play, .podsec-all svg{ transition:none !important; }
+	.sazan-podsec.has-hoverblur .podsec-grid:hover .podsec-card{ filter:none !important; opacity:1 !important; }
+}

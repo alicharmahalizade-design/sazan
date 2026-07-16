@@ -44,6 +44,7 @@ final class Widgets_Manager {
 		'cta/class-sazan-cta.php'           => '\Sazan\Widgets\CTA',
 		'calendar/class-sazan-calendar.php' => '\Sazan\Widgets\Calendar',
 		'podcast/class-sazan-podcast.php'   => '\Sazan\Widgets\Podcast',
+		'podcast-section/class-sazan-podcast-section.php' => '\Sazan\Widgets\Podcast_Section',
 		'blog/class-sazan-blog.php'         => '\Sazan\Widgets\Blog',
 		'quiz/class-sazan-quiz.php'         => '\Sazan\Widgets\Quiz',
 		'consult/class-sazan-consult.php'   => '\Sazan\Widgets\Consult',
