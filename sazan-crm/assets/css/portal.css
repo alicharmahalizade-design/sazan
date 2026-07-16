@@ -79,6 +79,7 @@ body.szc-portal-lock{overflow:hidden}
 .szc-p-search input{flex:1;min-width:0;border:0;background:transparent;padding:10px 4px;font:inherit;font-size:14px;color:var(--c-text);outline:none}
 .szc-p-user{display:flex;align-items:center;gap:8px;font-size:13px}
 .szc-p-avatar img{border-radius:50%;display:block;width:34px;height:34px}
+.szc-p-avatar--initial{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:linear-gradient(120deg,var(--c-accent),var(--c-accent2));color:#fff;font-weight:800;font-size:15px}
 .szc-p-uname{font-weight:700;display:none}
 .szc-p-logout{display:flex;align-items:center;justify-content:center;width:38px;height:38px;color:var(--c-text2);border:1px solid var(--c-line);border-radius:11px}
 .szc-p-logout .szc-ico{width:19px;height:19px}

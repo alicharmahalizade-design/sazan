@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SZC_Install {
 
-	const DB_VERSION = '1.7.0';
+	const DB_VERSION = '1.8.0';
 
 	public static function activate() {
 		self::create_tables();
@@ -90,6 +90,60 @@ class SZC_Install {
 				}
 			}
 		}
+	}
+
+	/**
+	 * مهاجرتِ یک‌باره: کارشناسانی که پیش‌تر به‌صورتِ کاربرِ وردپرس ثبت شده بودند را به
+	 * جدولِ کارشناسانِ مستقلِ CRM منتقل می‌کند، مالکیتِ سرنخ‌ها (owner_id) را از شناسه‌ی
+	 * کاربرِ وردپرس به فضای‌نامِ کارشناس (OFFSET+id) نگاشت می‌کند و تنظیمِ قدیمیِ agents
+	 * را پاک می‌کند. کاربرانِ وردپرسِ قبلی حذف نمی‌شوند (غیرمخرب).
+	 */
+	public static function migrate_agents() {
+		global $wpdb;
+		if ( get_option( 'szc_agents_migrated' ) === '1' ) {
+			return;
+		}
+		if ( ! class_exists( 'SZC_Agents' ) || ! class_exists( 'SZC_Settings' ) ) {
+			return;
+		}
+		$old = get_option( SZC_Settings::OPTION, array() );
+		$old = is_array( $old ) ? $old : array();
+		$wp_agent_ids = array_values( array_filter( array_map( 'intval', (array) ( $old['agents'] ?? array() ) ) ) );
+
+		$map = array(); // oldWpUid => newOwnerId
+		foreach ( $wp_agent_ids as $uid ) {
+			$u = get_userdata( $uid );
+			if ( ! $u ) {
+				continue;
+			}
+			$mobile = szc_normalize_mobile( (string) get_user_meta( $uid, 'mobile', true ) );
+			if ( $mobile === '' ) {
+				$mobile = szc_normalize_mobile( $u->user_login );
+			}
+			if ( ! szc_is_valid_mobile( $mobile ) || SZC_Agents::get_by_mobile( $mobile ) ) {
+				continue;
+			}
+			$hash = (string) get_user_meta( $uid, '_szc_portal_pass', true );
+			$res  = SZC_Agents::create( $u->display_name ?: $mobile, $mobile, '', 1, $hash );
+			if ( ! empty( $res['ok'] ) ) {
+				$map[ $uid ] = SZC_Agents::to_owner( (int) $res['id'] );
+			}
+		}
+
+		// نگاشتِ مالکیتِ سرنخ‌ها: کارشناسِ قدیمی → کارشناسِ تازه؛ سایرِ مالک‌ها (مدیر/نامعتبر) → بدونِ تخصیص.
+		$table = $wpdb->prefix . 'szc_contacts';
+		$owners = $wpdb->get_col( "SELECT DISTINCT owner_id FROM $table WHERE owner_id>0 AND owner_id < " . (int) SZC_Agents::OFFSET );
+		foreach ( array_map( 'intval', (array) $owners ) as $ow ) {
+			$new = isset( $map[ $ow ] ) ? (int) $map[ $ow ] : 0;
+			$wpdb->update( $table, array( 'owner_id' => $new ), array( 'owner_id' => $ow ) );
+		}
+
+		// تنظیمِ قدیمیِ agents دیگر لازم نیست.
+		if ( isset( $old['agents'] ) ) {
+			$old['agents'] = array();
+			update_option( SZC_Settings::OPTION, $old );
+		}
+		update_option( 'szc_agents_migrated', '1' );
 	}
 
 	public static function create_tables() {
@@ -180,6 +234,10 @@ class SZC_Install {
 			enrollment_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			send_at datetime DEFAULT NULL,
 			status varchar(20) NOT NULL DEFAULT 'pending',
+			provider_msgid varchar(190) NOT NULL DEFAULT '',
+			delivery varchar(20) NOT NULL DEFAULT '',
+			delivery_at datetime DEFAULT NULL,
+			delivery_checks int(11) NOT NULL DEFAULT 0,
 			attempts int(11) NOT NULL DEFAULT 0,
 			response text NULL,
 			created_by bigint(20) unsigned NOT NULL DEFAULT 0,
@@ -260,6 +318,23 @@ class SZC_Install {
 			KEY contact_id (contact_id)
 		) $charset;";
 
+		// ---- کارشناسانِ فروش (موجودیتِ مستقلِ CRM، نه کاربرِ وردپرس) ----
+		$ag = $wpdb->prefix . 'szc_agents';
+		$sql .= "
+		CREATE TABLE $ag (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			name varchar(150) NOT NULL DEFAULT '',
+			mobile varchar(20) NOT NULL DEFAULT '',
+			pass_hash varchar(255) NOT NULL DEFAULT '',
+			active tinyint(1) NOT NULL DEFAULT 1,
+			created_at datetime DEFAULT NULL,
+			updated_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY mobile (mobile)
+		) $charset;";
+
 		dbDelta( $sql );
+
+		self::migrate_agents();
 	}
 }

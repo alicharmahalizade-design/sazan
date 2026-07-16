@@ -11,20 +11,20 @@ class SZC_Settings {
 		add_filter( 'user_has_cap', array( __CLASS__, 'grant_cap' ), 10, 3 );
 	}
 
-	/** دسترسی مجازی szc_access را به مدیران و کاربران مجاز می‌دهد. */
+	/** دسترسی مجازی szc_access را به مدیرانِ فروش (کاربرِ وردپرس) می‌دهد. */
 	public static function grant_cap( $allcaps, $caps, $args ) {
 		if ( ! in_array( self::CAP, (array) $caps, true ) ) {
 			return $allcaps;
 		}
 		$uid = isset( $args[1] ) ? (int) $args[1] : 0;
-		if ( ! empty( $allcaps['manage_options'] ) || ( $uid && in_array( $uid, self::allowed_user_ids(), true ) ) ) {
+		if ( ! empty( $allcaps['manage_options'] ) || ( $uid && in_array( $uid, self::manager_ids(), true ) ) ) {
 			$allcaps[ self::CAP ] = true;
 		}
 		return $allcaps;
 	}
 
 	public static function can_access() {
-		return current_user_can( self::CAP );
+		return SZC_Auth::can_access();
 	}
 
 	public static function defaults() {
@@ -74,102 +74,36 @@ class SZC_Settings {
 		return array_values( array_filter( array_map( 'intval', (array) self::get( 'managers' ) ) ) );
 	}
 
-	public static function agent_ids() {
-		return array_values( array_filter( array_map( 'intval', (array) self::get( 'agents' ) ) ) );
-	}
-
-	/** همه‌ی کاربران دارای دسترسی (مدیر + کارشناس). */
-	public static function allowed_user_ids() {
-		return array_values( array_unique( array_merge( self::manager_ids(), self::agent_ids() ) ) );
-	}
-
-	/** آیا این کاربر مدیرِ CRM است؟ (مدیران سایت همیشه بله) */
+	/** آیا این کاربر/بازیگر مدیرِ CRM است؟ (مدیرانِ سایت همیشه بله؛ کارشناس هرگز نه) */
 	public static function is_manager( $uid = 0 ) {
-		$uid = $uid ? (int) $uid : get_current_user_id();
-		if ( user_can( $uid, 'manage_options' ) ) {
-			return true;
+		if ( $uid ) {
+			$uid = (int) $uid;
+			return user_can( $uid, 'manage_options' ) || in_array( $uid, self::manager_ids(), true );
 		}
-		return in_array( $uid, self::manager_ids(), true );
+		return SZC_Auth::is_manager();
 	}
 
-	/** نقش کاربر در CRM: manager | agent | none. */
-	public static function role( $uid = 0 ) {
-		$uid = $uid ? (int) $uid : get_current_user_id();
-		if ( self::is_manager( $uid ) ) {
+	/** نقشِ بازیگرِ جاری در CRM: manager | agent | none. */
+	public static function role() {
+		if ( SZC_Auth::is_manager() ) {
 			return 'manager';
 		}
-		return in_array( $uid, self::agent_ids(), true ) ? 'agent' : 'none';
+		return SZC_Auth::is_agent() ? 'agent' : 'none';
 	}
 
-	/**
-	 * محدوده‌ی مالکیت برای کوئری‌ها: مدیر → 0 (بدون محدودیت)، کارشناس → آیدی خودش.
-	 * برای اعمال در فیلترِ owner استفاده می‌شود.
-	 */
+	/** محدوده‌ی مالکیت برای کوئری‌ها: مدیر → 0 (بدون محدودیت)، کارشناس → owner_idِ خودش. */
 	public static function scope_owner( $uid = 0 ) {
-		$uid = $uid ? (int) $uid : get_current_user_id();
-		return self::is_manager( $uid ) ? 0 : $uid;
+		return SZC_Auth::scope_owner();
 	}
 
-	/* ==================== ورود سریعِ کارشناسان با رمز ==================== */
-
-	const PASS_META = '_szc_portal_pass';
-
-	/** آیا ورود با رمز فعال است؟ */
+	/** آیا ورودِ کارشناسان به پورتال فعال است؟ */
 	public static function pass_login_enabled() {
 		return ! empty( self::get( 'pass_login' ) );
 	}
 
-	/** تنظیمِ رمزِ ورودِ پورتال برای یک کاربر (هش‌شده). */
-	public static function set_portal_pass( $uid, $pass ) {
-		$pass = (string) $pass;
-		if ( $pass === '' ) {
-			return;
-		}
-		update_user_meta( (int) $uid, self::PASS_META, wp_hash_password( $pass ) );
-	}
-
-	public static function clear_portal_pass( $uid ) {
-		delete_user_meta( (int) $uid, self::PASS_META );
-	}
-
-	public static function has_portal_pass( $uid ) {
-		return (bool) get_user_meta( (int) $uid, self::PASS_META, true );
-	}
-
-	/**
-	 * تطبیقِ رمزِ واردشده با کاربرانِ مجاز. خروجی: شناسه‌ی کاربر یا 0.
-	 * برای امنیت، همه‌ی کاربران بررسی می‌شوند (بدون افشای این‌که کدام کاربر).
-	 */
-	public static function verify_portal_pass( $pass ) {
-		$pass = (string) $pass;
-		if ( $pass === '' ) {
-			return 0;
-		}
-		foreach ( self::allowed_user_ids() as $uid ) {
-			$hash = get_user_meta( (int) $uid, self::PASS_META, true );
-			if ( $hash && wp_check_password( $pass, $hash, $uid ) ) {
-				return (int) $uid;
-			}
-		}
-		return 0;
-	}
-
-	/** کاربرانی که می‌توان سرنخ را به آن‌ها تخصیص داد ([id => display_name]). */
+	/** کارشناسانی که می‌توان سرنخ را به آن‌ها تخصیص داد ([owner_id => name]). */
 	public static function assignable_users() {
-		$ids = self::allowed_user_ids();
-		// مدیران سایت را هم اضافه کن.
-		foreach ( get_users( array( 'role' => 'administrator', 'fields' => 'ID' ) ) as $a ) {
-			$ids[] = (int) $a;
-		}
-		$ids = array_values( array_unique( array_filter( $ids ) ) );
-		$out = array();
-		foreach ( $ids as $id ) {
-			$u = get_userdata( $id );
-			if ( $u ) {
-				$out[ $id ] = $u->display_name;
-			}
-		}
-		return $out;
+		return SZC_Agents::assignable( true );
 	}
 
 	/**

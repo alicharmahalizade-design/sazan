@@ -168,6 +168,8 @@ a.szc-stat:hover{border-color:#2271b1}
 .szc-seg-opt{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;color:#475569}
 .szc-seg-opt input{margin:0}
 .szc-seg-opt:has(input:checked){background:#fff;color:#2271b1;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.szc-agent-ops{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.szc-agent-ops .button-link{white-space:nowrap}
 .szc-broadcast-count{display:flex;align-items:baseline;gap:10px;margin-top:14px;padding:12px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px}
 .szc-bc-num{font-size:30px;font-weight:900;color:#0369a1;line-height:1}
 .szc-broadcast-send{display:flex;flex-direction:column;gap:10px;align-items:flex-start}

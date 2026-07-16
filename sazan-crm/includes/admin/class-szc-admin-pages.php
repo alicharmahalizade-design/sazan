@@ -11,7 +11,10 @@ class SZC_Admin_Pages {
 		add_action( 'admin_post_szc_template_delete', array( __CLASS__, 'handle_template_delete' ) );
 		add_action( 'admin_post_szc_settings_save',   array( __CLASS__, 'handle_settings_save' ) );
 		add_action( 'admin_post_szc_broadcast',       array( __CLASS__, 'handle_broadcast' ) );
-		add_action( 'admin_post_szc_agent_create',    array( __CLASS__, 'handle_agent_create' ) );
+		add_action( 'admin_post_szc_delivery_refresh', array( __CLASS__, 'handle_delivery_refresh' ) );
+		add_action( 'admin_post_szc_agent_save',      array( __CLASS__, 'handle_agent_save' ) );
+		add_action( 'admin_post_szc_agent_delete',    array( __CLASS__, 'handle_agent_delete' ) );
+		add_action( 'admin_post_szc_agent_toggle',    array( __CLASS__, 'handle_agent_toggle' ) );
 		add_action( 'admin_post_szc_bulk',            array( __CLASS__, 'handle_bulk' ) );
 		add_action( 'admin_post_szc_save_segment',    array( __CLASS__, 'handle_save_segment' ) );
 		add_action( 'admin_post_szc_delete_segment',  array( __CLASS__, 'handle_delete_segment' ) );
@@ -36,7 +39,7 @@ class SZC_Admin_Pages {
 			'owner'    => absint( $_POST['f_owner'] ?? 0 ),
 		);
 		if ( ! SZC_Settings::is_manager() ) {
-			$a['owner'] = get_current_user_id();
+			$a['owner'] = SZC_Auth::actor_id();
 		}
 		return $a;
 	}
@@ -64,9 +67,9 @@ class SZC_Admin_Pages {
 		$file  = isset( $_GET['file'] ) ? sanitize_file_name( wp_unslash( $_GET['file'] ) ) : '';
 		$delim = isset( $_GET['delim'] ) ? sanitize_key( $_GET['delim'] ) : 'comma';
 		// phpcs:enable
-		$stats = get_transient( 'szc_import_' . get_current_user_id() );
+		$stats = get_transient( 'szc_import_' . SZC_Auth::actor_id() );
 		if ( $stats ) {
-			delete_transient( 'szc_import_' . get_current_user_id() );
+			delete_transient( 'szc_import_' . SZC_Auth::actor_id() );
 		}
 		?>
 		<div class="wrap szc-wrap">
@@ -227,7 +230,7 @@ class SZC_Admin_Pages {
 		if ( empty( $res['ok'] ) ) {
 			wp_die( esc_html( $res['msg'] ?? 'خطا در ایمپورت.' ) );
 		}
-		set_transient( 'szc_import_' . get_current_user_id(), $res['stats'], 60 );
+		set_transient( 'szc_import_' . SZC_Auth::actor_id(), $res['stats'], 60 );
 		wp_safe_redirect( self::url( 'szc-import' ) );
 		exit;
 	}
@@ -322,12 +325,10 @@ class SZC_Admin_Pages {
 		$templates = SZC_Templates::all();
 		$staff     = get_users( array( 'role__in' => array( 'administrator', 'editor', 'author', 'shop_manager', 'contributor' ), 'number' => 500, 'fields' => array( 'ID', 'display_name', 'user_login' ) ) );
 		$managers  = SZC_Settings::manager_ids();
-		$agents    = SZC_Settings::agent_ids();
 		$sms_ok    = SZC_SMS::enabled();
 
 		$tabs = array(
 			'access'     => array( 'دسترسی و نقش‌ها', 'users' ),
-			'login'      => array( 'ورودِ کارشناسان', 'idcard' ),
 			'sms'        => array( 'پنل پیامک', 'mail' ),
 			'auto'       => array( 'اتوماسیون پیامک', 'sparkles' ),
 			'remind'     => array( 'یادآوری‌ها', 'bell' ),
@@ -340,7 +341,7 @@ class SZC_Admin_Pages {
 			<div class="szc-settings-hero">
 				<div>
 					<h1>تنظیمات سازان CRM</h1>
-					<p class="szc-muted">پیکربندیِ دسترسی تیم، پنل پیامک، کانال‌های بله و روبیکا و اتوماسیون‌ها. هر بخش را از نوارِ بالا انتخاب کنید.</p>
+					<p class="szc-muted">پیکربندیِ دسترسی، پنل پیامک و اتوماسیون‌ها. کارشناسانِ فروش از منوی «کارشناسان» مدیریت می‌شوند.</p>
 				</div>
 				<div class="szc-settings-badges">
 					<span class="szc-pill <?php echo $sms_ok ? 'is-on' : 'is-off'; ?>">پیامک: <?php echo $sms_ok ? 'فعال' : 'غیرفعال'; ?></span>
@@ -348,21 +349,6 @@ class SZC_Admin_Pages {
 			</div>
 
 			<?php if ( isset( $_GET['msg'] ) ) : ?><div class="notice notice-success is-dismissible"><p>تنظیمات ذخیره شد.</p></div><?php endif; ?>
-			<?php
-			if ( isset( $_GET['agent'] ) ) :
-				$ag   = sanitize_key( wp_unslash( $_GET['agent'] ) );
-				$amap = array(
-					'created'   => array( 'success', 'کارشناس ساخته شد و به تیم فروش افزوده شد. حالا می‌تواند با موبایل و رمزش وارد پورتال شود.' ),
-					'exists'    => array( 'error', 'کاربری با این موبایل/نام‌کاربری از قبل وجود دارد.' ),
-					'badmobile' => array( 'error', 'شماره‌ی موبایل نامعتبر است (۰۹...).' ),
-					'missing'   => array( 'error', 'نام، موبایل و رمز الزامی است.' ),
-					'err'       => array( 'error', 'ساخت کاربر ناموفق بود.' ),
-				);
-				if ( isset( $amap[ $ag ] ) ) :
-					?><div class="notice notice-<?php echo esc_attr( $amap[ $ag ][0] ); ?> is-dismissible"><p><?php echo esc_html( $amap[ $ag ][1] ); ?></p></div><?php
-				endif;
-			endif;
-			?>
 
 			<div class="szc-tabs" role="tablist">
 				<?php foreach ( $tabs as $key => $tab ) : ?>
@@ -393,54 +379,13 @@ class SZC_Admin_Pages {
 								<p class="szc-hint">مدیر همه‌ی سرنخ‌ها را می‌بیند و می‌تواند تخصیص دهد. (Ctrl/Cmd برای انتخاب چندتایی)</p>
 							</div>
 						</div>
-						<div class="szc-field">
-							<label>کارشناسانِ فروش</label>
-							<div class="szc-field-c">
-								<select name="agents[]" multiple size="6" class="szc-multi">
-									<?php foreach ( $staff as $u ) : ?>
-										<option value="<?php echo (int) $u->ID; ?>" <?php echo in_array( (int) $u->ID, $agents, true ) ? 'selected' : ''; ?>><?php echo esc_html( $u->display_name . ' (' . $u->user_login . ')' ); ?></option>
-									<?php endforeach; ?>
-								</select>
-								<p class="szc-hint">کارشناس فقط سرنخ‌های تخصیص‌یافته به خودش را می‌بیند.</p>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- ===== ورود کارشناسان ===== -->
-				<div class="szc-tabpane" data-pane="login" hidden>
-					<div class="szc-scard">
-						<div class="szc-scard-h"><h2>ورودِ سریعِ کارشناسان با رمز</h2><p>کارشناس می‌تواند بدون صفحه‌ی ورودِ وردپرس و فقط با یک رمز وارد پورتالِ خودش شود.</p></div>
 						<div class="szc-field szc-field--toggle">
-							<label>فعال‌سازی</label>
-							<div class="szc-field-c">
-								<label class="szc-switch"><input type="checkbox" name="pass_login" value="1" <?php checked( ! empty( $s['pass_login'] ) ); ?>><span></span></label>
-								<p class="szc-hint">صفحه‌ی پورتال برای بازدیدکننده‌ی واردنشده کادر رمز نشان می‌دهد؛ کارشناس رمز خود را می‌زند و مستقیم وارد می‌شود.</p>
-							</div>
-						</div>
-						<?php $allowed = SZC_Settings::allowed_user_ids(); if ( $allowed ) : ?>
-							<div class="szc-field">
-								<label>رمزِ کاربران</label>
+								<label>ورودِ کارشناسان</label>
 								<div class="szc-field-c">
-									<table class="widefat striped szc-passtable">
-										<thead><tr><th>کاربر</th><th>وضعیت</th><th>تعیین/تغییر رمز</th><th>حذف</th></tr></thead>
-										<tbody>
-										<?php foreach ( $allowed as $uid ) : $u = get_userdata( $uid ); if ( ! $u ) { continue; } $has = SZC_Settings::has_portal_pass( $uid ); ?>
-											<tr>
-												<td><?php echo esc_html( $u->display_name . ' (' . $u->user_login . ')' ); ?></td>
-												<td><?php echo $has ? '<span class="szc-ok">تنظیم‌شده</span>' : '<span class="szc-muted">ندارد</span>'; ?></td>
-												<td><input type="text" name="agent_pass[<?php echo (int) $uid; ?>]" value="" autocomplete="off" placeholder="<?php echo $has ? 'رمز جدید…' : 'رمز…'; ?>"></td>
-												<td><?php if ( $has ) : ?><label class="szc-check"><input type="checkbox" name="agent_pass_clear[<?php echo (int) $uid; ?>]" value="1"> حذف</label><?php endif; ?></td>
-											</tr>
-										<?php endforeach; ?>
-										</tbody>
-									</table>
-									<p class="szc-hint">خالی گذاشتنِ کادر = بدون تغییر. رمز به‌صورت هش‌شده ذخیره می‌شود و قابل‌مشاهده نیست.</p>
+									<label class="szc-switch"><input type="checkbox" name="pass_login" value="1" <?php checked( ! empty( $s['pass_login'] ) ); ?>><span></span></label>
+									<p class="szc-hint">کارشناسان با «موبایل + رمز» واردِ پورتال می‌شوند (بدونِ کاربرِ وردپرس). ساخت و مدیریتِ کارشناسان از منوی «کارشناسان».</p>
 								</div>
 							</div>
-						<?php else : ?>
-							<div class="szc-field"><label>رمزِ کاربران</label><div class="szc-field-c"><p class="szc-hint">ابتدا کارشناس/مدیر را در «دسترسی و نقش‌ها» انتخاب و ذخیره کنید، سپس این‌جا برایشان رمز بگذارید.</p></div></div>
-						<?php endif; ?>
 					</div>
 				</div>
 
@@ -558,20 +503,6 @@ class SZC_Admin_Pages {
 				</div>
 			</form>
 
-			<div class="szc-scard szc-scard--standalone">
-				<div class="szc-scard-h"><h2>ساخت کارشناسِ جدید (کاربر + رمز، در یک مرحله)</h2><p>یک کاربرِ وردپرس ساخته می‌شود، به «کارشناسان فروش» افزوده می‌شود و رمزِ ورودِ پورتال برایش تنظیم می‌گردد. موبایل، نام‌کاربریِ ورود هم می‌شود.</p></div>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<?php wp_nonce_field( 'szc_agent_create' ); ?>
-					<input type="hidden" name="action" value="szc_agent_create">
-					<div class="szc-grid2">
-						<div class="szc-field szc-field--col"><label for="szc-ag-name">نام کارشناس</label><div class="szc-field-c"><input id="szc-ag-name" type="text" name="ag_name" required placeholder="مثلاً: مریم احمدی"></div></div>
-						<div class="szc-field szc-field--col"><label for="szc-ag-mobile">موبایل (نام کاربری)</label><div class="szc-field-c"><input id="szc-ag-mobile" type="text" name="ag_mobile" required dir="ltr" placeholder="۰۹۱۲..."></div></div>
-						<div class="szc-field szc-field--col"><label for="szc-ag-pass">رمز ورود</label><div class="szc-field-c"><input id="szc-ag-pass" type="text" name="ag_pass" required autocomplete="off" placeholder="رمز دلخواه"></div></div>
-						<div class="szc-field szc-field--col"><label for="szc-ag-email">ایمیل (اختیاری)</label><div class="szc-field-c"><input id="szc-ag-email" type="email" name="ag_email" dir="ltr" placeholder="اختیاری"></div></div>
-					</div>
-					<p><button class="button button-primary">ساخت کارشناس و افزودن به تیم فروش</button></p>
-				</form>
-			</div>
 		</div>
 		<?php
 	}
@@ -582,7 +513,6 @@ class SZC_Admin_Pages {
 		$p   = wp_unslash( $_POST );
 		$new = array(
 			'managers'         => array_map( 'intval', (array) ( $p['managers'] ?? array() ) ),
-			'agents'           => array_map( 'intval', (array) ( $p['agents'] ?? array() ) ),
 			'pass_login'       => empty( $p['pass_login'] ) ? 0 : 1,
 			'max_per_run'      => max( 1, absint( $p['max_per_run'] ?? 80 ) ),
 			'max_per_day'      => max( 0, absint( $p['max_per_day'] ?? 0 ) ),
@@ -612,87 +542,156 @@ class SZC_Admin_Pages {
 		$new['outcome_templates'] = $omap;
 		SZC_Settings::save( $new );
 
-		// رمزِ ورودِ پورتال برای هر کاربر (تعیین/تغییر و حذف).
-		foreach ( (array) ( $p['agent_pass'] ?? array() ) as $uid => $pw ) {
-			$pw = (string) $pw;
-			if ( $pw !== '' ) {
-				SZC_Settings::set_portal_pass( (int) $uid, $pw );
-			}
-		}
-		foreach ( (array) ( $p['agent_pass_clear'] ?? array() ) as $uid => $v ) {
-			if ( $v ) {
-				SZC_Settings::clear_portal_pass( (int) $uid );
-			}
-		}
-
 		wp_safe_redirect( self::url( 'szc-settings', array( 'msg' => 1 ) ) );
 		exit;
 	}
 
-	/** ساخت کارشناس جدید در یک مرحله: کاربر وردپرس + افزودن به کارشناسان + رمزِ پورتال. */
-	public static function handle_agent_create() {
+	/* ==================== کارشناسان (موجودیتِ مستقلِ CRM) ==================== */
+
+	public static function page_agents() {
 		self::guard();
 		if ( ! SZC_Settings::is_manager() ) {
 			wp_die( 'دسترسی غیرمجاز' );
 		}
-		check_admin_referer( 'szc_agent_create' );
+		$edit   = isset( $_GET['edit'] ) ? absint( $_GET['edit'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification
+		$row    = $edit ? SZC_Agents::get( $edit ) : null;
+		$agents = SZC_Agents::all();
+		$mmap   = array(
+			'saved'   => array( 'success', 'کارشناس ذخیره شد.' ),
+			'deleted' => array( 'success', 'کارشناس حذف شد (سرنخ‌هایش بدونِ تخصیص شدند).' ),
+			'toggled' => array( 'success', 'وضعیتِ کارشناس تغییر کرد.' ),
+			'dup'     => array( 'error', 'کارشناسی با این موبایل از قبل وجود دارد.' ),
+			'bad'     => array( 'error', 'نام یا موبایلِ نامعتبر است (۰۹...).' ),
+		);
+		?>
+		<div class="wrap szc-wrap szc-settings">
+			<div class="szc-settings-hero">
+				<div>
+					<h1>کارشناسانِ فروش</h1>
+					<p class="szc-muted">کارشناسان مستقل از وردپرس‌اند: با «موبایل + رمز» واردِ پورتال می‌شوند و هیچ کاربرِ وردپرسی ساخته نمی‌شود.</p>
+				</div>
+				<div class="szc-settings-badges">
+					<span class="szc-pill is-on"><?php echo esc_html( szc_fa_digits( SZC_Agents::count() ) ); ?> کارشناس</span>
+				</div>
+			</div>
+
+			<?php
+			if ( isset( $_GET['m'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification
+				$m = sanitize_key( wp_unslash( $_GET['m'] ) );
+				if ( isset( $mmap[ $m ] ) ) :
+					?><div class="notice notice-<?php echo esc_attr( $mmap[ $m ][0] ); ?> is-dismissible"><p><?php echo esc_html( $mmap[ $m ][1] ); ?></p></div><?php
+				endif;
+			endif;
+			?>
+
+			<div class="szc-single-grid">
+				<div class="szc-col">
+					<div class="szc-scard">
+						<div class="szc-scard-h"><h2><?php echo $row ? 'ویرایشِ کارشناس' : 'افزودنِ کارشناسِ جدید'; ?></h2><p><?php echo $row ? 'نام/موبایل را ویرایش کنید یا رمزِ تازه بگذارید.' : 'با نام، موبایل و رمز یک کارشناس بسازید. موبایل، نام‌کاربریِ ورودِ اوست.'; ?></p></div>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<?php wp_nonce_field( 'szc_agent_save' ); ?>
+							<input type="hidden" name="action" value="szc_agent_save">
+							<input type="hidden" name="id" value="<?php echo (int) ( $row->id ?? 0 ); ?>">
+							<div class="szc-field szc-field--col"><label>نام کارشناس</label><div class="szc-field-c"><input type="text" name="name" required value="<?php echo esc_attr( $row->name ?? '' ); ?>" placeholder="مثلاً: مریم احمدی"></div></div>
+							<div class="szc-field szc-field--col"><label>موبایل (ورود)</label><div class="szc-field-c"><input type="text" name="mobile" required dir="ltr" value="<?php echo esc_attr( $row->mobile ?? '' ); ?>" placeholder="۰۹۱۲..."></div></div>
+							<div class="szc-field szc-field--col"><label><?php echo $row ? 'رمزِ تازه (اختیاری)' : 'رمز ورود'; ?></label><div class="szc-field-c"><input type="text" name="pass" autocomplete="off" <?php echo $row ? '' : 'required'; ?> placeholder="<?php echo $row ? 'خالی = بدون تغییر' : 'رمز دلخواه'; ?>"></div></div>
+							<div class="szc-field szc-field--toggle"><label>فعال</label><div class="szc-field-c"><label class="szc-switch"><input type="checkbox" name="active" value="1" <?php checked( $row ? (int) $row->active === 1 : true ); ?>><span></span></label></div></div>
+							<p style="padding:0 18px 16px">
+								<button class="button button-primary button-hero"><?php echo $row ? 'ذخیره تغییرات' : 'ساخت کارشناس'; ?></button>
+								<?php if ( $row ) : ?><a class="button" href="<?php echo esc_url( self::url( 'szc-agents' ) ); ?>">کارشناسِ جدید</a><?php endif; ?>
+							</p>
+						</form>
+					</div>
+				</div>
+
+				<div class="szc-col">
+					<div class="szc-scard">
+						<div class="szc-scard-h"><h2>فهرستِ کارشناسان</h2><p>وضعیت، ویرایش و حذف. حذفِ کارشناس، سرنخ‌هایش را بدونِ تخصیص می‌کند (پاک نمی‌شوند).</p></div>
+						<table class="widefat striped szc-passtable" style="margin:0">
+							<thead><tr><th>نام</th><th>موبایل</th><th>وضعیت</th><th>اقدام</th></tr></thead>
+							<tbody>
+							<?php if ( ! $agents ) : ?>
+								<tr><td colspan="4" class="szc-muted">هنوز کارشناسی ساخته نشده است.</td></tr>
+							<?php else : foreach ( $agents as $a ) : ?>
+								<tr>
+									<td><b><?php echo esc_html( $a->name ); ?></b></td>
+									<td dir="ltr"><?php echo esc_html( szc_fa_digits( $a->mobile ) ); ?></td>
+									<td><?php echo (int) $a->active === 1 ? '<span class="szc-ok">فعال</span>' : '<span class="szc-muted">غیرفعال</span>'; ?></td>
+									<td class="szc-agent-ops">
+										<a class="button-link" href="<?php echo esc_url( self::url( 'szc-agents', array( 'edit' => $a->id ) ) ); ?>">ویرایش</a>
+										<a class="button-link" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=szc_agent_toggle&id=' . $a->id ), 'szc_agent_toggle_' . $a->id ) ); ?>"><?php echo (int) $a->active === 1 ? 'غیرفعال‌کن' : 'فعال‌کن'; ?></a>
+										<a class="button-link szc-danger" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=szc_agent_delete&id=' . $a->id ), 'szc_agent_delete_' . $a->id ) ); ?>" onclick="return confirm('این کارشناس حذف شود؟')">حذف</a>
+									</td>
+								</tr>
+							<?php endforeach; endif; ?>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	public static function handle_agent_save() {
+		self::guard();
+		if ( ! SZC_Settings::is_manager() ) {
+			wp_die( 'دسترسی غیرمجاز' );
+		}
+		check_admin_referer( 'szc_agent_save' );
 		$p      = wp_unslash( $_POST );
-		$name   = sanitize_text_field( $p['ag_name'] ?? '' );
-		$mobile = szc_normalize_mobile( $p['ag_mobile'] ?? '' );
-		$pass   = (string) ( $p['ag_pass'] ?? '' );
-		$email  = sanitize_email( $p['ag_email'] ?? '' );
+		$id     = absint( $p['id'] ?? 0 );
+		$name   = sanitize_text_field( $p['name'] ?? '' );
+		$mobile = szc_normalize_mobile( $p['mobile'] ?? '' );
+		$pass   = (string) ( $p['pass'] ?? '' );
+		$active = empty( $p['active'] ) ? 0 : 1;
 
-		if ( $name === '' || $mobile === '' || $pass === '' ) {
-			wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'missing' ) ) );
-			exit;
-		}
-		if ( ! szc_is_valid_mobile( $mobile ) ) {
-			wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'badmobile' ) ) );
-			exit;
-		}
-
-		// نام کاربری = موبایل. اگر کاربری با همین نام‌کاربری یا موبایل هست، خطا بده.
-		$existing = get_user_by( 'login', $mobile );
-		if ( ! $existing ) {
-			$q = get_users( array( 'meta_key' => 'mobile', 'meta_value' => $mobile, 'number' => 1, 'fields' => 'ID' ) );
-			if ( $q ) {
-				$existing = get_userdata( (int) $q[0] );
+		if ( $id ) {
+			$res = SZC_Agents::update( $id, $name, $mobile );
+			if ( empty( $res['ok'] ) ) {
+				wp_safe_redirect( self::url( 'szc-agents', array( 'edit' => $id, 'm' => 'bad' ) ) );
+				exit;
+			}
+			SZC_Agents::set_active( $id, $active );
+			if ( $pass !== '' ) {
+				SZC_Agents::set_password( $id, $pass );
+			}
+		} else {
+			$res = SZC_Agents::create( $name, $mobile, $pass, $active );
+			if ( empty( $res['ok'] ) ) {
+				$m = ( strpos( (string) $res['msg'], 'موبایل' ) !== false && strpos( (string) $res['msg'], 'وجود' ) !== false ) ? 'dup' : 'bad';
+				wp_safe_redirect( self::url( 'szc-agents', array( 'm' => $m ) ) );
+				exit;
 			}
 		}
-		if ( $existing ) {
-			wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'exists' ) ) );
-			exit;
-		}
+		wp_safe_redirect( self::url( 'szc-agents', array( 'm' => 'saved' ) ) );
+		exit;
+	}
 
-		if ( $email === '' ) {
-			$email = $mobile . '@sazan-crm.local';
+	public static function handle_agent_delete() {
+		self::guard();
+		if ( ! SZC_Settings::is_manager() ) {
+			wp_die( 'دسترسی غیرمجاز' );
 		}
-		if ( email_exists( $email ) ) {
-			$email = $mobile . '.' . wp_generate_password( 4, false ) . '@sazan-crm.local';
-		}
+		$id = absint( $_GET['id'] ?? 0 );
+		check_admin_referer( 'szc_agent_delete_' . $id );
+		SZC_Agents::delete( $id );
+		wp_safe_redirect( self::url( 'szc-agents', array( 'm' => 'deleted' ) ) );
+		exit;
+	}
 
-		$uid = wp_insert_user( array(
-			'user_login'   => $mobile,
-			'user_pass'    => $pass,
-			'user_email'   => $email,
-			'display_name' => $name,
-			'first_name'   => $name,
-			'role'         => 'subscriber',
-		) );
-		if ( is_wp_error( $uid ) ) {
-			wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'err' ) ) );
-			exit;
+	public static function handle_agent_toggle() {
+		self::guard();
+		if ( ! SZC_Settings::is_manager() ) {
+			wp_die( 'دسترسی غیرمجاز' );
 		}
-		update_user_meta( (int) $uid, 'mobile', $mobile );
-
-		$agents = SZC_Settings::agent_ids();
-		if ( ! in_array( (int) $uid, $agents, true ) ) {
-			$agents[] = (int) $uid;
+		$id = absint( $_GET['id'] ?? 0 );
+		check_admin_referer( 'szc_agent_toggle_' . $id );
+		$a = SZC_Agents::get( $id );
+		if ( $a ) {
+			SZC_Agents::set_active( $id, (int) $a->active === 1 ? 0 : 1 );
 		}
-		SZC_Settings::save( array( 'agents' => $agents ) );
-		SZC_Settings::set_portal_pass( (int) $uid, $pass );
-
-		wp_safe_redirect( self::url( 'szc-settings', array( 'agent' => 'created' ) ) );
+		wp_safe_redirect( self::url( 'szc-agents', array( 'm' => 'toggled' ) ) );
 		exit;
 	}
 
@@ -715,6 +714,80 @@ class SZC_Admin_Pages {
 		wp_send_json_error( array( 'msg' => $res['msg'] ?? 'ارسال ناموفق بود.' ) );
 	}
 
+	/* ==================== گزارشِ تحویل پیامک ==================== */
+
+	public static function page_delivery() {
+		self::guard();
+		global $wpdb;
+		$c    = SZC_SMS::delivery_counts( 7 );
+		$rows = $wpdb->get_results( 'SELECT contact_id, mobile, delivery, provider_msgid, sent_at FROM ' . SZC_SMS::queue_table()
+			. " WHERE status='sent' ORDER BY sent_at DESC LIMIT 80" );
+		$lbl  = array(
+			'delivered'   => array( 'رسید', 'szc-ok' ),
+			'undelivered' => array( 'نرسید', 'szc-danger' ),
+			'pending'     => array( 'در انتظار', 'szc-muted' ),
+			'unknown'     => array( 'نامشخص', 'szc-muted' ),
+			''            => array( 'بدونِ پیگیری', 'szc-muted' ),
+		);
+		$bmsg = get_transient( 'szc_delivery_' . SZC_Auth::actor_id() );
+		if ( $bmsg ) {
+			delete_transient( 'szc_delivery_' . SZC_Auth::actor_id() );
+		}
+		?>
+		<div class="wrap szc-wrap">
+			<h1>گزارشِ تحویلِ پیامک</h1>
+			<p class="szc-muted">وضعیتِ واقعیِ رسیدنِ پیامک‌ها از سرویس‌دهنده (۷ روزِ اخیر). وضعیت‌ها هر ۵ دقیقه خودکار به‌روزرسانی می‌شوند؛ برای به‌روزرسانیِ فوری دکمه‌ی زیر را بزنید.</p>
+			<?php if ( $bmsg ) : ?><div class="notice notice-success is-dismissible"><p><?php echo esc_html( $bmsg ); ?></p></div><?php endif; ?>
+			<?php if ( ! SZC_SMS::enabled() ) : ?>
+				<div class="notice notice-warning"><p>سرویس پیامک فعال نیست.</p></div>
+			<?php endif; ?>
+
+			<div class="szc-kpis">
+				<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $c['sent'] ) ); ?></span><span class="szc-kpi-l">ارسال‌شده (۷ روز)</span></div>
+				<div class="szc-kpi"><span class="szc-kpi-n" style="color:#16a34a"><?php echo esc_html( szc_fa_digits( $c['delivered'] ) ); ?></span><span class="szc-kpi-l">رسیده</span></div>
+				<div class="szc-kpi"><span class="szc-kpi-n" style="color:#b91c1c"><?php echo esc_html( szc_fa_digits( $c['undelivered'] ) ); ?></span><span class="szc-kpi-l">نرسیده</span></div>
+				<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $c['pending'] ) ); ?></span><span class="szc-kpi-l">در انتظار</span></div>
+				<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $c['rate'] ) ); ?>٪</span><span class="szc-kpi-l">نرخِ تحویل</span></div>
+			</div>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:8px 0 16px">
+				<?php wp_nonce_field( 'szc_delivery_refresh' ); ?>
+				<input type="hidden" name="action" value="szc_delivery_refresh">
+				<button class="button button-primary">بروزرسانیِ فوریِ وضعیت‌ها</button>
+			</form>
+
+			<table class="wp-list-table widefat fixed striped">
+				<thead><tr><th>مخاطب/موبایل</th><th>وضعیت تحویل</th><th>شناسه سرویس</th><th>زمان ارسال</th></tr></thead>
+				<tbody>
+				<?php if ( ! $rows ) : ?>
+					<tr><td colspan="4" class="szc-muted">پیامکِ ارسال‌شده‌ای نیست.</td></tr>
+				<?php else : foreach ( $rows as $r ) :
+					$c2 = $r->contact_id ? SZC_Contacts::get( $r->contact_id ) : null;
+					$who = $c2 ? SZC_Contacts::full_name( $c2 ) : szc_fa_digits( $r->mobile );
+					$dl  = $lbl[ $r->delivery ] ?? $lbl[''];
+					?>
+					<tr>
+						<td><?php echo esc_html( $who ); ?> <span class="szc-muted" dir="ltr"><?php echo esc_html( szc_fa_digits( $r->mobile ) ); ?></span></td>
+						<td class="<?php echo esc_attr( $dl[1] ); ?>" style="font-weight:700"><?php echo esc_html( $dl[0] ); ?></td>
+						<td dir="ltr" class="szc-muted"><?php echo esc_html( $r->provider_msgid ?: '—' ); ?></td>
+						<td class="szc-muted"><?php echo esc_html( $r->sent_at ? szc_format_mysql( $r->sent_at ) : '—' ); ?></td>
+					</tr>
+				<?php endforeach; endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	public static function handle_delivery_refresh() {
+		self::guard();
+		check_admin_referer( 'szc_delivery_refresh' );
+		$n = SZC_SMS::refresh_delivery( 200 );
+		set_transient( 'szc_delivery_' . SZC_Auth::actor_id(), 'وضعیتِ ' . szc_fa_digits( $n ) . ' پیامک به‌روزرسانی شد.', 60 );
+		wp_safe_redirect( self::url( 'szc-delivery' ) );
+		exit;
+	}
+
 	/* ==================== ارسال همگانی (Broadcast) ==================== */
 
 	/** آرگومان‌های فیلترِ مخاطبین از فیلدهای b_* (با اعمالِ محدوده‌ی کارشناس). */
@@ -729,7 +802,7 @@ class SZC_Admin_Pages {
 			'opt_out'  => '0', // لغو دریافت‌کرده‌ها هرگز.
 		);
 		if ( ! SZC_Settings::is_manager() ) {
-			$a['owner'] = get_current_user_id();
+			$a['owner'] = SZC_Auth::actor_id();
 		}
 		return $a;
 	}
@@ -744,9 +817,9 @@ class SZC_Admin_Pages {
 		$assignees  = $is_manager ? SZC_Settings::assignable_users() : array();
 		$total      = SZC_Contacts::total( SZC_Settings::scope_owner() );
 		$sms_on     = SZC_SMS::enabled();
-		$res        = get_transient( 'szc_broadcast_' . get_current_user_id() );
+		$res        = get_transient( 'szc_broadcast_' . SZC_Auth::actor_id() );
 		if ( $res ) {
-			delete_transient( 'szc_broadcast_' . get_current_user_id() );
+			delete_transient( 'szc_broadcast_' . SZC_Auth::actor_id() );
 		}
 		?>
 		<div class="wrap szc-wrap szc-broadcast">
@@ -883,7 +956,7 @@ class SZC_Admin_Pages {
 		$p = wp_unslash( $_POST );
 
 		if ( ! SZC_SMS::enabled() ) {
-			set_transient( 'szc_broadcast_' . get_current_user_id(), array( 'queued' => 0, 'skipped' => 0, 'scheduled' => '' ), 60 );
+			set_transient( 'szc_broadcast_' . SZC_Auth::actor_id(), array( 'queued' => 0, 'skipped' => 0, 'scheduled' => '' ), 60 );
 			wp_safe_redirect( self::url( 'szc-broadcast' ) );
 			exit;
 		}
@@ -909,7 +982,7 @@ class SZC_Admin_Pages {
 			$r    = SZC_SMS::enqueue_text_bulk( $ids, $text, $when );
 		}
 
-		set_transient( 'szc_broadcast_' . get_current_user_id(), array(
+		set_transient( 'szc_broadcast_' . SZC_Auth::actor_id(), array(
 			'queued'    => (int) $r['queued'],
 			'skipped'   => (int) $r['skipped'],
 			'scheduled' => $scheduled_label,
@@ -935,7 +1008,7 @@ class SZC_Admin_Pages {
 			'owner'    => absint( $_POST['f_owner'] ?? 0 ),
 		);
 		if ( ! $is_manager ) {
-			$fargs['owner'] = get_current_user_id();
+			$fargs['owner'] = SZC_Auth::actor_id();
 		}
 
 		if ( $scope === 'all' ) {
@@ -943,7 +1016,7 @@ class SZC_Admin_Pages {
 		} else {
 			$ids = array_map( 'intval', (array) ( $_POST['ids'] ?? array() ) );
 			if ( ! $is_manager ) {
-				$self = get_current_user_id();
+				$self = SZC_Auth::actor_id();
 				$ids  = array_values( array_filter( $ids, function ( $id ) use ( $self ) {
 					$c = SZC_Contacts::get( $id );
 					return $c && (int) $c->owner_id === $self;
@@ -1001,7 +1074,7 @@ class SZC_Admin_Pages {
 			default:
 				$msg = 'اقدامی انتخاب نشد.';
 		}
-		set_transient( 'szc_bulk_' . get_current_user_id(), $msg, 60 );
+		set_transient( 'szc_bulk_' . SZC_Auth::actor_id(), $msg, 60 );
 		wp_safe_redirect( wp_get_referer() ?: self::url( 'szc-contacts' ) );
 		exit;
 	}
@@ -1255,7 +1328,7 @@ class SZC_Admin_Pages {
 		self::guard();
 		check_admin_referer( 'szc_blacklist_add' );
 		$n = SZC_Blacklist::add_bulk_text( wp_unslash( $_POST['numbers'] ?? '' ), sanitize_text_field( wp_unslash( $_POST['reason'] ?? '' ) ) );
-		set_transient( 'szc_bulk_' . get_current_user_id(), szc_fa_digits( $n ) . ' شماره به لیست سیاه افزوده شد.', 60 );
+		set_transient( 'szc_bulk_' . SZC_Auth::actor_id(), szc_fa_digits( $n ) . ' شماره به لیست سیاه افزوده شد.', 60 );
 		wp_safe_redirect( self::url( 'szc-blacklist' ) );
 		exit;
 	}
@@ -1373,7 +1446,7 @@ class SZC_Admin_Pages {
 		?>
 		<div class="wrap szc-wrap">
 			<h1>مخاطبین تکراری</h1>
-			<?php $bmsg = get_transient( 'szc_bulk_' . get_current_user_id() ); if ( $bmsg ) { delete_transient( 'szc_bulk_' . get_current_user_id() ); echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $bmsg ) . '</p></div>'; } ?>
+			<?php $bmsg = get_transient( 'szc_bulk_' . SZC_Auth::actor_id() ); if ( $bmsg ) { delete_transient( 'szc_bulk_' . SZC_Auth::actor_id() ); echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $bmsg ) . '</p></div>'; } ?>
 			<p class="szc-muted">گروه‌های زیر نامِ کاملِ یکسان دارند. برای هر گروه، رکوردِ «اصلی» را انتخاب کنید تا بقیه در آن ادغام شوند (سوابق منتقل و رکوردهای دیگر حذف می‌شوند).</p>
 			<?php if ( ! $groups ) : ?>
 				<div class="szc-card"><p class="szc-muted">مورد تکراریِ آشکاری پیدا نشد. 👌</p></div>
@@ -1413,7 +1486,7 @@ class SZC_Admin_Pages {
 				if ( ! empty( $r['ok'] ) ) { $merged++; }
 			}
 		}
-		set_transient( 'szc_bulk_' . get_current_user_id(), szc_fa_digits( $merged ) . ' رکورد ادغام شد.', 60 );
+		set_transient( 'szc_bulk_' . SZC_Auth::actor_id(), szc_fa_digits( $merged ) . ' رکورد ادغام شد.', 60 );
 		wp_safe_redirect( self::url( 'szc-duplicates' ) );
 		exit;
 	}

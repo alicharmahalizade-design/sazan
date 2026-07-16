@@ -138,7 +138,7 @@ class SZC_Sequences {
 				'contact_id'  => (int) $contact->id,
 				'status'      => 'active',
 				'started_at'  => $now,
-				'created_by'  => get_current_user_id(),
+				'created_by'  => SZC_Auth::actor_id(),
 			) );
 			$eid = (int) $wpdb->insert_id;
 		}

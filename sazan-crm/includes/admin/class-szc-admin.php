@@ -35,6 +35,9 @@ class SZC_Admin {
 		);
 		foreach ( $ajax as $action => $method ) {
 			add_action( 'wp_ajax_szc_' . $action, array( __CLASS__, 'ajax_' . $method ) );
+			// کارشناسانِ پورتال کاربرِ وردپرس نیستند (نشستِ اختصاصیِ CRM)، پس درخواست‌هایشان
+			// به هندلرهای nopriv می‌رسد. امنیت با guard() (نشستِ کارشناس/مدیر + nonce) تأمین می‌شود.
+			add_action( 'wp_ajax_nopriv_szc_' . $action, array( __CLASS__, 'ajax_' . $method ) );
 		}
 	}
 
@@ -53,7 +56,9 @@ class SZC_Admin {
 		add_submenu_page( 'szc', 'بخش‌بندی‌ها', 'بخش‌بندی‌ها', $cap, 'szc-segments', array( 'SZC_Admin_Pages', 'page_segments' ) );
 		add_submenu_page( 'szc', 'لیست سیاه', 'لیست سیاه', $cap, 'szc-blacklist', array( 'SZC_Admin_Pages', 'page_blacklist' ) );
 		add_submenu_page( 'szc', 'گزارش‌ها', 'گزارش‌ها', $cap, 'szc-reports', array( 'SZC_Admin_Pages', 'page_reports' ) );
+		add_submenu_page( 'szc', 'گزارش تحویل پیامک', 'گزارش تحویل پیامک', $cap, 'szc-delivery', array( 'SZC_Admin_Pages', 'page_delivery' ) );
 		add_submenu_page( 'szc', 'مراحل و فیلدها', 'مراحل و فیلدها', $cap, 'szc-pipeline', array( 'SZC_Admin_Pages', 'page_pipeline' ) );
+		add_submenu_page( 'szc', 'کارشناسان', 'کارشناسان', $cap, 'szc-agents', array( 'SZC_Admin_Pages', 'page_agents' ) );
 		add_submenu_page( 'szc', 'تنظیمات', 'تنظیمات', $cap, 'szc-settings', array( 'SZC_Admin_Pages', 'page_settings' ) );
 	}
 
@@ -97,7 +102,7 @@ class SZC_Admin {
 		$m   = szc_normalize_mobile( $raw );
 		if ( szc_is_valid_mobile( $m ) ) {
 			$c = SZC_Contacts::get_by_mobile( $m );
-			if ( $c && ( SZC_Settings::is_manager() || (int) $c->owner_id === get_current_user_id() ) ) {
+			if ( $c && ( SZC_Settings::is_manager() || (int) $c->owner_id === SZC_Auth::actor_id() ) ) {
 				wp_safe_redirect( self::contact_url( $c->id ) );
 				exit;
 			}
@@ -210,7 +215,7 @@ class SZC_Admin {
 		// phpcs:enable
 		// کارشناس فقط سرنخ‌های خودش را می‌بیند.
 		if ( ! $is_manager ) {
-			$args['owner'] = get_current_user_id();
+			$args['owner'] = SZC_Auth::actor_id();
 		}
 		$res       = SZC_Contacts::query( $args );
 		$items     = $res['items'];
@@ -237,7 +242,7 @@ class SZC_Admin {
 				<input type="search" name="find" dir="ltr" placeholder="جستجوی سریع شماره…">
 				<button class="button">یافتن</button>
 			</form>
-			<?php $bmsg = get_transient( 'szc_bulk_' . get_current_user_id() ); if ( $bmsg ) { delete_transient( 'szc_bulk_' . get_current_user_id() ); echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $bmsg ) . '</p></div>'; } ?>
+			<?php $bmsg = get_transient( 'szc_bulk_' . SZC_Auth::actor_id() ); if ( $bmsg ) { delete_transient( 'szc_bulk_' . SZC_Auth::actor_id() ); echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $bmsg ) . '</p></div>'; } ?>
 
 			<form method="get" class="szc-filters">
 				<input type="hidden" name="page" value="szc-contacts">
@@ -585,7 +590,7 @@ class SZC_Admin {
 		$sms_lbl = array( 'sent' => 'ارسال شد', 'failed' => 'ناموفق', 'scheduled' => 'زمان‌بندی شد' );
 		echo '<ul class="szc-timeline">';
 		foreach ( $items as $it ) {
-			$who  = $it['user_id'] ? get_the_author_meta( 'display_name', $it['user_id'] ) : '';
+			$who  = $it['user_id'] ? SZC_Auth::display_name( $it['user_id'] ) : '';
 			$head = $type_lbl[ $it['type'] ] ?? $it['type'];
 			$extra = '';
 			if ( $it['type'] === 'call' && $it['outcome'] ) {

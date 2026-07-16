@@ -122,14 +122,36 @@ class SZC_SMS {
 		$code = (int) wp_remote_retrieve_response_code( $res );
 		$raw  = wp_remote_retrieve_body( $res );
 		$ok   = ( $code >= 200 && $code < 300 );
+		$json = json_decode( (string) $raw, true );
 		if ( $ok && self::provider() === 'smsir' ) {
-			$j = json_decode( (string) $raw, true );
-			if ( is_array( $j ) && isset( $j['status'] ) && (int) $j['status'] !== 1 ) {
+			if ( is_array( $json ) && isset( $json['status'] ) && (int) $json['status'] !== 1 ) {
 				$ok  = false;
-				$raw = $j['message'] ?? $raw;
+				$raw = $json['message'] ?? $raw;
 			}
 		}
-		return array( 'ok' => $ok, 'msg' => $ok ? 'ارسال شد.' : ( 'خطای سرویس پیامک (' . $code . '): ' . wp_strip_all_tags( (string) $raw ) ), 'code' => $code );
+		return array(
+			'ok'    => $ok,
+			'msg'   => $ok ? 'ارسال شد.' : ( 'خطای سرویس پیامک (' . $code . '): ' . wp_strip_all_tags( (string) $raw ) ),
+			'code'  => $code,
+			'msgid' => $ok && is_array( $json ) ? self::extract_msgid( $json ) : '',
+		);
+	}
+
+	/** استخراجِ شناسه‌ی پیامِ سرویس‌دهنده از پاسخِ ارسال (برای پیگیریِ تحویل). */
+	protected static function extract_msgid( $json ) {
+		$data = isset( $json['data'] ) && is_array( $json['data'] ) ? $json['data'] : $json;
+		foreach ( array( 'message_id', 'messageId', 'bulk_id', 'bulkId', 'packId', 'pack_id', 'recId', 'messageIds' ) as $k ) {
+			if ( isset( $data[ $k ] ) ) {
+				$v = $data[ $k ];
+				if ( is_array( $v ) ) {
+					$v = reset( $v );
+				}
+				if ( $v !== '' && $v !== null ) {
+					return (string) $v;
+				}
+			}
+		}
+		return '';
 	}
 
 	/* ==================== ارسال فوری به یک مخاطب ==================== */
@@ -190,7 +212,7 @@ class SZC_SMS {
 			'send_at'        => $send_at,
 			'status'         => 'pending',
 			'attempts'       => 0,
-			'created_by'     => get_current_user_id(),
+			'created_by'     => SZC_Auth::actor_id(),
 			'created_at'     => current_time( 'mysql' ),
 		) );
 		return (int) $wpdb->insert_id;
@@ -353,12 +375,17 @@ class SZC_SMS {
 				: self::send_text( $row->mobile, $row->message );
 
 			$ok = ! empty( $res['ok'] );
-			$wpdb->update( self::queue_table(), array(
+			$upd = array(
 				'status'   => $ok ? 'sent' : 'failed',
 				'attempts' => (int) $row->attempts + 1,
 				'response' => (string) ( $res['msg'] ?? '' ),
 				'sent_at'  => $ok ? current_time( 'mysql' ) : null,
-			), array( 'id' => (int) $row->id ) );
+			);
+			if ( $ok ) {
+				$upd['provider_msgid'] = (string) ( $res['msgid'] ?? '' );
+				$upd['delivery']       = ( $res['msgid'] ?? '' ) !== '' ? 'pending' : '';
+			}
+			$wpdb->update( self::queue_table(), $upd, array( 'id' => (int) $row->id ) );
 
 			if ( $row->contact_id ) {
 				SZC_Activity::log( (int) $row->contact_id, 'sms', array(
@@ -368,5 +395,111 @@ class SZC_SMS {
 				) );
 			}
 		}
+		self::refresh_delivery();
+	}
+
+	/* ==================== گزارشِ تحویل (Delivery report) ==================== */
+
+	const DELIVERY_MAX_CHECKS = 6;
+
+	/** شمارِ وضعیت‌های تحویل در N روز اخیر برای گزارش. */
+	public static function delivery_counts( $days = 7 ) {
+		global $wpdb;
+		$since = wp_date( 'Y-m-d 00:00:00', time() - ( max( 1, (int) $days ) - 1 ) * DAY_IN_SECONDS );
+		$rows  = $wpdb->get_results( $wpdb->prepare(
+			'SELECT delivery, COUNT(*) c FROM ' . self::queue_table() . " WHERE status='sent' AND sent_at>=%s GROUP BY delivery", $since ), OBJECT_K );
+		$out = array( 'delivered' => 0, 'undelivered' => 0, 'pending' => 0, 'unknown' => 0, 'sent' => 0 );
+		foreach ( $rows as $k => $r ) {
+			$key = in_array( $k, array( 'delivered', 'undelivered', 'pending' ), true ) ? $k : 'unknown';
+			$out[ $key ] += (int) $r->c;
+			$out['sent'] += (int) $r->c;
+		}
+		$done          = $out['delivered'] + $out['undelivered'];
+		$out['rate']   = $done > 0 ? round( $out['delivered'] / $done * 100, 1 ) : 0;
+		return $out;
+	}
+
+	/**
+	 * به‌روزرسانیِ وضعیتِ تحویلِ پیامک‌های ارسال‌شده از سرویس‌دهنده (best-effort).
+	 * فقط ردیف‌هایی که شناسه‌ی سرویس‌دهنده دارند و هنوز قطعی نشده‌اند بررسی می‌شوند.
+	 */
+	public static function refresh_delivery( $limit = 40 ) {
+		global $wpdb;
+		if ( ! self::enabled() ) {
+			return 0;
+		}
+		$since = wp_date( 'Y-m-d H:i:s', time() - 3 * DAY_IN_SECONDS );
+		$rows  = $wpdb->get_results( $wpdb->prepare(
+			'SELECT id, provider_msgid, delivery_checks FROM ' . self::queue_table()
+			. " WHERE status='sent' AND provider_msgid<>'' AND delivery IN ('pending','') AND delivery_checks<%d AND sent_at>=%s ORDER BY sent_at DESC LIMIT %d",
+			self::DELIVERY_MAX_CHECKS, $since, (int) $limit ) );
+		$done = 0;
+		foreach ( $rows as $row ) {
+			$state = self::query_delivery_status( $row->provider_msgid );
+			$upd   = array( 'delivery_checks' => (int) $row->delivery_checks + 1 );
+			if ( in_array( $state, array( 'delivered', 'undelivered' ), true ) ) {
+				$upd['delivery']    = $state;
+				$upd['delivery_at'] = current_time( 'mysql' );
+				$done++;
+			} elseif ( (int) $row->delivery_checks + 1 >= self::DELIVERY_MAX_CHECKS ) {
+				$upd['delivery'] = 'unknown'; // پس از چند تلاش، نامشخص می‌ماند.
+			} else {
+				$upd['delivery'] = 'pending';
+			}
+			$wpdb->update( self::queue_table(), $upd, array( 'id' => (int) $row->id ) );
+		}
+		return $done;
+	}
+
+	/**
+	 * استعلامِ وضعیتِ تحویلِ یک پیام از سرویس‌دهنده.
+	 * خروجی: 'delivered' | 'undelivered' | 'pending' | 'unknown'.
+	 * کدهای دقیق بین پنل‌ها فرق دارد؛ این‌جا رایج‌ترین حالت‌ها تفسیر می‌شود.
+	 */
+	protected static function query_delivery_status( $msgid ) {
+		$msgid = rawurlencode( (string) $msgid );
+		if ( self::provider() === 'smsir' ) {
+			$url = self::base() . '/v1/send/' . $msgid;
+		} else {
+			$url = self::base() . '/messages/' . $msgid;
+		}
+		$res = wp_remote_get( $url, array( 'timeout' => 15, 'headers' => self::headers() ) );
+		if ( is_wp_error( $res ) ) {
+			return 'pending';
+		}
+		$code = (int) wp_remote_retrieve_response_code( $res );
+		if ( $code < 200 || $code >= 300 ) {
+			return 'pending';
+		}
+		$j = json_decode( (string) wp_remote_retrieve_body( $res ), true );
+		if ( ! is_array( $j ) ) {
+			return 'pending';
+		}
+		$data = isset( $j['data'] ) && is_array( $j['data'] ) ? $j['data'] : $j;
+
+		// وضعیتِ عددیِ تحویل (deliveryState) در sms.ir و مشابه: 1=رسید، سایرِ مقادیرِ نهایی=نرسید.
+		foreach ( array( 'deliveryState', 'delivery_state', 'status', 'state' ) as $k ) {
+			if ( isset( $data[ $k ] ) && is_numeric( $data[ $k ] ) ) {
+				$v = (int) $data[ $k ];
+				if ( $v === 1 ) {
+					return 'delivered';
+				}
+				if ( in_array( $v, array( 2, 3, 4, 5, 6, 8, 9 ), true ) ) {
+					return 'undelivered';
+				}
+				return 'pending';
+			}
+		}
+		// وضعیتِ متنی.
+		$txt = strtolower( (string) ( $data['deliveryStatus'] ?? $data['status'] ?? '' ) );
+		if ( $txt !== '' ) {
+			if ( strpos( $txt, 'deliver' ) !== false || strpos( $txt, 'sent' ) !== false ) {
+				return 'delivered';
+			}
+			if ( strpos( $txt, 'undeliver' ) !== false || strpos( $txt, 'fail' ) !== false || strpos( $txt, 'expire' ) !== false ) {
+				return 'undelivered';
+			}
+		}
+		return 'pending';
 	}
 }

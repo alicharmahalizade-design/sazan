@@ -28,7 +28,7 @@ class SZC_Blacklist {
 		$wpdb->query( $wpdb->prepare(
 			'INSERT INTO ' . self::table() . ' (mobile,reason,created_by,created_at) VALUES (%s,%s,%d,%s)
 			 ON DUPLICATE KEY UPDATE reason=VALUES(reason)',
-			$mobile, sanitize_text_field( $reason ), get_current_user_id(), current_time( 'mysql' ) ) );
+			$mobile, sanitize_text_field( $reason ), SZC_Auth::actor_id(), current_time( 'mysql' ) ) );
 		// اگر مخاطبی با این شماره هست، opt_out هم بشود.
 		$c = SZC_Contacts::get_by_mobile( $mobile );
 		if ( $c ) {

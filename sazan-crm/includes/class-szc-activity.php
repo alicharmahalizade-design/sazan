@@ -17,7 +17,7 @@ class SZC_Activity {
 		}
 		$wpdb->insert( self::t_notes(), array(
 			'contact_id' => (int) $contact_id,
-			'user_id'    => $user_id ? (int) $user_id : get_current_user_id(),
+			'user_id'    => $user_id ? (int) $user_id : SZC_Auth::actor_id(),
 			'body'       => $body,
 			'created_at' => current_time( 'mysql' ),
 		) );
@@ -34,7 +34,7 @@ class SZC_Activity {
 	public static function log( $contact_id, $type, $args = array() ) {
 		global $wpdb;
 		$a = wp_parse_args( $args, array(
-			'user_id' => get_current_user_id(),
+			'user_id' => SZC_Auth::actor_id(),
 			'outcome' => '',
 			'body'    => '',
 			'meta'    => null,
@@ -240,12 +240,13 @@ class SZC_Activity {
 				$msg .= ' موضوع: ' . $r->body;
 			}
 			if ( $sms && SZC_SMS::enabled() ) {
-				$to = szc_user_mobile( $owner );
+				$to = SZC_Auth::actor_mobile( $owner );
 				if ( $to !== '' ) {
 					SZC_SMS::send_text( $to, $msg );
 				}
 			}
-			if ( $email ) {
+			// ایمیل فقط برای مدیرانِ کاربرِ وردپرس معنا دارد؛ کارشناسانِ CRM ایمیل ندارند.
+			if ( $email && ! SZC_Agents::is_agent_owner( $owner ) ) {
 				$u = get_userdata( $owner );
 				if ( $u && $u->user_email ) {
 					wp_mail( $u->user_email, 'یادآوری پیگیری — سازان CRM', $msg );

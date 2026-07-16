@@ -20,7 +20,10 @@ class SZC_Portal {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 		add_action( 'admin_init', array( __CLASS__, 'lock_admin' ) );
 		add_action( 'after_setup_theme', array( __CLASS__, 'maybe_hide_admin_bar' ) );
+		add_filter( 'show_admin_bar', array( __CLASS__, 'hide_bar_on_portal' ), 100 );
+		add_action( 'template_redirect', array( __CLASS__, 'portal_nocache' ) );
 		add_action( 'wp_ajax_szc_portal_view', array( __CLASS__, 'ajax_view' ) );
+		add_action( 'wp_ajax_nopriv_szc_portal_view', array( __CLASS__, 'ajax_view' ) );
 		add_action( 'wp_ajax_nopriv_szc_portal_login', array( __CLASS__, 'ajax_login' ) );
 		add_action( 'wp_ajax_szc_portal_login', array( __CLASS__, 'ajax_login' ) );
 		add_action( 'init', array( __CLASS__, 'maybe_serve_pwa' ) );
@@ -128,7 +131,7 @@ JS;
 
 	/** بارگذاری AJAXِ یک نما (SPA). خروجی: html فرگمنت. */
 	public static function ajax_view() {
-		if ( ! is_user_logged_in() || ! SZC_Settings::can_access() ) {
+		if ( ! SZC_Settings::can_access() ) {
 			wp_send_json_error( array( 'msg' => 'دسترسی غیرمجاز' ), 403 );
 		}
 		check_ajax_referer( 'szc_admin', 'nonce' );
@@ -143,30 +146,33 @@ JS;
 
 	/* ==================== ورودِ سریعِ کارشناسان با رمز ==================== */
 
-	/** تأییدِ رمز و ورودِ کارشناس (تنظیمِ کوکیِ ورودِ وردپرس برای همان کاربر). */
+	/** تأییدِ موبایل+رمز و ورودِ کارشناس (نشستِ اختصاصیِ CRM، بدونِ کاربرِ وردپرس). */
 	public static function ajax_login() {
 		if ( ! SZC_Settings::pass_login_enabled() ) {
-			wp_send_json_error( array( 'msg' => 'ورود با رمز غیرفعال است.' ), 403 );
+			wp_send_json_error( array( 'msg' => 'ورودِ کارشناسان غیرفعال است.' ), 403 );
 		}
 		check_ajax_referer( 'szc_portal_login', 'nonce' );
-		$pass = isset( $_POST['pass'] ) ? (string) wp_unslash( $_POST['pass'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$mobile = isset( $_POST['mobile'] ) ? szc_normalize_mobile( wp_unslash( $_POST['mobile'] ) ) : '';
+		$pass   = isset( $_POST['pass'] ) ? (string) wp_unslash( $_POST['pass'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 
-		// محدودسازیِ ساده‌ی نرخِ تلاش (ضدّ حدسِ رمز) بر پایه‌ی IP.
+		// محدودسازیِ نرخِ تلاش (ضدّ حدسِ رمز) بر پایه‌ی IP.
 		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '0';
 		$key = 'szc_login_try_' . md5( $ip );
 		$try = (int) get_transient( $key );
 		if ( $try >= 8 ) {
 			wp_send_json_error( array( 'msg' => 'تلاش‌های زیاد. چند دقیقه بعد دوباره امتحان کنید.' ), 429 );
 		}
+		if ( $mobile === '' || $pass === '' ) {
+			wp_send_json_error( array( 'msg' => 'موبایل و رمز را وارد کنید.' ) );
+		}
 
-		$uid = SZC_Settings::verify_portal_pass( $pass );
-		if ( ! $uid ) {
+		$agent = SZC_Agents::authenticate( $mobile, $pass );
+		if ( ! $agent ) {
 			set_transient( $key, $try + 1, 10 * MINUTE_IN_SECONDS );
-			wp_send_json_error( array( 'msg' => 'رمز نادرست است.' ) );
+			wp_send_json_error( array( 'msg' => 'موبایل یا رمز نادرست است.' ) );
 		}
 		delete_transient( $key );
-		wp_set_current_user( $uid );
-		wp_set_auth_cookie( $uid, true );
+		SZC_Auth::login_agent( $agent );
 		wp_send_json_success( array( 'redirect' => self::page_url(), 'msg' => 'خوش آمدید' ) );
 	}
 
@@ -177,7 +183,11 @@ JS;
 			<form class="szc-p-loginbox" data-login-form>
 				<span class="szc-p-login-logo"><?php echo szc_icon( 'idcard' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
 				<h1 class="szc-p-login-title">پنل فروش سازان</h1>
-				<p class="szc-p-login-sub">برای ورود، رمز کارشناسی خود را وارد کنید.</p>
+				<p class="szc-p-login-sub">برای ورود، موبایل و رمزِ کارشناسی خود را وارد کنید.</p>
+				<div class="szc-p-login-field">
+					<span class="szc-p-login-ico"><?php echo szc_icon( 'smartphone' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+					<input type="tel" data-login-mobile dir="ltr" placeholder="موبایل (۰۹...)" autocomplete="username" inputmode="numeric" enterkeyhint="next">
+				</div>
 				<div class="szc-p-login-field">
 					<span class="szc-p-login-ico"><?php echo szc_icon( 'user' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
 					<input type="password" data-login-pass placeholder="رمز ورود" autocomplete="current-password" enterkeyhint="go">
@@ -267,6 +277,18 @@ JS;
 		}
 	}
 
+	/** نوارِ ابزارِ وردپرس روی برگه‌ی پورتال همیشه مخفی بماند (برای همه، از جمله مدیر). */
+	public static function hide_bar_on_portal( $show ) {
+		return self::is_portal_singular() ? false : $show;
+	}
+
+	/** برگه‌ی پورتال برای نشستِ کارشناس کش نشود (پیش از ارسالِ خروجی). */
+	public static function portal_nocache() {
+		if ( self::is_portal_singular() && SZC_Auth::is_agent() ) {
+			nocache_headers();
+		}
+	}
+
 	/* ==================== assets ==================== */
 
 	public static function assets() {
@@ -311,14 +333,16 @@ JS;
 	}
 
 	public static function shortcode( $atts = array() ) {
-		if ( ! is_user_logged_in() ) {
+		if ( ! SZC_Settings::can_access() ) {
 			if ( SZC_Settings::pass_login_enabled() ) {
 				return self::login_form_html();
 			}
-			return '<div class="szc-portal"><div class="szc-p-login">برای ورود به پنل فروش ابتدا وارد حساب کاربری شوید. <a href="' . esc_url( wp_login_url( self::page_url() ) ) . '">ورود</a></div></div>';
-		}
-		if ( ! SZC_Settings::can_access() ) {
 			return '<div class="szc-portal"><div class="szc-p-login">شما به پنل فروش دسترسی ندارید. با مدیر تماس بگیرید.</div></div>';
+		}
+
+		// نشستِ کارشناس شخصی است؛ کش‌ نشود تا داده‌ی یک کارشناس به دیگری نشت نکند.
+		if ( SZC_Auth::is_agent() && ! defined( 'DONOTCACHEPAGE' ) ) {
+			define( 'DONOTCACHEPAGE', true );
 		}
 
 		// ثبت برگه‌ی پورتال برای هدایت‌ها.
@@ -348,7 +372,9 @@ JS;
 	}
 
 	protected static function topbar_html() {
-		$u = wp_get_current_user();
+		$name    = SZC_Auth::current_name();
+		$initial = $name !== '' ? mb_substr( $name, 0, 1 ) : '؟';
+		$logout  = add_query_arg( 'szc_logout', '1', self::page_url() );
 		ob_start(); ?>
 		<header class="szc-p-top">
 			<div class="szc-p-brand">
@@ -365,9 +391,9 @@ JS;
 					<span class="szc-p-theme-sun"><?php echo szc_icon( 'sun' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
 					<span class="szc-p-theme-moon"><?php echo szc_icon( 'moon' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
 				</button>
-				<span class="szc-p-avatar"><?php echo get_avatar( $u->ID, 34 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
-				<span class="szc-p-uname"><?php echo esc_html( $u->display_name ); ?></span>
-				<a class="szc-p-logout" href="<?php echo esc_url( wp_logout_url( self::page_url() ) ); ?>" aria-label="خروج"><?php echo szc_icon( 'log-out' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
+				<span class="szc-p-avatar szc-p-avatar--initial"><?php echo esc_html( $initial ); ?></span>
+				<span class="szc-p-uname"><?php echo esc_html( $name ); ?></span>
+				<a class="szc-p-logout" href="<?php echo esc_url( $logout ); ?>" aria-label="خروج"><?php echo szc_icon( 'log-out' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
 			</div>
 		</header>
 		<?php
@@ -753,7 +779,7 @@ JS;
 		if ( ! $c ) {
 			return '<p class="szc-p-empty">مخاطب یافت نشد. <a href="' . esc_url( self::url( 'contacts' ) ) . '">بازگشت</a></p>';
 		}
-		if ( ! SZC_Settings::is_manager() && (int) $c->owner_id !== get_current_user_id() && (int) $c->owner_id !== 0 ) {
+		if ( ! SZC_Settings::is_manager() && (int) $c->owner_id !== SZC_Auth::actor_id() && (int) $c->owner_id !== 0 ) {
 			return '<p class="szc-p-empty">به این مخاطب دسترسی ندارید.</p>';
 		}
 
@@ -953,7 +979,7 @@ JS;
 		ob_start();
 		echo '<ul class="szc-p-timeline">';
 		foreach ( $items as $it ) {
-			$who   = $it['user_id'] ? get_the_author_meta( 'display_name', $it['user_id'] ) : '';
+			$who   = $it['user_id'] ? SZC_Auth::display_name( $it['user_id'] ) : '';
 			$head  = $type_lbl[ $it['type'] ] ?? $it['type'];
 			$extra = '';
 			if ( $it['type'] === 'call' && $it['outcome'] ) {

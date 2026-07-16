@@ -45,7 +45,7 @@ class SZC_Segments {
 		$wpdb->insert( self::table(), array(
 			'name'       => $name,
 			'filters'    => wp_json_encode( $clean ),
-			'created_by' => get_current_user_id(),
+			'created_by' => SZC_Auth::actor_id(),
 			'created_at' => current_time( 'mysql' ),
 		) );
 		return (int) $wpdb->insert_id;

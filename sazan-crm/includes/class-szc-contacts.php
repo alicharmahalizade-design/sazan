@@ -70,7 +70,11 @@ class SZC_Contacts {
 			'priority' => 'warm', 'stage' => SZC_Settings::default_stage(),
 		), self::clean( $in ) );
 		$data['mobile']     = $mobile;
-		$data['created_by'] = get_current_user_id();
+		$data['created_by'] = SZC_Auth::actor_id();
+		// مخاطبی که کارشناس می‌افزاید به خودِ او تعلق می‌گیرد (تا در فهرستِ خودش دیده شود).
+		if ( ! isset( $data['owner_id'] ) && SZC_Auth::is_agent() ) {
+			$data['owner_id'] = SZC_Auth::actor_id();
+		}
 		$data['created_at'] = $now;
 		$data['updated_at'] = $now;
 		$cf = self::clean_cf( $in['cf'] ?? array() );

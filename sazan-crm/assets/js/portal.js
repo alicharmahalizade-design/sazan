@@ -355,16 +355,19 @@
 		var f = e.target.closest('[data-login-form]');
 		if (!f) return;
 		e.preventDefault();
+		var mobile = (f.querySelector('[data-login-mobile]') || {}).value || '';
 		var pass = (f.querySelector('[data-login-pass]') || {}).value || '';
 		var nonce = (f.querySelector('[data-login-nonce]') || {}).value || '';
 		var msg = f.querySelector('[data-login-msg]');
 		var btn = f.querySelector('.szc-p-login-btn');
 		function say(t, ok) { if (msg) { msg.textContent = t; msg.className = 'szc-p-login-msg' + (ok ? ' is-ok' : ' is-err'); } }
+		if (!mobile.trim()) { say('موبایل را وارد کنید.'); return; }
 		if (!pass) { say('رمز را وارد کنید.'); return; }
 		if (btn) btn.disabled = true;
 		var d = new FormData();
 		d.append('action', 'szc_portal_login');
 		d.append('nonce', nonce);
+		d.append('mobile', mobile);
 		d.append('pass', pass);
 		fetch(CFG.ajax || '', { method: 'POST', credentials: 'same-origin', body: d })
 			.then(function (r) { return r.json(); })
