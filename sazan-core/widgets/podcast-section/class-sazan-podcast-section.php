@@ -35,6 +35,11 @@ class Podcast_Section extends Widget_Base {
 		$this->start_controls_section( 'sec_side', array( 'label' => esc_html__( 'بلوکِ کناری (عنوان و میکروفون)', 'sazan-core' ) ) );
 		$this->add_control( 'side_title', array( 'label' => esc_html__( 'عنوانِ بخش', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'پادکست‌ها', 'sazan-core' ) ) );
 		$this->add_control( 'mic_image', array( 'label' => esc_html__( 'تصویرِ میکروفون (PNG شفاف)', 'sazan-core' ), 'type' => Controls_Manager::MEDIA, 'description' => esc_html__( 'روی دایره‌ی آبی می‌نشیند. خالی = آیکنِ پیش‌فرض.', 'sazan-core' ) ) );
+		$this->add_control( 'show_circle', array(
+			'label' => esc_html__( 'نمایشِ دایره‌ی پشتِ میکروفون', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'label_on' => esc_html__( 'روشن', 'sazan-core' ), 'label_off' => esc_html__( 'خاموش', 'sazan-core' ),
+			'return_value' => 'yes', 'default' => 'yes',
+		) );
 		$this->add_control( 'btn_text', array( 'label' => esc_html__( 'متنِ دکمه', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'همه پادکست‌ها', 'sazan-core' ), 'separator' => 'before' ) );
 		$this->add_control( 'btn_link', array( 'label' => esc_html__( 'لینکِ دکمه', 'sazan-core' ), 'type' => Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
 		$this->end_controls_section();
@@ -112,6 +117,49 @@ class Podcast_Section extends Widget_Base {
 		$this->add_control( 'c_text', array( 'label' => esc_html__( 'متنِ داخلِ پنل', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-podsec' => '--pods-text: {{VALUE}};' ) ) );
 		$this->add_control( 'c_mut', array( 'label' => esc_html__( 'متنِ کم‌رنگِ پنل', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#b9cbe6', 'selectors' => array( '{{WRAPPER}} .sazan-podsec' => '--pods-mut: {{VALUE}};' ) ) );
 		$this->add_control( 'c_side', array( 'label' => esc_html__( 'رنگِ عنوان/دکمه‌ی کناری', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#123a72', 'selectors' => array( '{{WRAPPER}} .sazan-podsec' => '--pods-side: {{VALUE}};' ) ) );
+		$this->end_controls_section();
+
+		/* ==================== استایل: افکت شیشه‌ای (گلس‌مورفیسم) ==================== */
+		$this->start_controls_section( 'sty_glass', array( 'label' => esc_html__( '✨ افکت شیشه‌ای (گلس‌مورفیسم)', 'sazan-core' ), 'tab' => Controls_Manager::TAB_STYLE ) );
+		$this->add_control( 'glass', array(
+			'label' => esc_html__( 'پنل و کارت‌ها شیشه‌ای (بلر)', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'label_on' => esc_html__( 'روشن', 'sazan-core' ), 'label_off' => esc_html__( 'خاموش', 'sazan-core' ),
+			'return_value' => 'yes', 'default' => 'yes',
+			'description' => esc_html__( 'پنلِ آبی و کارت‌ها شفاف و مات می‌شوند و پس‌زمینه از پشتشان بلور می‌خورد.', 'sazan-core' ),
+		) );
+		$this->add_control( 'glass_blur', array(
+			'label' => esc_html__( 'شدتِ بلر', 'sazan-core' ), 'type' => Controls_Manager::SLIDER, 'size_units' => array( 'px' ),
+			'range' => array( 'px' => array( 'min' => 0, 'max' => 40 ) ), 'default' => array( 'unit' => 'px', 'size' => 18 ),
+			'condition' => array( 'glass' => 'yes' ),
+			'selectors' => array( '{{WRAPPER}} .sazan-podsec' => '--pods-blur: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_control( 'panel_alpha', array(
+			'label' => esc_html__( 'شفافیتِ پنل (٪ کدری)', 'sazan-core' ), 'type' => Controls_Manager::SLIDER,
+			'range' => array( 'px' => array( 'min' => 0, 'max' => 100 ) ), 'default' => array( 'size' => 55 ),
+			'condition' => array( 'glass' => 'yes' ),
+			'selectors' => array( '{{WRAPPER}} .sazan-podsec' => '--pods-panel-a: calc({{SIZE}} / 100);' ),
+			'description' => esc_html__( 'کمتر = شیشه‌ای‌تر و شفاف‌تر.', 'sazan-core' ),
+		) );
+		$this->end_controls_section();
+
+		/* ==================== استایل: پس‌زمینه‌ی سکشن ==================== */
+		$this->start_controls_section( 'sty_section', array( 'label' => esc_html__( 'پس‌زمینه‌ی سکشن', 'sazan-core' ), 'tab' => Controls_Manager::TAB_STYLE ) );
+		$this->add_control( 'sec_bg_hint', array(
+			'type' => Controls_Manager::RAW_HTML,
+			'raw'  => esc_html__( 'برای دیده‌شدنِ افکتِ شیشه‌ای، یک پس‌زمینه/گرادیان یا تصویر بگذارید تا از پشتِ پنل بلور بخورد.', 'sazan-core' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+		$this->sazan_add_background( 'sec_bg', '.sazan-podsec' );
+		$this->add_responsive_control( 'sec_pad', array(
+			'label' => esc_html__( 'فاصله‌ی داخلیِ سکشن', 'sazan-core' ), 'type' => Controls_Manager::SLIDER, 'size_units' => array( 'px' ),
+			'range' => array( 'px' => array( 'min' => 0, 'max' => 100 ) ), 'default' => array( 'unit' => 'px', 'size' => 0 ),
+			'selectors' => array( '{{WRAPPER}} .sazan-podsec' => 'padding: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'sec_radius', array(
+			'label' => esc_html__( 'گردیِ گوشه‌ی سکشن', 'sazan-core' ), 'type' => Controls_Manager::SLIDER, 'size_units' => array( 'px' ),
+			'range' => array( 'px' => array( 'min' => 0, 'max' => 60 ) ), 'default' => array( 'unit' => 'px', 'size' => 0 ),
+			'selectors' => array( '{{WRAPPER}} .sazan-podsec' => 'border-radius: {{SIZE}}{{UNIT}}; overflow:hidden;' ),
+		) );
 		$this->end_controls_section();
 
 		/* ==================== استایل: ابعاد ==================== */
@@ -221,7 +269,9 @@ class Podcast_Section extends Widget_Base {
 
 		$cls = 'sazan-podsec';
 		if ( 'yes' === ( $s['hover_blur'] ?? 'yes' ) ) { $cls .= ' has-hoverblur'; }
-		$cls .= ( 'start' === ( $s['side_pos'] ?? 'end' ) ) ? ' side-start' : ' side-end';
+		if ( 'yes' === ( $s['glass'] ?? 'yes' ) ) { $cls .= ' is-glass'; }
+		if ( 'yes' !== ( $s['show_circle'] ?? 'yes' ) ) { $cls .= ' no-circle'; }
+		$cls .= ( 'end' === ( $s['side_pos'] ?? 'start' ) ) ? ' side-end' : ' side-start';
 
 		echo '<div class="' . esc_attr( $cls ) . '">';
 		echo '<div class="podsec-wrap">';

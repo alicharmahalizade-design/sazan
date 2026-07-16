@@ -2131,7 +2131,7 @@ body.sz-hero-modal-open{ overflow:hidden; }
 	--pods-panel1:#1c4c8f; --pods-panel2:#163f78; --pods-accent:#2f7be0; --pods-circle:#1573d6;
 	--pods-card:rgba(255,255,255,.06); --pods-bd:rgba(255,255,255,.14);
 	--pods-text:#fff; --pods-mut:#b9cbe6; --pods-side:#123a72;
-	--pods-radius:30px; --pods-sidew:280px;
+	--pods-radius:30px; --pods-sidew:280px; --pods-blur:18px; --pods-panel-a:.55;
 	direction:rtl; font-family:inherit;
 }
 .sazan-podsec *{ box-sizing:border-box; }
@@ -2144,6 +2144,20 @@ body.sz-hero-modal-open{ overflow:hidden; }
 	background:linear-gradient(160deg, var(--pods-panel1), var(--pods-panel2));
 	padding:26px; box-shadow:0 40px 90px -50px rgba(10,22,50,.7); }
 .podsec-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+
+/* گلس‌مورفیسم: پنل و کارت‌ها شیشه‌ای/مات */
+.sazan-podsec.is-glass .podsec-panel{
+	background:linear-gradient(160deg, rgba(28,76,143,.55), rgba(22,63,120,.44)); /* fallback */
+	background:linear-gradient(160deg,
+		color-mix(in srgb, var(--pods-panel1) calc(var(--pods-panel-a,.55) * 100%), transparent),
+		color-mix(in srgb, var(--pods-panel2) calc(var(--pods-panel-a,.55) * 82%), transparent));
+	-webkit-backdrop-filter:blur(var(--pods-blur)) saturate(140%); backdrop-filter:blur(var(--pods-blur)) saturate(140%);
+	border:1px solid rgba(255,255,255,.16);
+	box-shadow:0 40px 90px -50px rgba(10,22,50,.7), inset 0 1px 0 rgba(255,255,255,.14); }
+.sazan-podsec.is-glass .podsec-card{
+	background:linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+	border-color:rgba(255,255,255,.2); }
+.sazan-podsec.is-glass .podsec-card:hover{ background:linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.1)); }
 
 /* کارتِ اپیزود: [تصویر | متن | پخش] در RTL */
 .podsec-card{ display:flex; align-items:center; gap:14px; text-decoration:none; cursor:pointer;
@@ -2182,6 +2196,9 @@ body.sz-hero-modal-open{ overflow:hidden; }
 .podsec-mic__circle{ position:absolute; width:76%; height:76%; border-radius:50%; background:var(--pods-circle); box-shadow:0 30px 60px -28px rgba(21,115,214,.75); }
 .podsec-mic__img{ position:relative; z-index:1; max-width:104%; max-height:104%; object-fit:contain; filter:drop-shadow(0 22px 30px rgba(0,0,0,.4)); }
 .podsec-mic__ph{ position:relative; z-index:1; width:76%; height:76%; display:grid; place-items:center; }
+/* حذفِ دایره‌ی پشتِ میکروفون */
+.sazan-podsec.no-circle .podsec-mic__circle{ display:none; }
+.sazan-podsec.no-circle .podsec-mic__img{ max-width:100%; max-height:100%; }
 .podsec-all{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; cursor:pointer; color:var(--pods-side);
 	font-weight:800; font-size:15px; padding:12px 26px; border-radius:50px; border:2px solid var(--pods-side); background:transparent;
 	transition:background .25s, color .25s; }
