@@ -177,8 +177,11 @@
 		var disp = wrap.querySelector('.szc-jp-disp'); if (disp) disp.value = jalaliDisp(hidden.value);
 	}
 
-	var jpPop = null;
-	function closeJp() { if (jpPop) { jpPop.remove(); jpPop = null; } }
+	var jpPop = null, jpBackdrop = null;
+	function closeJp() {
+		if (jpPop) { jpPop.remove(); jpPop = null; }
+		if (jpBackdrop) { jpBackdrop.remove(); jpBackdrop = null; }
+	}
 	function openJp(anchor, hidden) {
 		closeJp();
 		var now = new Date();
@@ -205,11 +208,25 @@
 			pop.innerHTML = h;
 		}
 		render();
-		document.body.appendChild(pop);
-		var r = anchor.getBoundingClientRect();
-		pop.style.position = 'absolute';
-		pop.style.top = (window.scrollY + r.bottom + 6) + 'px';
-		pop.style.left = (window.scrollX + r.left) + 'px';
+		if (window.innerWidth <= 640) {
+			// موبایل: نمایش به‌صورتِ شیتِ پایین‌چسبان با پس‌زمینه‌ی تیره (بدونِ برش از لبه‌ی صفحه).
+			pop.classList.add('is-sheet');
+			jpBackdrop = document.createElement('div');
+			jpBackdrop.className = 'szc-jp-backdrop';
+			document.body.appendChild(jpBackdrop);
+			jpBackdrop.addEventListener('click', closeJp);
+			document.body.appendChild(pop);
+		} else {
+			document.body.appendChild(pop);
+			var r = anchor.getBoundingClientRect();
+			pop.style.position = 'absolute';
+			var w = pop.offsetWidth || 304;
+			var left = window.scrollX + r.left;
+			var maxLeft = window.scrollX + document.documentElement.clientWidth - w - 12;
+			if (left > maxLeft) { left = Math.max(window.scrollX + 12, maxLeft); }
+			pop.style.top = (window.scrollY + r.bottom + 6) + 'px';
+			pop.style.left = left + 'px';
+		}
 		pop.addEventListener('click', function (e) {
 			var t = e.target;
 			if (t.classList.contains('szc-jp-pm')) { if (--view[1] < 1) { view[1] = 12; view[0]--; } render(); }
@@ -272,6 +289,74 @@
 		if (!el || !el.closest('.szc-portal')) return;
 		var single = document.querySelector('.szc-single');
 		crmPost('szc_set_group', { contact: single ? single.getAttribute('data-contact') : '0', group: el.value });
+	});
+
+	/* ---------- انتخابِ گروهی در فهرست مخاطبین (پیامک / انتقال به پوشه) ---------- */
+	function selCount(m) { return m ? m.querySelectorAll('[data-sel-cb]:checked').length : 0; }
+	function selRefresh(m) { if (!m) return; var el = m.querySelector('[data-sel-count]'); if (el) el.textContent = faD(selCount(m)); }
+	document.addEventListener('click', function (e) {
+		var tgl = e.target.closest('[data-sel-toggle]');
+		if (tgl && tgl.closest('.szc-portal')) {
+			e.preventDefault();
+			var m = tgl.closest('.szc-p-contactsmain');
+			var on = m.classList.toggle('is-selecting');
+			var acts = m.querySelector('.szc-p-selactions');
+			if (acts) acts.hidden = !on;
+			tgl.classList.toggle('is-on', on);
+			if (!on) {
+				Array.prototype.forEach.call(m.querySelectorAll('[data-sel-cb]:checked'), function (cb) { cb.checked = false; });
+				var sa = m.querySelector('[data-sel-all]'); if (sa) sa.checked = false;
+				var sc = m.querySelector('[data-sel-scope-all]'); if (sc) sc.checked = false;
+				selRefresh(m);
+			}
+			return;
+		}
+		var act = e.target.closest('[data-sel-act]');
+		if (!act || !act.closest('.szc-portal')) return;
+		e.preventDefault();
+		var main = act.closest('.szc-p-contactsmain');
+		var bar = main.querySelector('.szc-p-selbar');
+		var op = act.getAttribute('data-sel-act');
+		var scopeEl = main.querySelector('[data-sel-scope-all]');
+		var isAll = scopeEl && scopeEl.checked;
+		var ids = [];
+		if (!isAll) {
+			Array.prototype.forEach.call(main.querySelectorAll('[data-sel-cb]:checked'), function (cb) { ids.push(cb.value); });
+			if (!ids.length) { toast('ابتدا چند مخاطب را انتخاب کنید یا «روی کلِ نتایج» را بزنید.', 'err'); return; }
+		}
+		var data = { op: op, scope: isAll ? 'all' : 'selected' };
+		if (isAll) {
+			data.f_s = bar.getAttribute('data-f-s') || '';
+			data.f_stage = bar.getAttribute('data-f-stage') || '';
+			data.f_priority = bar.getAttribute('data-f-priority') || '';
+			data.f_due = bar.getAttribute('data-f-due') || '';
+			data.f_group = bar.getAttribute('data-f-group') || '0';
+		} else {
+			ids.forEach(function (id, i) { data['ids[' + i + ']'] = id; });
+		}
+		var n = isAll ? faD(bar.getAttribute('data-total') || '') : faD(ids.length);
+		if (op === 'sms') {
+			var tpl = main.querySelector('[data-sel-tpl]');
+			if (!tpl) { toast('قالبی تعریف نشده است.', 'err'); return; }
+			data.value = tpl.value;
+			if (!confirm('ارسالِ پیامک برای ' + n + ' مخاطب؟')) return;
+		} else if (op === 'move') {
+			var fol = main.querySelector('[data-sel-folder]');
+			if (!fol || fol.value === '') { toast('پوشه‌ی مقصد را انتخاب کنید.', 'err'); return; }
+			data.value = fol.value;
+			if (!confirm('انتقالِ ' + n + ' مخاطب به پوشه؟')) return;
+		} else { return; }
+		crmPost('szc_list_bulk', data);
+	});
+	document.addEventListener('change', function (e) {
+		var cb = e.target.closest('[data-sel-cb]');
+		if (cb && cb.closest('.szc-portal')) { selRefresh(cb.closest('.szc-p-contactsmain')); return; }
+		var all = e.target.closest('[data-sel-all]');
+		if (all && all.closest('.szc-portal')) {
+			var m = all.closest('.szc-p-contactsmain');
+			Array.prototype.forEach.call(m.querySelectorAll('[data-sel-cb]'), function (x) { x.checked = all.checked; });
+			selRefresh(m);
+		}
 	});
 
 	/* ---------- دایلر: ثبت تماس و بعدی ---------- */

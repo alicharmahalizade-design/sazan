@@ -676,21 +676,30 @@ JS;
 					<a class="szc-p-fchip szc-p-fchip-due<?php echo $due === 'overdue' ? ' is-active' : ''; ?>" href="<?php echo esc_url( $chip_url( '', 'overdue' ) ); ?>"><?php echo szc_icon( 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>سررسیده</a>
 				</div>
 
-				<?php if ( $group ) : ?>
-					<div class="szc-p-bulkbar" data-group="<?php echo (int) $group; ?>">
-						<span class="szc-p-bulklabel">اقدام گروهی روی «<?php echo esc_html( $title ); ?>»:</span>
-						<select data-bulk-stage>
-							<?php foreach ( $stages as $k => $lbl ) : ?><option value="<?php echo esc_attr( $k ); ?>"><?php echo esc_html( $lbl ); ?></option><?php endforeach; ?>
-						</select>
-						<button type="button" class="szc-p-btn" data-folder-act="bulk-stage">تغییر مرحله‌ی همه</button>
+				<div class="szc-p-selbar" data-f-s="<?php echo esc_attr( $search ); ?>" data-f-stage="<?php echo esc_attr( $stage ); ?>" data-f-priority="<?php echo esc_attr( $prio ); ?>" data-f-due="<?php echo esc_attr( $due ); ?>" data-f-group="<?php echo (int) $group; ?>" data-total="<?php echo (int) $res['total']; ?>">
+					<button type="button" class="szc-p-btn szc-p-selbtn" data-sel-toggle><?php echo szc_icon( 'check' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>انتخاب گروهی</span></button>
+					<div class="szc-p-selactions" hidden>
+						<label class="szc-p-selchk"><input type="checkbox" data-sel-all> این صفحه</label>
+						<span class="szc-p-selcount"><b data-sel-count>۰</b> انتخاب‌شده</span>
 						<?php if ( $templates ) : ?>
-							<select data-bulk-tpl>
-								<?php foreach ( $templates as $t ) : ?><option value="<?php echo (int) $t->id; ?>"><?php echo esc_html( $t->name ); ?></option><?php endforeach; ?>
-							</select>
-							<button type="button" class="szc-p-btn" data-folder-act="bulk-sms">پیامک به همه</button>
+							<span class="szc-p-selgroup">
+								<select data-sel-tpl aria-label="قالب پیامک">
+									<?php foreach ( $templates as $t ) : ?><option value="<?php echo (int) $t->id; ?>"><?php echo esc_html( $t->name ); ?></option><?php endforeach; ?>
+								</select>
+								<button type="button" class="szc-p-btn" data-sel-act="sms"><?php echo szc_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>پیامک</span></button>
+							</span>
 						<?php endif; ?>
+						<span class="szc-p-selgroup">
+							<select data-sel-folder aria-label="انتقال به پوشه">
+								<option value="">— انتقال به پوشه —</option>
+								<option value="0">بدون پوشه (ریشه)</option>
+								<?php foreach ( SZC_Groups::all() as $g ) : ?><option value="<?php echo (int) $g->id; ?>"><?php echo esc_html( $g->name ); ?></option><?php endforeach; ?>
+							</select>
+							<button type="button" class="szc-p-btn" data-sel-act="move"><?php echo szc_icon( 'folder' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>انتقال</span></button>
+						</span>
+						<label class="szc-p-selchk szc-p-selscope"><input type="checkbox" data-sel-scope-all> روی کلِ نتایج (<?php echo esc_html( szc_fa_digits( $res['total'] ) ); ?>)</label>
 					</div>
-				<?php endif; ?>
+				</div>
 
 				<?php if ( ! $res['items'] ) : ?>
 					<div class="szc-p-empty-state">
@@ -741,6 +750,7 @@ JS;
 				<a class="szc-p-swa szc-p-swa-sms" href="<?php echo esc_url( self::contact_url( $c->id ) ); ?>"><?php echo szc_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span>پیامک</span></a>
 			</div>
 			<div class="szc-p-cface">
+				<label class="szc-p-selcb"><input type="checkbox" data-sel-cb value="<?php echo (int) $c->id; ?>" aria-label="انتخاب مخاطب"></label>
 				<span class="szc-p-grip" title="بکشید و روی یک پوشه رها کنید" aria-hidden="true"><?php echo szc_icon( 'grip' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
 				<a class="szc-p-cmain" draggable="false" href="<?php echo esc_url( self::contact_url( $c->id ) ); ?>">
 					<span class="szc-p-cav"><?php echo esc_html( mb_substr( $cname, 0, 1 ) ); ?></span>
@@ -884,7 +894,7 @@ JS;
 						<?php endif; ?>
 						<div class="szc-p-customsms">
 							<label class="szc-p-cslabel">پیامک دلخواه</label>
-							<textarea data-custom-sms rows="2" placeholder="متن دلخواه… (می‌توانید از %first% و %name% استفاده کنید)"></textarea>
+							<textarea data-custom-sms rows="2" placeholder="متن دلخواه… (می‌توانید از %first%، %last% و %name% استفاده کنید)"></textarea>
 							<button class="szc-p-btn" data-szc-act="custom_sms">ارسال پیامک دلخواه</button>
 						</div>
 						<?php if ( $c->opt_out ) : ?><p class="szc-p-muted">این مخاطب لغو دریافت پیامک دارد.</p><?php endif; ?>

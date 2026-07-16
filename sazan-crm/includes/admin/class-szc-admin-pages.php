@@ -257,7 +257,7 @@ class SZC_Admin_Pages {
 							<input type="hidden" name="id" value="<?php echo (int) ( $row->id ?? 0 ); ?>">
 							<p><label>نام قالب<br><input type="text" name="name" class="regular-text" required value="<?php echo esc_attr( $row->name ?? '' ); ?>"></label></p>
 							<p><label>متن پیامک<br><textarea name="body" rows="4" class="large-text" required><?php echo esc_textarea( $row->body ?? '' ); ?></textarea></label></p>
-							<p class="szc-muted">متغیرها: <code>%first%</code> نام، <code>%name%</code> نام کامل، <code>%company%</code> شرکت، <code>%job%</code> شغل، <code>%city%</code> شهر، <code>%mini%</code> لینک مینی‌دوره، <code>%intro%</code> لینک معارفه.</p>
+							<p class="szc-muted">متغیرها: <code>%first%</code> نام، <code>%last%</code> نام خانوادگی، <code>%name%</code> نام کامل، <code>%company%</code> شرکت، <code>%job%</code> شغل، <code>%city%</code> شهر، <code>%mini%</code> لینک مینی‌دوره، <code>%intro%</code> لینک معارفه.</p>
 							<?php if ( $mode === 'pattern' ) : ?>
 								<p><label>کد پترن (اختیاری، برای خط خدماتی)<br><input type="text" name="pattern_code" dir="ltr" class="regular-text" value="<?php echo esc_attr( $row->pattern_code ?? '' ); ?>"></label>
 								<br><span class="szc-muted">در حالت پترن، مقادیر با نام متغیرهای بالا ارسال می‌شوند.</span></p>
@@ -852,7 +852,7 @@ class SZC_Admin_Pages {
 
 							<div data-msg="text" style="margin-top:12px">
 								<textarea name="text" rows="5" class="large-text" placeholder="متنِ پیام… می‌توانید از متغیرها استفاده کنید."></textarea>
-								<p class="szc-muted">متغیرها: <code>%first%</code> نام، <code>%name%</code> نام کامل، <code>%company%</code> شرکت، <code>%job%</code> شغل، <code>%city%</code> شهر، <code>%mini%</code> لینک مینی‌دوره، <code>%intro%</code> لینک معارفه.</p>
+								<p class="szc-muted">متغیرها: <code>%first%</code> نام، <code>%last%</code> نام خانوادگی، <code>%name%</code> نام کامل، <code>%company%</code> شرکت، <code>%job%</code> شغل، <code>%city%</code> شهر، <code>%mini%</code> لینک مینی‌دوره، <code>%intro%</code> لینک معارفه.</p>
 								<p class="szc-muted"><span data-char-count>۰</span> نویسه · حدود <span data-sms-count>۱</span> پیامک</p>
 							</div>
 

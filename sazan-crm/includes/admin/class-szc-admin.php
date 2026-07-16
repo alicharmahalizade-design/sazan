@@ -31,6 +31,7 @@ class SZC_Admin {
 			'group_delete'  => 'group_delete',
 			'set_group'     => 'set_group',
 			'group_bulk'    => 'group_bulk',
+			'list_bulk'     => 'list_bulk',
 			'dialer_call'   => 'dialer_call',
 		);
 		foreach ( $ajax as $action => $method ) {
@@ -481,7 +482,7 @@ class SZC_Admin {
 								<button class="button" data-szc-act="schedule_sms">زمان‌بندی (۱ ساعت بعد)</button>
 							</div>
 							<label class="szc-msg-lbl" style="margin-top:12px;display:block">متنِ دلخواه (اختیاری — بر قالب اولویت دارد)
-									<textarea data-custom-sms rows="3" style="width:100%" placeholder="متنِ پیام… با متغیرهایی مثل %first% و %name%"></textarea>
+									<textarea data-custom-sms rows="3" style="width:100%" placeholder="متنِ پیام… با متغیرهایی مثل %first%، %last% و %name%"></textarea>
 								</label>
 								<div class="szc-actions">
 									<button class="button" data-szc-act="custom_sms">ارسال پیامکِ دلخواه</button>
@@ -951,6 +952,72 @@ class SZC_Admin {
 			}
 			$n = SZC_SMS::enqueue_template_bulk( $ids, $tid );
 			wp_send_json_success( array( 'msg' => 'پیامک برای ' . szc_fa_digits( (int) $n ) . ' مخاطب در صف قرار گرفت.', 'reload' => true ) );
+		}
+		wp_send_json_error( array( 'msg' => 'اقدام نامعتبر.' ) );
+	}
+
+	/**
+	 * اقدامِ گروهی روی مخاطبینِ انتخاب‌شده در فهرست (یا کلِ نتایجِ فیلتر):
+	 * ارسالِ پیامکِ قالبی، انتقال به پوشه، یا تغییرِ مرحله. برای «ارسالِ همگانی از
+	 * خودِ فهرست» و «انتقالِ یک‌جای انتخاب‌شده‌ها به پوشه».
+	 */
+	public static function ajax_list_bulk() {
+		self::guard();
+		$op    = isset( $_POST['op'] ) ? sanitize_key( $_POST['op'] ) : '';
+		$value = isset( $_POST['value'] ) ? sanitize_text_field( wp_unslash( $_POST['value'] ) ) : '';
+		$scope = ( ( $_POST['scope'] ?? '' ) === 'all' ) ? 'all' : 'selected';
+
+		if ( $scope === 'all' ) {
+			$args = array(
+				'search'   => sanitize_text_field( wp_unslash( $_POST['f_s'] ?? '' ) ),
+				'stage'    => sanitize_key( $_POST['f_stage'] ?? '' ),
+				'priority' => sanitize_key( $_POST['f_priority'] ?? '' ),
+				'due'      => sanitize_key( $_POST['f_due'] ?? '' ),
+				'group'    => absint( $_POST['f_group'] ?? 0 ),
+			);
+			if ( ! SZC_Settings::is_manager() ) {
+				$args['owner'] = SZC_Auth::actor_id();
+			}
+			$ids = SZC_Contacts::ids_matching( $args );
+		} else {
+			$ids = array_map( 'intval', (array) ( $_POST['ids'] ?? array() ) );
+		}
+
+		// کارشناس فقط روی سرنخ‌های خودش (یا بدونِ‌تخصیص) اقدام کند.
+		if ( ! SZC_Settings::is_manager() ) {
+			$self = SZC_Auth::actor_id();
+			$ids  = array_values( array_filter( $ids, function ( $id ) use ( $self ) {
+				$c = SZC_Contacts::get( $id );
+				return $c && ( (int) $c->owner_id === $self || (int) $c->owner_id === 0 );
+			} ) );
+		}
+		$ids = array_values( array_filter( array_map( 'intval', $ids ) ) );
+		if ( ! $ids ) {
+			wp_send_json_error( array( 'msg' => 'موردی برای اقدام نیست.' ) );
+		}
+
+		if ( $op === 'sms' ) {
+			if ( ! SZC_SMS::enabled() ) {
+				wp_send_json_error( array( 'msg' => 'سرویس پیامک فعال نیست.' ) );
+			}
+			$tid = absint( $value );
+			if ( ! $tid ) {
+				wp_send_json_error( array( 'msg' => 'قالب پیامک را انتخاب کنید.' ) );
+			}
+			$r = SZC_SMS::enqueue_template_bulk( $ids, $tid );
+			wp_send_json_success( array( 'msg' => szc_fa_digits( $r['queued'] ) . ' پیامک در صف قرار گرفت (' . szc_fa_digits( $r['skipped'] ) . ' رد شد).', 'reload' => true ) );
+		} elseif ( $op === 'move' ) {
+			$gid = absint( $value );
+			foreach ( $ids as $id ) {
+				SZC_Groups::move_contact( (int) $id, $gid );
+			}
+			wp_send_json_success( array( 'msg' => szc_fa_digits( count( $ids ) ) . ' مخاطب به پوشه منتقل شد.', 'reload' => true ) );
+		} elseif ( $op === 'stage' ) {
+			$st = sanitize_key( $value );
+			foreach ( $ids as $id ) {
+				SZC_Contacts::set_stage( (int) $id, $st );
+			}
+			wp_send_json_success( array( 'msg' => szc_fa_digits( count( $ids ) ) . ' مخاطب تغییر مرحله داد.', 'reload' => true ) );
 		}
 		wp_send_json_error( array( 'msg' => 'اقدام نامعتبر.' ) );
 	}
