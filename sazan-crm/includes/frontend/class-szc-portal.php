@@ -789,7 +789,7 @@ JS;
 		if ( ! $c ) {
 			return '<p class="szc-p-empty">مخاطب یافت نشد. <a href="' . esc_url( self::url( 'contacts' ) ) . '">بازگشت</a></p>';
 		}
-		if ( ! SZC_Settings::is_manager() && (int) $c->owner_id !== SZC_Auth::actor_id() && (int) $c->owner_id !== 0 ) {
+		if ( ! SZC_Auth::can_see_all() && (int) $c->owner_id !== SZC_Auth::actor_id() && (int) $c->owner_id !== 0 ) {
 			return '<p class="szc-p-empty">به این مخاطب دسترسی ندارید.</p>';
 		}
 

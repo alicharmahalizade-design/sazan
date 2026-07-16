@@ -103,7 +103,7 @@ class SZC_Admin {
 		$m   = szc_normalize_mobile( $raw );
 		if ( szc_is_valid_mobile( $m ) ) {
 			$c = SZC_Contacts::get_by_mobile( $m );
-			if ( $c && ( SZC_Settings::is_manager() || (int) $c->owner_id === SZC_Auth::actor_id() ) ) {
+			if ( $c && ( SZC_Auth::can_see_all() || (int) $c->owner_id === SZC_Auth::actor_id() ) ) {
 				wp_safe_redirect( self::contact_url( $c->id ) );
 				exit;
 			}
@@ -975,7 +975,7 @@ class SZC_Admin {
 				'due'      => sanitize_key( $_POST['f_due'] ?? '' ),
 				'group'    => absint( $_POST['f_group'] ?? 0 ),
 			);
-			if ( ! SZC_Settings::is_manager() ) {
+			if ( ! SZC_Auth::can_see_all() ) {
 				$args['owner'] = SZC_Auth::actor_id();
 			}
 			$ids = SZC_Contacts::ids_matching( $args );
@@ -983,8 +983,8 @@ class SZC_Admin {
 			$ids = array_map( 'intval', (array) ( $_POST['ids'] ?? array() ) );
 		}
 
-		// کارشناس فقط روی سرنخ‌های خودش (یا بدونِ‌تخصیص) اقدام کند.
-		if ( ! SZC_Settings::is_manager() ) {
+		// وقتی استخر مشترک نیست، کارشناس فقط روی سرنخ‌های خودش (یا بدونِ‌تخصیص) اقدام کند.
+		if ( ! SZC_Auth::can_see_all() ) {
 			$self = SZC_Auth::actor_id();
 			$ids  = array_values( array_filter( $ids, function ( $id ) use ( $self ) {
 				$c = SZC_Contacts::get( $id );

@@ -386,6 +386,13 @@ class SZC_Admin_Pages {
 									<p class="szc-hint">کارشناسان با «موبایل + رمز» واردِ پورتال می‌شوند (بدونِ کاربرِ وردپرس). ساخت و مدیریتِ کارشناسان از منوی «کارشناسان».</p>
 								</div>
 							</div>
+							<div class="szc-field szc-field--toggle">
+								<label>استخرِ مشترکِ مخاطبین</label>
+								<div class="szc-field-c">
+									<label class="szc-switch"><input type="checkbox" name="shared_pool" value="1" <?php checked( ! empty( $s['shared_pool'] ) ); ?>><span></span></label>
+									<p class="szc-hint">روشن: همه‌ی کارشناسان همه‌ی مخاطبین را می‌بینند (پیش‌فرض). خاموش: هر کارشناس فقط سرنخ‌های تخصیص‌یافته به خودش را می‌بیند.</p>
+								</div>
+							</div>
 					</div>
 				</div>
 
@@ -514,6 +521,7 @@ class SZC_Admin_Pages {
 		$new = array(
 			'managers'         => array_map( 'intval', (array) ( $p['managers'] ?? array() ) ),
 			'pass_login'       => empty( $p['pass_login'] ) ? 0 : 1,
+			'shared_pool'      => empty( $p['shared_pool'] ) ? 0 : 1,
 			'max_per_run'      => max( 1, absint( $p['max_per_run'] ?? 80 ) ),
 			'max_per_day'      => max( 0, absint( $p['max_per_day'] ?? 0 ) ),
 			'sms_enabled'      => empty( $p['sms_enabled'] ) ? 0 : 1,

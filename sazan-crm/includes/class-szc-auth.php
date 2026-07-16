@@ -138,9 +138,20 @@ class SZC_Auth {
 		return self::actor_id();
 	}
 
-	/** محدوده‌ی مالکیت برای کوئری‌ها: مدیر → 0 (همه)، کارشناس → owner_idِ خودش. */
+	/**
+	 * آیا بازیگرِ جاری همه‌ی مخاطبین را می‌بیند؟
+	 * مدیر همیشه، و کارشناس در حالتِ «استخر مشترک» (پیش‌فرض روشن).
+	 */
+	public static function can_see_all() {
+		if ( self::is_manager() ) {
+			return true;
+		}
+		return ! empty( SZC_Settings::get( 'shared_pool' ) );
+	}
+
+	/** محدوده‌ی مالکیت برای کوئری‌ها: دیدنِ همه → 0، وگرنه owner_idِ خودِ کارشناس. */
 	public static function scope_owner() {
-		return self::is_manager() ? 0 : self::actor_id();
+		return self::can_see_all() ? 0 : self::actor_id();
 	}
 
 	/** نامِ نمایشیِ یک شناسه‌ی بازیگر (کارشناس یا کاربرِ وردپرس). */
