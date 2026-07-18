@@ -1,0 +1,77 @@
+/* فرم مشاوره کسب‌وکار سازان — دیزاین شیشه‌ای تیره RTL */
+.sazan-consult{
+  --c:#00b6f1; --o:#f7941d; --bg:#000014;
+  --card:rgba(255,255,255,.04); --bd:rgba(255,255,255,.12); --txt:#e8f0f4; --mut:#9fb3bf;
+  direction:rtl; color:var(--txt); font-family:inherit;
+  background:linear-gradient(160deg,rgba(0,182,241,.06),rgba(0,0,20,.4));
+  border:1px solid var(--bd); border-radius:var(--sz-radius,18px);
+  padding:28px; backdrop-filter:blur(14px); position:relative; overflow:hidden;
+}
+.sazan-consult::before{content:"";position:absolute;inset:0;background:
+  radial-gradient(420px 200px at 90% -10%,rgba(0,182,241,.18),transparent),
+  radial-gradient(360px 200px at 0% 110%,rgba(247,148,29,.14),transparent);
+  pointer-events:none;}
+.sazan-consult>*{position:relative;z-index:1;}
+
+.szc-intro{margin:0 0 18px;color:var(--mut);font-size:15px;line-height:1.9;}
+
+.szc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.szc-col2{grid-column:1 / -1;}
+@media(max-width:640px){.szc-grid{grid-template-columns:1fr;}}
+
+.szc-field{display:flex;flex-direction:column;gap:7px;}
+.szc-field>span{font-size:13.5px;color:var(--mut);font-weight:600;}
+.szc-field>span i{color:var(--o);font-style:normal;}
+.szc-field input{
+  width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--bd);
+  border-radius:12px;padding:12px 14px;color:var(--txt);font-size:15px;font-family:inherit;
+  transition:border-color .2s,box-shadow .2s;
+}
+.szc-field input:focus{outline:none;border-color:var(--c);box-shadow:0 0 0 3px rgba(0,182,241,.18);}
+.szc-field input::placeholder{color:#5f7682;}
+.szc-date-display{cursor:pointer;}
+
+/* ساعت‌ها */
+.szc-slots{display:flex;flex-wrap:wrap;gap:9px;}
+.szc-slot{position:relative;cursor:pointer;}
+.szc-slot input{position:absolute;opacity:0;inset:0;cursor:pointer;}
+.szc-slot span{display:block;padding:9px 16px;border:1px solid var(--bd);border-radius:10px;
+  background:var(--card);font-size:14px;transition:.18s;}
+.szc-slot input:checked + span{background:linear-gradient(135deg,var(--c),#0090c4);border-color:transparent;
+  color:#fff;box-shadow:0 6px 18px rgba(0,182,241,.35);}
+.szc-slot.is-full{opacity:.35;cursor:not-allowed;}
+.szc-slot.is-full span{text-decoration:line-through;}
+.szc-slot input:disabled{cursor:not-allowed;}
+.szc-otp{margin-top:6px;}
+
+/* تقویم */
+.szc-cal{margin-top:10px;background:rgba(8,14,28,.96);border:1px solid var(--bd);
+  border-radius:14px;padding:14px;width:300px;max-width:100%;
+  box-shadow:0 18px 50px rgba(0,0,0,.5);}
+.szc-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-weight:700;}
+.szc-nav{background:var(--card);border:1px solid var(--bd);color:var(--txt);width:32px;height:32px;
+  border-radius:9px;cursor:pointer;font-size:18px;line-height:1;}
+.szc-nav:hover{border-color:var(--c);color:var(--c);}
+.szc-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+.szc-dow{font-size:12px;color:var(--mut);padding:4px 0;}
+.szc-day{background:transparent;border:1px solid transparent;border-radius:9px;color:var(--txt);
+  padding:8px 0;cursor:pointer;font-size:14px;transition:.15s;}
+.szc-day:hover:not(:disabled){background:var(--card);border-color:var(--bd);}
+.szc-day.is-today{border-color:var(--o);color:var(--o);}
+.szc-day.is-sel{background:linear-gradient(135deg,var(--c),#0090c4);color:#fff;}
+.szc-day.is-past{opacity:.3;cursor:not-allowed;}
+
+/* دکمه و پیام */
+.szc-submit{margin-top:22px;width:100%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--o),#e07d0c);color:#fff;font-size:16px;font-weight:700;
+  padding:15px;border-radius:13px;font-family:inherit;transition:.2s;
+  box-shadow:0 10px 28px rgba(247,148,29,.32);}
+.szc-submit:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(247,148,29,.45);}
+.szc-submit.is-loading{opacity:.6;pointer-events:none;}
+.szc-submit.is-loading::after{content:"...";}
+
+.szc-msg{margin-top:14px;padding:12px 14px;border-radius:11px;font-size:14px;}
+.szc-msg.is-err{background:rgba(255,77,79,.12);border:1px solid rgba(255,77,79,.4);color:#ff9b9c;}
+
+.szc-done{text-align:center;padding:30px 10px;color:var(--c);}
+.szc-done-msg{color:var(--txt);font-size:16px;line-height:1.9;margin-top:14px;}
