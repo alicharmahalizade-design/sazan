@@ -194,6 +194,101 @@
 		onScroll();
 	}
 
+	// نوارِ پیشرفتِ اسکرول (سراسری، تک‌نمونه)
+	function initScrollProgress( accent ) {
+		if ( document.getElementById( 'sazan-scroll-progress' ) ) { return; }
+		var bar = document.createElement( 'div' );
+		bar.id = 'sazan-scroll-progress';
+		bar.className = 'sazan-scroll-progress';
+		bar.setAttribute( 'aria-hidden', 'true' );
+		if ( accent ) { bar.style.background = accent; }
+		document.body.appendChild( bar );
+		var ticking = false;
+		function update() {
+			var h = document.documentElement;
+			var max = ( h.scrollHeight - h.clientHeight ) || 1;
+			var p = Math.min( 1, Math.max( 0, ( window.pageYOffset || h.scrollTop || 0 ) / max ) );
+			bar.style.transform = 'scaleX(' + p + ')';
+			ticking = false;
+		}
+		function onScroll() { if ( ! ticking ) { ticking = true; requestAnimationFrame( update ); } }
+		$( window ).off( 'scroll.szprog resize.szprog' ).on( 'scroll.szprog resize.szprog', onScroll );
+		update();
+	}
+
+	// مجیک‌لاین: خطِ متحرک زیر منوی اصلی
+	function initMagicLine( $h ) {
+		var nav = $h.find( '.sazan-header__nav' ).first()[0];
+		if ( ! nav ) { return; }
+		var ul = nav.querySelector( 'ul, .sazan-menu' );
+		if ( ! ul || ul.querySelectorAll( ':scope > li' ).length < 2 ) { return; }
+		nav.classList.add( 'has-magic' );
+		var line = nav.querySelector( '.sazan-magic-line' );
+		if ( ! line ) {
+			line = document.createElement( 'span' );
+			line.className = 'sazan-magic-line';
+			line.setAttribute( 'aria-hidden', 'true' );
+			nav.appendChild( line );
+		}
+		function activeLink() {
+			return ul.querySelector( ':scope > li.current-menu-item > a' )
+				|| ul.querySelector( ':scope > li.current-menu-parent > a' )
+				|| ul.querySelector( ':scope > li.current-menu-ancestor > a' );
+		}
+		function moveTo( link, show ) {
+			if ( ! link ) { line.style.opacity = '0'; return; }
+			var nr = nav.getBoundingClientRect(), r = link.getBoundingClientRect();
+			if ( ! r.width ) { line.style.opacity = '0'; return; }
+			line.style.width = r.width + 'px';
+			line.style.transform = 'translateX(' + ( r.left - nr.left ) + 'px)';
+			line.style.opacity = show ? '1' : '0';
+		}
+		function rest() { var a = activeLink(); moveTo( a, !! a ); }
+		$( ul ).find( '> li > a' ).off( 'mouseenter.szml focus.szml' ).on( 'mouseenter.szml focus.szml', function () { moveTo( this, true ); } );
+		$( ul ).off( 'mouseleave.szml' ).on( 'mouseleave.szml', rest );
+		$( window ).off( 'resize.szml' ).on( 'resize.szml', rest );
+		setTimeout( rest, 60 );
+		rest();
+	}
+
+	// پالسِ سبد هنگام افزودن محصول (ووکامرس) — تک‌بار بایند سراسری
+	function initCartPulse() {
+		if ( window.__szCartPulse ) { return; }
+		window.__szCartPulse = true;
+		$( document.body ).on( 'added_to_cart', function ( e, fragments, cart_hash, $button ) {
+			var qty = 1;
+			try { if ( $button && $button.data( 'quantity' ) ) { qty = parseInt( $button.data( 'quantity' ), 10 ) || 1; } } catch ( er ) {}
+			// همه‌ی سبدها (نوار چسبانِ شناور به body منتقل می‌شود، پس سراسری هدف می‌گیریم)
+			$( '.sazan-header__cart' ).each( function () {
+				var $cart = $( this );
+				$cart.removeClass( 'sz-cart-pulse' );
+				void this.offsetWidth;
+				$cart.addClass( 'sz-cart-pulse' );
+				var $c = $cart.find( '.sazan-header__cart-count' );
+				if ( $c.length ) {
+					var cur = parseInt( ( $c.text() || '0' ).replace( /[^\d]/g, '' ), 10 ) || 0;
+					$c.text( cur + qty ).removeClass( 'sz-count-bump' );
+					void $c[0].offsetWidth;
+					$c.addClass( 'sz-count-bump' );
+				}
+			} );
+		} );
+	}
+
+	function initFx( $h ) {
+		if ( $h.attr( 'data-fx-progress' ) === '1' ) {
+			var accent = ( getComputedStyle( $h[0] ).getPropertyValue( '--sz-progress' ) || '' ).trim();
+			initScrollProgress( accent );
+		}
+		if ( $h.attr( 'data-fx-magic' ) === '1' ) { initMagicLine( $h ); }
+		if ( $h.attr( 'data-fx-cartpulse' ) === '1' ) { initCartPulse(); }
+		if ( $h.attr( 'data-fx-entrance' ) === '1' && $h.attr( 'data-fx-entered' ) !== '1' ) {
+			$h.attr( 'data-fx-entered', '1' );
+			var isEditor = document.body.classList.contains( 'elementor-editor-active' );
+			if ( ! isEditor ) { $h[0].classList.add( 'sz-enter' ); }
+		}
+	}
+
 	function initHeader( scope ) {
 		var $h = $( scope ).hasClass( 'sazan-header' ) ? $( scope ) : $( scope ).find( '.sazan-header' ).first();
 		if ( ! $h.length ) { return; }
@@ -232,6 +327,7 @@
 		initSearch( $h );
 		initToggles( $h );
 		initSticky( $h );
+		initFx( $h );
 
 		// بستن با کلیک بیرون
 		$( document ).off( 'click.sz' + ( scope.dataset ? scope.dataset.szid : '' ) );

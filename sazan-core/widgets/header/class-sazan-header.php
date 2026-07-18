@@ -46,6 +46,7 @@ class Header extends Widget_Base {
 		$this->content_nav();
 		$this->content_account();
 		$this->content_cart();
+		$this->content_fx();
 
 		$this->style_general();
 		$this->style_logo();
@@ -287,6 +288,40 @@ class Header extends Widget_Base {
 			'label' => esc_html__( 'باز شدن با', 'sazan-core' ), 'type' => Controls_Manager::SELECT, 'default' => 'hover',
 			'options' => array( 'hover' => esc_html__( 'هاور', 'sazan-core' ), 'click' => esc_html__( 'کلیک', 'sazan-core' ) ),
 			'condition' => array( 'cart_dropdown' => 'yes' ),
+		) );
+		$this->end_controls_section();
+	}
+
+	private function content_fx() {
+		$this->start_controls_section( 'sec_fx', array( 'label' => esc_html__( 'میکرو-اینتراکشن‌ها', 'sazan-core' ) ) );
+		$this->add_control( 'fx_hint', array(
+			'type' => Controls_Manager::RAW_HTML,
+			'raw'  => esc_html__( 'جلوه‌های ظریف و حرفه‌ای که هدر را زنده‌تر می‌کنند. همه اختیاری‌اند.', 'sazan-core' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+		$this->add_control( 'fx_progress', array(
+			'label' => esc_html__( 'نوار پیشرفتِ اسکرول (بالای صفحه)', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'return_value' => 'yes', 'default' => 'yes',
+			'description' => esc_html__( 'یک خطِ نازکِ برند که با اسکرول پُر می‌شود.', 'sazan-core' ),
+		) );
+		$this->add_control( 'fx_progress_color', array(
+			'label' => esc_html__( 'رنگ نوار پیشرفت', 'sazan-core' ), 'type' => Controls_Manager::COLOR,
+			'default' => '', 'condition' => array( 'fx_progress' => 'yes' ),
+			'selectors' => array( '{{WRAPPER}} .sazan-header' => '--sz-progress: {{VALUE}};' ),
+		) );
+		$this->add_control( 'fx_magic', array(
+			'label' => esc_html__( 'مجیک‌لاین (خطِ متحرک زیر منو)', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'return_value' => 'yes', 'default' => 'yes',
+			'description' => esc_html__( 'خطِ زیرِ منو که نرم بینِ آیتم‌ها اسلاید می‌کند و روی آیتم فعال می‌ایستد.', 'sazan-core' ),
+		) );
+		$this->add_control( 'fx_cartpulse', array(
+			'label' => esc_html__( 'پالسِ سبد هنگام افزودن محصول', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'return_value' => 'yes', 'default' => 'yes',
+			'description' => esc_html__( 'هنگام افزودن به سبد (ووکامرس)، آیکنِ سبد ضربان می‌گیرد و شمارنده به‌روز می‌شود.', 'sazan-core' ),
+		) );
+		$this->add_control( 'fx_entrance', array(
+			'label' => esc_html__( 'افکتِ ورودِ نرمِ هدر هنگام لود', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER,
+			'return_value' => 'yes', 'default' => 'yes',
 		) );
 		$this->end_controls_section();
 	}
@@ -549,9 +584,14 @@ class Header extends Widget_Base {
 		$st_smart  = ( 'yes' === $s['sticky_smart'] ) ? '1' : '0';
 		$st_shrink = ( 'yes' === $s['sticky_shrink'] ) ? '1' : '0';
 		$st_bg     = ! empty( $s['sticky_bg'] ) ? $s['sticky_bg'] : '';
+		$fx_prog   = ( 'yes' === $s['fx_progress'] ) ? '1' : '0';
+		$fx_magic  = ( 'yes' === $s['fx_magic'] ) ? '1' : '0';
+		$fx_pulse  = ( 'yes' === $s['fx_cartpulse'] ) ? '1' : '0';
+		$fx_enter  = ( 'yes' === $s['fx_entrance'] ) ? '1' : '0';
 		printf(
-			'<div class="sazan-header skin-%1$s" data-sticky="%2$s" data-sticky-style="%3$s" data-sticky-offset="%4$d" data-sticky-smart="%5$s" data-sticky-shrink="%6$s" data-sticky-bg="%7$s">',
-			esc_attr( $skin ), esc_attr( $st_mode ), esc_attr( $st_style ), $st_off, esc_attr( $st_smart ), esc_attr( $st_shrink ), esc_attr( $st_bg )
+			'<div class="sazan-header skin-%1$s" data-sticky="%2$s" data-sticky-style="%3$s" data-sticky-offset="%4$d" data-sticky-smart="%5$s" data-sticky-shrink="%6$s" data-sticky-bg="%7$s" data-fx-progress="%8$s" data-fx-magic="%9$s" data-fx-cartpulse="%10$s" data-fx-entrance="%11$s">',
+			esc_attr( $skin ), esc_attr( $st_mode ), esc_attr( $st_style ), $st_off, esc_attr( $st_smart ), esc_attr( $st_shrink ), esc_attr( $st_bg ),
+			esc_attr( $fx_prog ), esc_attr( $fx_magic ), esc_attr( $fx_pulse ), esc_attr( $fx_enter )
 		);
 
 		/* ---- بالا ---- */
