@@ -22,15 +22,15 @@
 .sazan-header__logo{ display:inline-flex; align-items:center; text-decoration:none; }
 .sazan-header__logo img{ display:block; height:auto; }
 .sazan-header__logo-text{ font-weight:800; font-size:26px; color:#fff; }
-.sazan-header__logo-icon{ display:inline-flex; color:#00b6f1; }
+.sazan-header__logo-icon{ display:inline-flex; color:#1B90B2; }
 .sazan-header__logo-icon svg{ width:1em; height:1em; fill:currentColor; }
 
 /* تماس (چپ) */
 .sazan-header__contact{ display:inline-flex; align-items:center; gap:12px; }
 .sazan-header__c-texts{ display:flex; flex-direction:column; align-items:flex-end; line-height:1.6; text-align:right; }
-.sazan-header__c-label{ font-size:13px; color:#00b6f1; }
+.sazan-header__c-label{ font-size:13px; color:#1B90B2; }
 .sazan-header__c-phone{ font-size:15px; color:#fff; text-decoration:none; direction:ltr; }
-.sazan-header__c-icon{ display:inline-flex; color:#00b6f1; }
+.sazan-header__c-icon{ display:inline-flex; color:#1B90B2; }
 .sazan-header__c-icon svg{ width:1em; height:1em; fill:currentColor; }
 
 /* نوار پایین */
@@ -41,12 +41,12 @@
 .sazan-header__categories{ position:relative; }
 .sazan-header__cat-btn{
 	display:inline-flex; align-items:center; gap:10px; cursor:pointer; border:0; font:inherit;
-	background-color:#f7941d; color:#fff; font-weight:700;
+	background-color:#1B90B2; color:#fff; font-weight:700;
 	border-radius:50px; padding:6px 18px 6px 8px; transition:.2s ease;
 }
 .sazan-header__cat-icon{
 	display:inline-flex; align-items:center; justify-content:center;
-	width:32px; height:32px; border-radius:50%; background:#fff; color:#00b6f1; flex:0 0 auto;
+	width:32px; height:32px; border-radius:50%; background:#fff; color:#1B90B2; flex:0 0 auto;
 }
 .sazan-header__cat-icon svg{ width:1em; height:1em; fill:currentColor; }
 .sazan-header__cat-chev{ display:inline-flex; color:rgba(255,255,255,.85); }
@@ -63,7 +63,7 @@
 .sazan-header__categories.is-open .sazan-header__cat-dropdown{ opacity:1; visibility:visible; transform:translateY(0); }
 .sazan-header__cat-dropdown ul{ list-style:none; margin:0; padding:0; }
 .sazan-header__cat-dropdown a{ display:block; padding:9px 14px; border-radius:8px; text-decoration:none; color:#fff; transition:.18s; }
-.sazan-header__cat-dropdown a:hover{ color:#00b6f1; }
+.sazan-header__cat-dropdown a:hover{ color:#1B90B2; }
 .sazan-header__cat-dropdown .sub-menu{ padding-right:10px; }
 
 /* منوی اصلی */
@@ -84,7 +84,7 @@
 }
 .sazan-header__nav li:hover > .sub-menu{ opacity:1; visibility:visible; transform:translateY(0); }
 .sazan-header__nav .sub-menu a{ display:block; padding:8px 18px; color:#fff; text-decoration:none; }
-.sazan-header__nav .sub-menu a:hover{ color:#00b6f1; }
+.sazan-header__nav .sub-menu a:hover{ color:#1B90B2; }
 .sazan-header__nav .sub-menu .sub-menu{ top:0; right:100%; }
 
 /* اکشن‌ها */
@@ -100,7 +100,7 @@
 .sazan-header__cart{
 	position:relative; display:inline-flex; align-items:center; justify-content:center;
 	width:52px; height:52px; border-radius:50%; text-decoration:none;
-	background-color:#f7941d; flex:0 0 auto;
+	background-color:#1B90B2; flex:0 0 auto;
 }
 .sazan-header__cart-icon{ display:inline-flex; color:#0c1c28; font-size:20px; }
 .sazan-header__cart-icon svg{ width:1em; height:1em; fill:currentColor; }
@@ -150,7 +150,7 @@
 	position:absolute; top:14px; left:16px; width:34px; height:34px; border:0; cursor:pointer;
 	background:rgba(255,255,255,.08); color:#fff; border-radius:50%; font-size:22px; line-height:1;
 }
-.sazan-header__drawer-title{ font-weight:700; color:#00b6f1; margin:14px 0 6px; }
+.sazan-header__drawer-title{ font-weight:700; color:#1B90B2; margin:14px 0 6px; }
 .sazan-header__drawer-actions{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
 
 /* منوهای داخل کشو: عمودی و باز */
@@ -163,7 +163,7 @@
 	background:transparent; padding:0 14px 0 0; min-width:auto;
 }
 .sazan-header__drawer-nav .menu-item-has-children > a::after{ content:none !important; }
-.sazan-header__drawer-phone{ display:block; margin-top:14px; color:#00b6f1; text-decoration:none; }
+.sazan-header__drawer-phone{ display:block; margin-top:14px; color:#1B90B2; text-decoration:none; }
 
 /* نقطه‌ی شکست */
 @media (max-width:1024px){
@@ -215,7 +215,7 @@
 .sazan-header__search-results a:hover{ background:rgba(255,255,255,.05); }
 .sazan-header__search-results img{ width:42px; height:42px; border-radius:8px; object-fit:cover; flex:0 0 auto; }
 .sazan-header__search-results .sr-t{ font-size:13px; line-height:1.5; }
-.sazan-header__search-results .sr-p{ font-size:12px; color:#00b6f1; }
+.sazan-header__search-results .sr-p{ font-size:12px; color:#1B90B2; }
 .sazan-header__search-results .sr-empty,
 .sazan-header__search-results .sr-loading{ padding:10px; font-size:13px; color:rgba(255,255,255,.6); }
 
@@ -231,7 +231,7 @@
 .sazan-header__account-wrap.is-open .sazan-header__acc-dropdown{ opacity:1; visibility:visible; transform:none; }
 .sazan-header__acc-dropdown ul{ list-style:none; margin:0; padding:0; }
 .sazan-header__acc-dropdown a{ display:block; padding:9px 14px; border-radius:8px; text-decoration:none; color:#fff; transition:.15s; }
-.sazan-header__acc-dropdown a:hover{ color:#00b6f1; background:rgba(255,255,255,.04); }
+.sazan-header__acc-dropdown a:hover{ color:#1B90B2; background:rgba(255,255,255,.04); }
 
 /* مینی‌کارت بازشو */
 .sazan-header__cart-wrap{ position:relative; }
@@ -272,7 +272,7 @@
 }
 .sazan-mc__meta{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .sazan-mc__qty{ font-size:11.5px; font-weight:600; color:var(--cartdd-color,#e8f0f4); opacity:.65; background:rgba(255,255,255,.08); padding:2px 9px; border-radius:999px; }
-.sazan-mc__price, .sazan-mc__price .amount{ font-size:13.5px; font-weight:800; color:var(--cartdd-price,#00b6f1) !important; }
+.sazan-mc__price, .sazan-mc__price .amount{ font-size:13.5px; font-weight:800; color:var(--cartdd-price,#1B90B2) !important; }
 .sazan-mc__price del{ opacity:.5; font-weight:500; margin-left:4px; }
 
 .sazan-mc__remove{
@@ -289,7 +289,7 @@
 	margin:0 0 12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.12);
 	font-size:14px; font-weight:600; color:var(--cartdd-color,#e8f0f4);
 }
-.sazan-mc__total-val, .sazan-mc__total-val .amount{ font-size:16px; font-weight:800; color:var(--cartdd-price,#00b6f1) !important; }
+.sazan-mc__total-val, .sazan-mc__total-val .amount{ font-size:16px; font-weight:800; color:var(--cartdd-price,#1B90B2) !important; }
 .sazan-mc__btns{ display:flex; gap:8px; }
 .sazan-mc__btn{
 	flex:1 1 auto; padding:11px 14px; border-radius:10px; text-align:center;
@@ -298,8 +298,8 @@
 .sazan-mc__btn--ghost{ background:rgba(255,255,255,.08); color:var(--cartdd-color,#e8f0f4) !important; }
 .sazan-mc__btn--ghost:hover{ background:rgba(255,255,255,.16); }
 .sazan-mc__btn--cta{
-	background:linear-gradient(135deg,var(--cartdd-price,#00b6f1),#0090d4); color:#fff !important;
-	box-shadow:0 10px 24px -12px rgba(0,182,241,.85);
+	background:linear-gradient(135deg,var(--cartdd-price,#1B90B2),#0090d4); color:#fff !important;
+	box-shadow:0 10px 24px -12px rgba(27,144,178,.85);
 }
 .sazan-mc__btn--cta:hover{ filter:brightness(1.08); transform:translateY(-1px); }
 .sazan-header__cart-empty{ margin:0; padding:22px 4px; text-align:center; font-size:13px; color:var(--cartdd-muted,rgba(232,240,244,.6)) !important; }
@@ -385,14 +385,14 @@ body.sazan-drawer-open{ overflow:hidden; }
 .sazan-header.skin-min{ position:relative; }
 .sazan-header.skin-min::before{
 	content:""; position:absolute; top:0; left:0; right:0; height:3px; z-index:6;
-	background:linear-gradient(90deg,#00b6f1,#f7941d);
+	background:linear-gradient(90deg,#1B90B2,#2ba6c9);
 }
 .sazan-header.skin-min .sazan-header__bottom{ box-shadow:inset 0 -1px 0 rgba(255,255,255,.1); }
 /* منو: خط زیرین متحرک به‌جای پس‌زمینه */
 .sazan-header.skin-min .sazan-header__nav > ul > li > a{ position:relative; padding-bottom:6px; }
 .sazan-header.skin-min .sazan-header__nav > ul > li > a::before{
 	content:""; position:absolute; right:0; left:0; bottom:0; height:2px; border-radius:2px;
-	background:#00b6f1; transform:scaleX(0); transform-origin:center; transition:transform .25s ease;
+	background:#1B90B2; transform:scaleX(0); transform-origin:center; transition:transform .25s ease;
 }
 .sazan-header.skin-min .sazan-header__nav > ul > li > a:hover::before,
 .sazan-header.skin-min .sazan-header__nav > ul > li.current-menu-item > a::before{ transform:scaleX(1); }
@@ -420,19 +420,19 @@ body.sazan-drawer-open{ overflow:hidden; }
 /* ============================================================
    هدر: طرح چهارم «نئونی» (گلو + خط گرادینتیِ متحرک)
    ============================================================ */
-.sazan-header.skin-neon{ position:relative; box-shadow:0 10px 34px -14px rgba(0,182,241,.35); }
+.sazan-header.skin-neon{ position:relative; box-shadow:0 10px 34px -14px rgba(27,144,178,.35); }
 /* خط نئونیِ متحرک زیر هدر */
 .sazan-header.skin-neon .sazan-header__bottom{ position:relative; }
 .sazan-header.skin-neon .sazan-header__bottom::after{
 	content:""; position:absolute; left:0; right:0; bottom:0; height:2px; z-index:5;
-	background:linear-gradient(90deg, transparent, #00b6f1, #f7941d, #00b6f1, transparent);
+	background:linear-gradient(90deg, transparent, #2ba6c9, #1B90B2, #2ba6c9, transparent);
 	background-size:200% 100%; animation:sazan-neon 5s linear infinite;
-	box-shadow:0 0 12px rgba(0,182,241,.7);
+	box-shadow:0 0 12px rgba(27,144,178,.7);
 }
 /* خط نازک بالای هدر هم نئونی */
 .sazan-header.skin-neon::before{
 	content:""; position:absolute; top:0; left:0; right:0; height:2px; z-index:6;
-	background:linear-gradient(90deg, transparent, #f7941d, #00b6f1, #f7941d, transparent);
+	background:linear-gradient(90deg, transparent, #1B90B2, #2ba6c9, #1B90B2, transparent);
 	background-size:200% 100%; animation:sazan-neon 5s linear infinite reverse;
 }
 @keyframes sazan-neon{ to{ background-position:200% 0; } }
@@ -441,24 +441,24 @@ body.sazan-drawer-open{ overflow:hidden; }
 .sazan-header.skin-neon .sazan-header__nav > ul > li > a{ position:relative; transition:color .2s, text-shadow .2s; }
 .sazan-header.skin-neon .sazan-header__nav > ul > li > a::before{
 	content:""; position:absolute; right:0; left:0; bottom:-4px; height:2px; border-radius:2px;
-	background:#00b6f1; box-shadow:0 0 10px #00b6f1; transform:scaleX(0); transform-origin:center; transition:transform .25s;
+	background:#1B90B2; box-shadow:0 0 10px #1B90B2; transform:scaleX(0); transform-origin:center; transition:transform .25s;
 }
 .sazan-header.skin-neon .sazan-header__nav > ul > li > a:hover,
-.sazan-header.skin-neon .sazan-header__nav > ul > li.current-menu-item > a{ color:#00b6f1; text-shadow:0 0 10px rgba(0,182,241,.7); }
+.sazan-header.skin-neon .sazan-header__nav > ul > li.current-menu-item > a{ color:#1B90B2; text-shadow:0 0 10px rgba(27,144,178,.7); }
 .sazan-header.skin-neon .sazan-header__nav > ul > li > a:hover::before,
 .sazan-header.skin-neon .sazan-header__nav > ul > li.current-menu-item > a::before{ transform:scaleX(1); }
 
 /* دکمه‌ها: حلقه‌ی نورانی */
-.sazan-header.skin-neon .sazan-header__cat-btn{ box-shadow:0 0 18px -2px rgba(247,148,29,.55); }
-.sazan-header.skin-neon .sazan-header__cat-btn:hover{ box-shadow:0 0 26px -2px rgba(247,148,29,.8); }
-.sazan-header.skin-neon .sazan-header__cart{ box-shadow:0 0 18px -2px rgba(247,148,29,.55); }
-.sazan-header.skin-neon .sazan-header__cart:hover{ box-shadow:0 0 26px -2px rgba(247,148,29,.85); }
-.sazan-header.skin-neon .sazan-header__search-toggle{ width:42px; height:42px; border-radius:50%; background:rgba(0,182,241,.08); transition:box-shadow .2s, background .2s; }
-.sazan-header.skin-neon .sazan-header__search-toggle:hover{ background:rgba(0,182,241,.16); box-shadow:0 0 16px rgba(0,182,241,.6); }
+.sazan-header.skin-neon .sazan-header__cat-btn{ box-shadow:0 0 18px -2px rgba(27,144,178,.55); }
+.sazan-header.skin-neon .sazan-header__cat-btn:hover{ box-shadow:0 0 26px -2px rgba(27,144,178,.8); }
+.sazan-header.skin-neon .sazan-header__cart{ box-shadow:0 0 18px -2px rgba(27,144,178,.55); }
+.sazan-header.skin-neon .sazan-header__cart:hover{ box-shadow:0 0 26px -2px rgba(27,144,178,.85); }
+.sazan-header.skin-neon .sazan-header__search-toggle{ width:42px; height:42px; border-radius:50%; background:rgba(27,144,178,.08); transition:box-shadow .2s, background .2s; }
+.sazan-header.skin-neon .sazan-header__search-toggle:hover{ background:rgba(27,144,178,.16); box-shadow:0 0 16px rgba(27,144,178,.6); }
 .sazan-header.skin-neon .sazan-header__account{ transition:box-shadow .2s; }
-.sazan-header.skin-neon .sazan-header__account:hover{ box-shadow:0 0 16px -2px rgba(0,182,241,.55); }
+.sazan-header.skin-neon .sazan-header__account:hover{ box-shadow:0 0 16px -2px rgba(27,144,178,.55); }
 /* آیکن لوگو با درخشش ملایم */
-.sazan-header.skin-neon .sazan-header__logo-icon{ filter:drop-shadow(0 0 8px rgba(0,182,241,.7)); }
+.sazan-header.skin-neon .sazan-header__logo-icon{ filter:drop-shadow(0 0 8px rgba(27,144,178,.7)); }
 
 /* کاهش انیمیشن برای کاربرانی که ترجیح می‌دهند */
 @media (prefers-reduced-motion: reduce){
@@ -640,20 +640,20 @@ body.sazan-drawer-open{ overflow:hidden; }
 .sazan-mbar .sazan-mbar-item svg{ width:23px; height:23px; }
 .sazan-mbar .sazan-mbar-label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
 .sazan-mbar .sazan-mbar-item:hover,
-.sazan-mbar .sazan-mbar-item.is-active{ color:var(--mbar-active,#00b6f1); }
+.sazan-mbar .sazan-mbar-item.is-active{ color:var(--mbar-active,#1B90B2); }
 
 /* نشان تعداد سبد */
 .sazan-mbar .sazan-mbar-badge{
 	position:absolute; top:-6px; right:-10px; min-width:16px; height:16px; padding:0 4px; border-radius:9px;
-	background:var(--mbar-active,#00b6f1); color:#04202c; font-size:10px; font-weight:800;
+	background:var(--mbar-active,#1B90B2); color:#04202c; font-size:10px; font-weight:800;
 	display:flex; align-items:center; justify-content:center; line-height:1;
 }
 
 /* دکمه‌ی برجسته‌ی وسط (FAB) */
 .sazan-mbar .sazan-mbar-item--highlight .sazan-mbar-ic{
 	width:54px; height:54px; margin-top:-28px; border-radius:50%;
-	background:linear-gradient(180deg, var(--mbar-active,#00b6f1), #0090c4); color:#fff;
-	box-shadow:0 12px 24px -8px rgba(0,182,241,.7);
+	background:linear-gradient(180deg, var(--mbar-active,#1B90B2), #0090c4); color:#fff;
+	box-shadow:0 12px 24px -8px rgba(27,144,178,.7);
 }
 .sazan-mbar .sazan-mbar-item--highlight svg{ width:26px; height:26px; }
 .sazan-mbar .sazan-mbar-item--highlight .sazan-mbar-badge{ top:-22px; }
@@ -680,13 +680,13 @@ body.sazan-drawer-open{ overflow:hidden; }
 	padding:6px 4px !important; margin:0 !important;
 	color:var(--mbar-icon,#cfe9f5) !important; font:inherit; font-size:11px; line-height:1; cursor:pointer;
 }
-.sazan-mbar .sazan-header__search-toggle:hover{ color:var(--mbar-active,#00b6f1) !important; }
+.sazan-mbar .sazan-header__search-toggle:hover{ color:var(--mbar-active,#1B90B2) !important; }
 .sazan-mbar .sazan-header__search-toggle svg{ width:23px !important; height:23px !important; }
 /* اگر جستجو به‌عنوان دکمه‌ی برجسته‌ی وسط انتخاب شد */
 .sazan-mbar .sazan-header__search.sazan-mbar-item--highlight .sazan-mbar-ic{
 	width:54px; height:54px; margin-top:-28px; border-radius:50%;
-	background:linear-gradient(180deg, var(--mbar-active,#00b6f1), #0090c4); color:#fff;
-	box-shadow:0 12px 24px -8px rgba(0,182,241,.7);
+	background:linear-gradient(180deg, var(--mbar-active,#1B90B2), #0090c4); color:#fff;
+	box-shadow:0 12px 24px -8px rgba(27,144,178,.7);
 }
 
 /* ============================================================
@@ -739,14 +739,14 @@ body.sazan-mbar-lock{ overflow:hidden; }
 .sazan-mbar-search-results a:hover{ background:rgba(255,255,255,.07); }
 .sazan-mbar-search-results img{ width:42px; height:42px; object-fit:cover; border-radius:8px; flex:0 0 auto; }
 .sazan-mbar-search-results .sr-t{ font-size:13px; line-height:1.5; }
-.sazan-mbar-search-results .sr-p{ display:block; color:var(--mbar-active,#00b6f1); font-size:12px; }
+.sazan-mbar-search-results .sr-p{ display:block; color:var(--mbar-active,#1B90B2); font-size:12px; }
 .sazan-mbar-search-results .sr-loading, .sazan-mbar-search-results .sr-empty{ color:rgba(234,246,252,.6); font-size:13px; padding:6px 2px; }
 
 /* منوها داخل پنل (حساب/منو) و مینی‌کارت */
 .sazan-mbar-menu .sazan-menu{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
 .sazan-mbar-menu .sazan-menu li{ border-bottom:1px solid rgba(255,255,255,.07); }
 .sazan-mbar-menu .sazan-menu a, .sazan-mbar-loginlink{ display:block; padding:13px 6px; color:#eaf6fc; text-decoration:none; font-size:15px; }
-.sazan-mbar-menu .sazan-menu a:hover, .sazan-mbar-loginlink:hover{ color:var(--mbar-active,#00b6f1); }
+.sazan-mbar-menu .sazan-menu a:hover, .sazan-mbar-loginlink:hover{ color:var(--mbar-active,#1B90B2); }
 .sazan-mbar-menu .sub-menu{ list-style:none; margin:0; padding:0 12px; }
 .sazan-mbar-empty{ color:rgba(234,246,252,.6); }
 .sazan-mbar-panel .widget_shopping_cart_content{ color:#eaf6fc; }
@@ -824,11 +824,11 @@ body.sazan-mbar-lock{ overflow:hidden; }
 	transition:color .2s ease, transform .14s ease;
 }
 .sazan-mhead-btn:hover, .sazan-mhead-btn:focus, .sazan-mhead-btn:active{ background:none !important; background-color:transparent !important; box-shadow:none !important; }
-.sazan-mhead-btn:hover, .sazan-mhead-btn:focus{ color:var(--mh-accent,#00b6f1); }
+.sazan-mhead-btn:hover, .sazan-mhead-btn:focus{ color:var(--mh-accent,#1B90B2); }
 .sazan-mhead-btn:active{ transform:scale(.88); }
 .sazan-mhead-btn svg{ width:26px; height:26px; display:block; }
 .sazan-mhead-ic{ position:relative; display:inline-flex; }
-.sazan-mhead-badge{ position:absolute; top:-5px; right:-7px; min-width:16px; height:16px; padding:0 4px; border-radius:9px; background:var(--mh-accent,#00b6f1); color:#04202c; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; }
+.sazan-mhead-badge{ position:absolute; top:-5px; right:-7px; min-width:16px; height:16px; padding:0 4px; border-radius:9px; background:var(--mh-accent,#1B90B2); color:#04202c; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; }
 .sazan-mhead-logo a, .sazan-mhead-drawer-logo a{ display:inline-flex; align-items:center; text-decoration:none; color:inherit; }
 .sazan-mhead-logo img{ height:var(--mh-logo-h,34px); width:auto; display:block; }
 .sazan-mhead-logo-text{ font-size:20px; font-weight:800; letter-spacing:1px; color:var(--mh-icon,#eaf6fc); }
@@ -866,20 +866,20 @@ body.sazan-mbar-lock{ overflow:hidden; }
 .sazan-mhead-search-results a{ display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px; color:#eaf6fc; text-decoration:none; }
 .sazan-mhead-search-results a:hover{ background:rgba(255,255,255,.07); }
 .sazan-mhead-search-results img{ width:40px; height:40px; object-fit:cover; border-radius:8px; flex:0 0 auto; }
-.sazan-mhead-search-results .sr-p{ display:block; color:var(--mh-accent,#00b6f1); font-size:12px; }
+.sazan-mhead-search-results .sr-p{ display:block; color:var(--mh-accent,#1B90B2); font-size:12px; }
 .sazan-mhead-search-results .sr-loading, .sazan-mhead-search-results .sr-empty{ color:rgba(234,246,252,.6); font-size:13px; padding:6px 2px; }
 
 .sazan-mhead-menu .sazan-menu{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
 .sazan-mhead-menu .sazan-menu li{ border-bottom:1px solid rgba(255,255,255,.06); }
 .sazan-mhead-menu .sazan-menu a{ position:relative; display:flex; align-items:center; gap:10px; padding:13px 8px; color:#eaf6fc; text-decoration:none; font-size:15px; font-weight:500; border-radius:10px; transition:background .2s, color .2s; }
-.sazan-mhead-menu .sazan-menu > li > a:hover{ background:rgba(255,255,255,.06); color:var(--mh-accent,#00b6f1); }
+.sazan-mhead-menu .sazan-menu > li > a:hover{ background:rgba(255,255,255,.06); color:var(--mh-accent,#1B90B2); }
 .sazan-mhead-menu .sazan-menu .menu-item-icon, .sazan-mhead-menu .sazan-menu a i{ font-size:18px; opacity:.85; }
-.sazan-mhead-menu .sazan-menu .current-menu-item > a{ color:var(--mh-accent,#00b6f1); }
+.sazan-mhead-menu .sazan-menu .current-menu-item > a{ color:var(--mh-accent,#1B90B2); }
 
 /* دکمه‌ی فلش آکاردئون (سمت چپ در RTL) */
 .sazan-mhead-sub-toggle{ position:absolute; inset-inline-start:2px; top:50%; transform:translateY(-50%); width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; border:0 !important; background:none !important; background-color:transparent !important; box-shadow:none !important; outline:none !important; -webkit-appearance:none; appearance:none; color:inherit; opacity:.7; cursor:pointer; transition:transform .25s ease, opacity .2s; }
 .sazan-mhead-sub-toggle:hover, .sazan-mhead-sub-toggle:focus, .sazan-mhead-sub-toggle:active{ background:none !important; opacity:1; }
-.menu-item-has-children.is-expanded > a > .sazan-mhead-sub-toggle{ transform:translateY(-50%) rotate(180deg); opacity:1; color:var(--mh-accent,#00b6f1); }
+.menu-item-has-children.is-expanded > a > .sazan-mhead-sub-toggle{ transform:translateY(-50%) rotate(180deg); opacity:1; color:var(--mh-accent,#1B90B2); }
 .sazan-mhead-menu .menu-item-has-children > a{ padding-inline-start:40px; font-weight:700; }
 
 /* آکاردئونِ دراپ‌داونِ دسته‌بندیِ هدر و نوار چسبان */
@@ -891,13 +891,13 @@ body.sazan-mbar-lock{ overflow:hidden; }
 .sazan-mhead-menu .sub-menu{ list-style:none; margin:0 6px 0 0; padding:0; border-inline-start:2px solid rgba(255,255,255,.1); }
 .sazan-mhead-menu .sub-menu li{ border-bottom:0; }
 .sazan-mhead-menu .sub-menu a{ padding:10px 14px; font-size:14px; font-weight:400; opacity:.9; }
-.sazan-mhead-menu .sub-menu a:hover{ opacity:1; color:var(--mh-accent,#00b6f1); }
+.sazan-mhead-menu .sub-menu a:hover{ opacity:1; color:var(--mh-accent,#1B90B2); }
 
 /* حالت آکاردئونی: زیرمنو پیش‌فرض بسته، با انیمیشن باز می‌شود */
 .sazan-mhead-menu.mhead-accordion .sub-menu{ max-height:0; overflow:hidden; transition:max-height .32s ease; }
 .sazan-mhead-menu.mhead-accordion .menu-item-has-children.is-expanded > .sub-menu{ max-height:1000px; }
 
-.sazan-mhead-callbtn{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; padding:12px; border-radius:12px; background:var(--mh-accent,#00b6f1); color:#04202c; font-weight:800; text-decoration:none; }
+.sazan-mhead-callbtn{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; padding:12px; border-radius:12px; background:var(--mh-accent,#1B90B2); color:#04202c; font-weight:800; text-decoration:none; }
 .sazan-mhead-callbtn svg{ width:20px; height:20px; }
 
 /* در ویرایشگر، نوار ثابت نباشد و کشو/بک‌گراند مزاحم نشوند */
@@ -944,7 +944,7 @@ html, body{ overflow-x:clip !important; }
 /* هالهٔ ملایمِ رنگِ برند در پس‌زمینهٔ نوار شناور */
 .sazan-header__bottom.sz-fixed.sz-float::after{
 	content:""; position:absolute; inset:0; border-radius:inherit; z-index:-1; pointer-events:none;
-	background:linear-gradient(120deg, rgba(0,182,241,.10), transparent 40%, rgba(247,148,29,.08));
+	background:linear-gradient(120deg, rgba(27,144,178,.10), transparent 40%, rgba(27,144,178,.08));
 }
 .sazan-header__bottom.sz-fixed.sz-float .sazan-header__bottom-inner{ min-height:60px; }
 @keyframes sazan-sfloat-in{ from{ transform:translateY(-16px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
@@ -965,22 +965,22 @@ html, body{ overflow-x:clip !important; }
 
 /* دکمهٔ دسته‌بندی: گرادینت نرم + بالاآمدنِ ظریف هنگام هاور */
 .sazan-header__cat-btn{
-	background-image:linear-gradient(135deg,#f7a43c,#f7941d);
-	box-shadow:0 10px 24px -14px rgba(247,148,29,.9);
+	background-image:linear-gradient(135deg,#2ba6c9,#1B90B2);
+	box-shadow:0 10px 24px -14px rgba(27,144,178,.9);
 	transition:transform .2s ease, box-shadow .25s ease, filter .2s ease;
 }
-.sazan-header__cat-btn:hover{ transform:translateY(-1px); box-shadow:0 16px 30px -14px rgba(247,148,29,.95); filter:brightness(1.03); }
+.sazan-header__cat-btn:hover{ transform:translateY(-1px); box-shadow:0 16px 30px -14px rgba(27,144,178,.95); filter:brightness(1.03); }
 .sazan-header__cat-btn:active{ transform:translateY(0); }
 .sazan-header__cat-chev svg{ transition:transform .25s ease; }
 .sazan-header__categories.is-open .sazan-header__cat-chev svg{ transform:rotate(-90deg); }
 
 /* سبد خرید: عمق و واکنشِ لمسی */
 .sazan-header__cart{
-	background-image:linear-gradient(135deg,#f7a43c,#f7941d);
-	box-shadow:0 10px 22px -12px rgba(247,148,29,.85);
+	background-image:linear-gradient(135deg,#2ba6c9,#1B90B2);
+	box-shadow:0 10px 22px -12px rgba(27,144,178,.85);
 	transition:transform .2s ease, box-shadow .25s ease, filter .2s ease;
 }
-.sazan-header__cart:hover{ transform:translateY(-2px); box-shadow:0 18px 30px -14px rgba(247,148,29,.95); filter:brightness(1.04); }
+.sazan-header__cart:hover{ transform:translateY(-2px); box-shadow:0 18px 30px -14px rgba(27,144,178,.95); filter:brightness(1.04); }
 .sazan-header__cart:active{ transform:translateY(0); }
 
 /* حساب کاربری: هاورِ نرم */
@@ -989,7 +989,7 @@ html, body{ overflow-x:clip !important; }
 
 /* دکمهٔ جستجو: هالهٔ ملایم هنگام هاور */
 .sazan-header__search-toggle{ border-radius:12px; transition:background .2s ease, color .2s ease, box-shadow .2s ease; }
-.sazan-header__search-toggle:hover{ color:#00b6f1; }
+.sazan-header__search-toggle:hover{ color:#1B90B2; }
 
 /* منوی اصلی (کلاسیک): زیرخطِ متحرکِ ظریف */
 .sazan-header.skin-classic .sazan-header__nav > ul > li > a,
@@ -997,7 +997,7 @@ html, body{ overflow-x:clip !important; }
 .sazan-header.skin-classic .sazan-header__nav > ul > li > a::after,
 .sazan-header:not([class*="skin-"]) .sazan-header__nav > ul > li > a::after{
 	content:""; position:absolute; right:0; left:0; bottom:0; height:2px; border-radius:2px;
-	background:linear-gradient(90deg,#00b6f1,#f7941d); transform:scaleX(0); transform-origin:right center;
+	background:linear-gradient(90deg,#1B90B2,#2ba6c9); transform:scaleX(0); transform-origin:right center;
 	transition:transform .25s ease;
 }
 .sazan-header.skin-classic .sazan-header__nav > ul > li > a:hover::after,
@@ -1028,4 +1028,50 @@ html, body{ overflow-x:clip !important; }
 	.sazan-header__logo-text{ font-size:18px; }
 	.sazan-header__drawer{ width:86vw; max-width:86vw; }
 	.sazan-header__search-panel{ width:min(320px,90vw); }
+}
+
+/* ============================================================
+   برندِ سازان — پالتِ اصلی + نشانِ لوگو + آیکن‌های SVG توکار
+   رنگِ برند: #1B90B2
+   ============================================================ */
+.sazan-header{
+	--sz-accent:#1B90B2;
+	--sz-accent-l:#2ba6c9;
+	--sz-accent-d:#12708a;
+}
+
+/* آیکن‌های توکارِ SVG: هم‌اندازه و شفاف (نه ایموجی) */
+.sazan-header__logo-icon svg,
+.sazan-header__c-icon svg,
+.sazan-header__cat-icon svg,
+.sazan-header__acc-icon svg,
+.sazan-header__cart-icon svg,
+.sazan-header__search-toggle svg{ width:1em; height:1em; display:block; overflow:visible; }
+
+/* نشانِ لوگو: بَجِ گِردِ شیشه‌ایِ برند با درخششِ ملایم */
+.sazan-header__logo-icon{
+	width:1.55em; height:1.55em; border-radius:14px; flex:0 0 auto;
+	display:inline-flex; align-items:center; justify-content:center;
+	color:var(--sz-accent);
+	background:linear-gradient(135deg, rgba(27,144,178,.24), rgba(27,144,178,.05));
+	border:1px solid rgba(27,144,178,.38);
+	box-shadow:0 8px 20px -10px rgba(27,144,178,.75), inset 0 1px 0 rgba(255,255,255,.14);
+	transition:transform .25s ease, box-shadow .25s ease;
+}
+.sazan-header__logo:hover .sazan-header__logo-icon{ transform:translateY(-1px) rotate(-3deg); box-shadow:0 12px 26px -10px rgba(27,144,178,.9); }
+.sazan-header__logo-text{ letter-spacing:.5px; }
+
+/* دکمهٔ جستجو/حساب: هالهٔ ظریفِ برند هنگام هاور */
+.sazan-header__search-toggle:hover{ color:var(--sz-accent); }
+.sazan-header__account:hover{ box-shadow:0 8px 22px -12px rgba(27,144,178,.7); }
+
+/* شمارندهٔ سبد: کنتراستِ تمیزتر روی دکمهٔ برند */
+.sazan-header__cart-count{ box-shadow:0 2px 8px -2px rgba(0,0,0,.6); border:1.5px solid rgba(255,255,255,.9); }
+
+/* هالهٔ نوار شناور: تمام‌برند (بدون نارنجی) */
+.sazan-header__bottom.sz-fixed.sz-float::after{
+	background:linear-gradient(120deg, rgba(27,144,178,.14), transparent 45%, rgba(43,166,201,.10)) !important;
+}
+.sazan-header__bottom.sz-fixed.sz-float{
+	box-shadow:0 24px 60px -28px rgba(4,26,34,.9), 0 6px 20px -10px rgba(27,144,178,.35), inset 0 1px 0 rgba(255,255,255,.14) !important;
 }

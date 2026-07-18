@@ -80,7 +80,7 @@ class Header extends Widget_Base {
 			),
 		) );
 		$this->add_control( 'sticky', array(
-			'label' => esc_html__( '📌 حالت چسبان (Sticky)', 'sazan-core' ), 'type' => Controls_Manager::SELECT,
+			'label' => esc_html__( 'حالت چسبان (Sticky)', 'sazan-core' ), 'type' => Controls_Manager::SELECT,
 			'default' => 'bottom', 'prefix_class' => 'sazan-sticky-', 'separator' => 'before',
 			'options' => array(
 				'none'   => esc_html__( 'خاموش', 'sazan-core' ),
@@ -90,7 +90,7 @@ class Header extends Widget_Base {
 			'description' => esc_html__( 'برای چسباندن نوار پایین هنگام اسکرول، «فقط ردیف دوم» را انتخاب کن. (روی صفحه‌ی واقعی سایت تست کن، نه داخل ویرایشگر.)', 'sazan-core' ),
 		) );
 		$this->add_control( 'sticky_style', array(
-			'label' => esc_html__( '✨ ظاهر حالت چسبان', 'sazan-core' ), 'type' => Controls_Manager::SELECT,
+			'label' => esc_html__( 'ظاهر حالت چسبان', 'sazan-core' ), 'type' => Controls_Manager::SELECT,
 			'default' => 'bar', 'prefix_class' => 'sazan-stystyle-',
 			'options' => array(
 				'bar'   => esc_html__( 'نوار شناور شیشه‌ای (هدر + نوار چسبان یکی می‌شوند)', 'sazan-core' ),
@@ -196,8 +196,8 @@ class Header extends Widget_Base {
 	private function content_logo() {
 		$this->start_controls_section( 'sec_logo', array( 'label' => esc_html__( 'لوگو', 'sazan-core' ) ) );
 		$this->add_control( 'logo_image', array( 'label' => esc_html__( 'تصویر لوگو', 'sazan-core' ), 'type' => Controls_Manager::MEDIA, 'default' => array( 'url' => '' ) ) );
-		$this->add_control( 'logo_text', array( 'label' => esc_html__( 'یا متن لوگو', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'مسعود صرامی', 'sazan-core' ) ) );
-		$this->add_control( 'logo_icon', array( 'label' => esc_html__( 'آیکن کنار متن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => 'fas fa-leaf', 'library' => 'fa-solid' ) ) );
+		$this->add_control( 'logo_text', array( 'label' => esc_html__( 'یا متن لوگو', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'سازان', 'sazan-core' ) ) );
+		$this->add_control( 'logo_icon', array( 'label' => esc_html__( 'آیکن کنار متن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => '', 'library' => '' ), 'description' => esc_html__( 'خالی بگذارید تا نشانِ پیش‌فرضِ سازان (SVG) نمایش داده شود.', 'sazan-core' ) ) );
 		$this->add_control( 'logo_link', array( 'label' => esc_html__( 'لینک', 'sazan-core' ), 'type' => Controls_Manager::URL, 'default' => array( 'url' => home_url( '/' ) ) ) );
 		$this->add_control( 'logo_position', array(
 			'label' => esc_html__( 'جای لوگو', 'sazan-core' ), 'type' => Controls_Manager::SELECT,
@@ -213,7 +213,7 @@ class Header extends Widget_Base {
 		$this->add_control( 'contact_label', array( 'label' => esc_html__( 'برچسب', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'تماس بگیرید', 'sazan-core' ) ) );
 		$this->add_control( 'contact_phone', array( 'label' => esc_html__( 'شماره (نمایش)', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => '۰۹۹-۹۹۹۹۹۹' ) );
 		$this->add_control( 'contact_phone_raw', array( 'label' => esc_html__( 'شماره برای tel:', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => '099999999' ) );
-		$this->add_control( 'contact_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => 'fas fa-phone-alt', 'library' => 'fa-solid' ) ) );
+		$this->add_control( 'contact_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => '', 'library' => '' ) ) );
 		$this->add_control( 'contact_side', array(
 			'label' => esc_html__( 'محل بخش تماس', 'sazan-core' ), 'type' => Controls_Manager::SELECT, 'default' => 'left',
 			'options' => array( 'left' => esc_html__( 'چپ (کنار لوگو)', 'sazan-core' ), 'right' => esc_html__( 'راست (سمت لوگو)', 'sazan-core' ) ),
@@ -225,7 +225,7 @@ class Header extends Widget_Base {
 	private function content_search() {
 		$this->start_controls_section( 'sec_search', array( 'label' => esc_html__( 'جستجوی سریع', 'sazan-core' ) ) );
 		$this->add_control( 'search_show', array( 'label' => esc_html__( 'نمایش', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
-		$this->add_control( 'search_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => 'fas fa-search', 'library' => 'fa-solid' ) ) );
+		$this->add_control( 'search_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => '', 'library' => '' ) ) );
 		$this->add_control( 'search_placeholder', array( 'label' => esc_html__( 'متن راهنما', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'جستجو کنید...', 'sazan-core' ) ) );
 		$this->add_control( 'search_source', array(
 			'label' => esc_html__( 'جستجو در', 'sazan-core' ), 'type' => Controls_Manager::SELECT, 'default' => 'any',
@@ -244,7 +244,7 @@ class Header extends Widget_Base {
 		$this->start_controls_section( 'sec_cats', array( 'label' => esc_html__( 'دکمه دسته بندی ها', 'sazan-core' ) ) );
 		$this->add_control( 'cats_show', array( 'label' => esc_html__( 'نمایش', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
 		$this->add_control( 'cats_text', array( 'label' => esc_html__( 'متن', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'دسته‌بندی‌ها', 'sazan-core' ) ) );
-		$this->add_control( 'cats_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => 'fas fa-th-large', 'library' => 'fa-solid' ) ) );
+		$this->add_control( 'cats_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => '', 'library' => '' ) ) );
 		$this->add_control( 'cats_chevron', array( 'label' => esc_html__( 'نمایش فلش', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
 		$this->add_control( 'cats_menu', array( 'label' => esc_html__( 'منوی دراپ‌داون', 'sazan-core' ), 'type' => Controls_Manager::SELECT, 'options' => $this->get_menus_options(), 'default' => '0' ) );
 		$this->add_control( 'cats_accordion', array( 'label' => esc_html__( 'حالت آکاردئونی (زیرمنوها با کلیک باز شوند)', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
@@ -263,7 +263,7 @@ class Header extends Widget_Base {
 		$this->add_control( 'acc_show', array( 'label' => esc_html__( 'نمایش', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
 		$this->add_control( 'acc_text', array( 'label' => esc_html__( 'متن (مهمان)', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'ورود/عضویت', 'sazan-core' ) ) );
 		$this->add_control( 'acc_link', array( 'label' => esc_html__( 'لینک صفحه ورود', 'sazan-core' ), 'type' => Controls_Manager::URL, 'default' => array( 'url' => wp_login_url() ) ) );
-		$this->add_control( 'acc_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => 'fas fa-user', 'library' => 'fa-solid' ) ) );
+		$this->add_control( 'acc_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => '', 'library' => '' ) ) );
 		$this->add_control( 'acc_logged_heading', array( 'label' => esc_html__( 'حالت ورود کرده', 'sazan-core' ), 'type' => Controls_Manager::HEADING, 'separator' => 'before' ) );
 		$this->add_control( 'acc_greeting', array( 'label' => esc_html__( 'متن خوش‌آمد', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => esc_html__( 'سلام', 'sazan-core' ), 'description' => esc_html__( 'مثلاً: سلام علی', 'sazan-core' ) ) );
 		$this->add_control( 'acc_menu', array( 'label' => esc_html__( 'منوی حساب (بازشو)', 'sazan-core' ), 'type' => Controls_Manager::SELECT, 'options' => $this->get_menus_options(), 'default' => '0' ) );
@@ -278,7 +278,7 @@ class Header extends Widget_Base {
 	private function content_cart() {
 		$this->start_controls_section( 'sec_cart', array( 'label' => esc_html__( 'سبد خرید', 'sazan-core' ) ) );
 		$this->add_control( 'cart_show', array( 'label' => esc_html__( 'نمایش', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
-		$this->add_control( 'cart_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => 'fas fa-shopping-cart', 'library' => 'fa-solid' ) ) );
+		$this->add_control( 'cart_icon', array( 'label' => esc_html__( 'آیکن', 'sazan-core' ), 'type' => Controls_Manager::ICONS, 'default' => array( 'value' => '', 'library' => '' ) ) );
 		$this->add_control( 'cart_link', array( 'label' => esc_html__( 'لینک سبد', 'sazan-core' ), 'type' => Controls_Manager::URL, 'default' => array( 'url' => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '#' ) ) );
 		$this->add_control( 'cart_count', array( 'label' => esc_html__( 'تعداد (ثابت)', 'sazan-core' ), 'type' => Controls_Manager::TEXT, 'default' => '0', 'description' => esc_html__( 'اگر ووکامرس فعال باشد، تعداد واقعی جایگزین می‌شود.', 'sazan-core' ) ) );
 		$this->add_control( 'cart_show_count', array( 'label' => esc_html__( 'نمایش شمارنده', 'sazan-core' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
@@ -339,7 +339,7 @@ class Header extends Widget_Base {
 		) );
 		$this->add_group_control( Group_Control_Typography::get_type(), array( 'name' => 'logo_typo', 'label' => esc_html__( 'تایپوگرافی متن', 'sazan-core' ), 'selector' => '{{WRAPPER}} .sazan-header__logo-text' ) );
 		$this->add_control( 'logo_color', array( 'label' => esc_html__( 'رنگ متن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-header__logo-text' => 'color: {{VALUE}};' ) ) );
-		$this->add_control( 'logo_icon_color', array( 'label' => esc_html__( 'رنگ آیکن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__logo-icon' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'logo_icon_color', array( 'label' => esc_html__( 'رنگ آیکن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__logo-icon' => 'color: {{VALUE}};' ) ) );
 		$this->add_responsive_control( 'logo_icon_size', array( 'label' => esc_html__( 'اندازه آیکن', 'sazan-core' ), 'type' => Controls_Manager::SLIDER, 'range' => array( 'px' => array( 'min' => 10, 'max' => 60 ) ), 'default' => array( 'unit' => 'px', 'size' => 30 ), 'selectors' => array( '{{WRAPPER}} .sazan-header__logo-icon' => 'font-size: {{SIZE}}{{UNIT}};' ) ) );
 		$this->add_responsive_control( 'logo_gap', array( 'label' => esc_html__( 'فاصله آیکن تا متن', 'sazan-core' ), 'type' => Controls_Manager::SLIDER, 'range' => array( 'px' => array( 'min' => 0, 'max' => 30 ) ), 'default' => array( 'unit' => 'px', 'size' => 10 ), 'selectors' => array( '{{WRAPPER}} .sazan-header__logo' => 'gap: {{SIZE}}{{UNIT}};' ) ) );
 		$this->end_controls_section();
@@ -347,11 +347,11 @@ class Header extends Widget_Base {
 
 	private function style_contact() {
 		$this->start_controls_section( 'style_contact', array( 'label' => esc_html__( 'تماس', 'sazan-core' ), 'tab' => Controls_Manager::TAB_STYLE ) );
-		$this->add_control( 'contact_label_color', array( 'label' => esc_html__( 'رنگ برچسب', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__c-label' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'contact_label_color', array( 'label' => esc_html__( 'رنگ برچسب', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__c-label' => 'color: {{VALUE}};' ) ) );
 		$this->add_group_control( Group_Control_Typography::get_type(), array( 'name' => 'contact_label_typo', 'label' => esc_html__( 'تایپوگرافی برچسب', 'sazan-core' ), 'selector' => '{{WRAPPER}} .sazan-header__c-label' ) );
 		$this->add_control( 'contact_phone_color', array( 'label' => esc_html__( 'رنگ شماره', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-header__c-phone' => 'color: {{VALUE}};' ) ) );
 		$this->add_group_control( Group_Control_Typography::get_type(), array( 'name' => 'contact_phone_typo', 'label' => esc_html__( 'تایپوگرافی شماره', 'sazan-core' ), 'selector' => '{{WRAPPER}} .sazan-header__c-phone' ) );
-		$this->add_control( 'contact_icon_color', array( 'label' => esc_html__( 'رنگ آیکن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__c-icon' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'contact_icon_color', array( 'label' => esc_html__( 'رنگ آیکن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__c-icon' => 'color: {{VALUE}};' ) ) );
 		$this->add_responsive_control( 'contact_icon_size', array( 'label' => esc_html__( 'اندازه آیکن', 'sazan-core' ), 'type' => Controls_Manager::SLIDER, 'range' => array( 'px' => array( 'min' => 12, 'max' => 50 ) ), 'default' => array( 'unit' => 'px', 'size' => 22 ), 'selectors' => array( '{{WRAPPER}} .sazan-header__c-icon' => 'font-size: {{SIZE}}{{UNIT}};' ) ) );
 		$this->end_controls_section();
 	}
@@ -366,7 +366,7 @@ class Header extends Widget_Base {
 		$this->add_control( 'search_text_color', array( 'label' => esc_html__( 'رنگ متن فیلد', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-header__search-input' => 'color: {{VALUE}};' ) ) );
 		$this->add_control( 'search_results_bg', array( 'label' => esc_html__( 'پس‌زمینه نتایج', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#0f2735', 'selectors' => array( '{{WRAPPER}} .sazan-header__search-results' => 'background: {{VALUE}};' ) ) );
 		$this->add_control( 'search_results_color', array( 'label' => esc_html__( 'رنگ نتایج', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#e8f0f4', 'selectors' => array( '{{WRAPPER}} .sazan-header__search-results a' => 'color: {{VALUE}};' ) ) );
-		$this->add_control( 'search_results_hover', array( 'label' => esc_html__( 'هاور نتایج', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__search-results a:hover' => 'background: rgba(255,255,255,.05); color: {{VALUE}};' ) ) );
+		$this->add_control( 'search_results_hover', array( 'label' => esc_html__( 'هاور نتایج', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__search-results a:hover' => 'background: rgba(255,255,255,.05); color: {{VALUE}};' ) ) );
 		$this->end_controls_section();
 	}
 
@@ -376,7 +376,7 @@ class Header extends Widget_Base {
 		$this->add_control( 'cats_color', array( 'label' => esc_html__( 'رنگ متن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-btn' => 'color: {{VALUE}};' ) ) );
 		$this->add_group_control( Group_Control_Background::get_type(), array( 'name' => 'cats_bg', 'types' => array( 'classic', 'gradient' ), 'selector' => '{{WRAPPER}} .sazan-header__cat-btn' ) );
 		$this->add_control( 'h_cat_badge', array( 'label' => esc_html__( 'بَج آیکن', 'sazan-core' ), 'type' => Controls_Manager::HEADING, 'separator' => 'before' ) );
-		$this->add_control( 'cats_icon_color', array( 'label' => esc_html__( 'رنگ آیکن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-icon' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'cats_icon_color', array( 'label' => esc_html__( 'رنگ آیکن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-icon' => 'color: {{VALUE}};' ) ) );
 		$this->add_control( 'cats_icon_bg', array( 'label' => esc_html__( 'پس‌زمینه دایره', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-icon' => 'background: {{VALUE}};' ) ) );
 		$this->add_responsive_control( 'cats_icon_circle', array( 'label' => esc_html__( 'قطر دایره', 'sazan-core' ), 'type' => Controls_Manager::SLIDER, 'range' => array( 'px' => array( 'min' => 18, 'max' => 56 ) ), 'default' => array( 'unit' => 'px', 'size' => 32 ), 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-icon' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};' ) ) );
 		$this->add_responsive_control( 'cats_icon_size', array( 'label' => esc_html__( 'اندازه آیکن', 'sazan-core' ), 'type' => Controls_Manager::SLIDER, 'range' => array( 'px' => array( 'min' => 8, 'max' => 30 ) ), 'default' => array( 'unit' => 'px', 'size' => 15 ), 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-icon' => 'font-size: {{SIZE}}{{UNIT}};' ) ) );
@@ -386,7 +386,7 @@ class Header extends Widget_Base {
 		$this->add_control( 'h_dd', array( 'label' => esc_html__( 'دراپ‌داون', 'sazan-core' ), 'type' => Controls_Manager::HEADING, 'separator' => 'before' ) );
 		$this->add_control( 'dd_bg', array( 'label' => esc_html__( 'پس‌زمینه', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#0f2735', 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-dropdown' => 'background: {{VALUE}};' ) ) );
 		$this->add_control( 'dd_color', array( 'label' => esc_html__( 'رنگ آیتم', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-dropdown a' => 'color: {{VALUE}};' ) ) );
-		$this->add_control( 'dd_color_h', array( 'label' => esc_html__( 'رنگ آیتم (هاور)', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-dropdown a:hover' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'dd_color_h', array( 'label' => esc_html__( 'رنگ آیتم (هاور)', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__cat-dropdown a:hover' => 'color: {{VALUE}};' ) ) );
 		$this->end_controls_section();
 	}
 
@@ -400,17 +400,17 @@ class Header extends Widget_Base {
 		$this->add_control( 'nav_color', array( 'label' => esc_html__( 'رنگ', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-header__nav > ul > li > a' => 'color: {{VALUE}};', '{{WRAPPER}} .sazan-header__nav .menu-item-has-children > a::after' => 'border-color: {{VALUE}};' ) ) );
 		$this->end_controls_tab();
 		$this->start_controls_tab( 'nav_h', array( 'label' => esc_html__( 'هاور', 'sazan-core' ) ) );
-		$this->add_control( 'nav_color_h', array( 'label' => esc_html__( 'رنگ', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__nav > ul > li > a:hover' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'nav_color_h', array( 'label' => esc_html__( 'رنگ', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__nav > ul > li > a:hover' => 'color: {{VALUE}};' ) ) );
 		$this->add_control( 'nav_hover_bg', array( 'label' => esc_html__( 'پس‌زمینه هاور', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .sazan-header__nav > ul > li > a:hover' => 'background: {{VALUE}};' ) ) );
 		$this->end_controls_tab();
 		$this->start_controls_tab( 'nav_a', array( 'label' => esc_html__( 'فعال', 'sazan-core' ) ) );
-		$this->add_control( 'nav_color_a', array( 'label' => esc_html__( 'رنگ', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__nav > ul > li.current-menu-item > a' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'nav_color_a', array( 'label' => esc_html__( 'رنگ', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__nav > ul > li.current-menu-item > a' => 'color: {{VALUE}};' ) ) );
 		$this->end_controls_tab();
 		$this->end_controls_tabs();
 		$this->add_control( 'h_sub', array( 'label' => esc_html__( 'زیرمنو', 'sazan-core' ), 'type' => Controls_Manager::HEADING, 'separator' => 'before' ) );
 		$this->add_control( 'sub_bg', array( 'label' => esc_html__( 'پس‌زمینه', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#0f2735', 'selectors' => array( '{{WRAPPER}} .sazan-header__nav .sub-menu' => 'background: {{VALUE}};' ) ) );
 		$this->add_control( 'sub_color', array( 'label' => esc_html__( 'رنگ آیتم', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-header__nav .sub-menu a' => 'color: {{VALUE}};' ) ) );
-		$this->add_control( 'sub_color_h', array( 'label' => esc_html__( 'رنگ آیتم (هاور)', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__nav .sub-menu a:hover' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'sub_color_h', array( 'label' => esc_html__( 'رنگ آیتم (هاور)', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__nav .sub-menu a:hover' => 'color: {{VALUE}};' ) ) );
 		$this->end_controls_section();
 	}
 
@@ -427,7 +427,7 @@ class Header extends Widget_Base {
 		$this->add_control( 'h_accdd', array( 'label' => esc_html__( 'منوی بازشو', 'sazan-core' ), 'type' => Controls_Manager::HEADING, 'separator' => 'before' ) );
 		$this->add_control( 'accdd_bg', array( 'label' => esc_html__( 'پس‌زمینه', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#0f2735', 'selectors' => array( '{{WRAPPER}} .sazan-header__acc-dropdown' => 'background: {{VALUE}};' ) ) );
 		$this->add_control( 'accdd_color', array( 'label' => esc_html__( 'رنگ آیتم', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#ffffff', 'selectors' => array( '{{WRAPPER}} .sazan-header__acc-dropdown a' => 'color: {{VALUE}};' ) ) );
-		$this->add_control( 'accdd_color_h', array( 'label' => esc_html__( 'رنگ آیتم (هاور)', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__acc-dropdown a:hover' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'accdd_color_h', array( 'label' => esc_html__( 'رنگ آیتم (هاور)', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__acc-dropdown a:hover' => 'color: {{VALUE}};' ) ) );
 		$this->end_controls_section();
 	}
 
@@ -443,7 +443,7 @@ class Header extends Widget_Base {
 		$this->add_control( 'h_cartdd', array( 'label' => esc_html__( 'مینی‌کارت', 'sazan-core' ), 'type' => Controls_Manager::HEADING, 'separator' => 'before' ) );
 		$this->add_control( 'cartdd_bg', array( 'label' => esc_html__( 'پس‌زمینه', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#0f2735', 'selectors' => array( '{{WRAPPER}} .sazan-header__cart-dropdown' => 'background: {{VALUE}};' ) ) );
 		$this->add_control( 'cartdd_color', array( 'label' => esc_html__( 'رنگ متن', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#e8f0f4', 'selectors' => array( '{{WRAPPER}} .sazan-header__cart-dropdown' => '--cartdd-color: {{VALUE}};' ) ) );
-		$this->add_control( 'cartdd_price', array( 'label' => esc_html__( 'رنگ قیمت', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#00b6f1', 'selectors' => array( '{{WRAPPER}} .sazan-header__cart-dropdown' => '--cartdd-price: {{VALUE}};' ) ) );
+		$this->add_control( 'cartdd_price', array( 'label' => esc_html__( 'رنگ قیمت', 'sazan-core' ), 'type' => Controls_Manager::COLOR, 'default' => '#1B90B2', 'selectors' => array( '{{WRAPPER}} .sazan-header__cart-dropdown' => '--cartdd-price: {{VALUE}};' ) ) );
 		$this->end_controls_section();
 	}
 
@@ -461,6 +461,33 @@ class Header extends Widget_Base {
 	private function icon( $icon ) {
 		if ( ! is_array( $icon ) || empty( $icon['value'] ) ) { return; }
 		Icons_Manager::render_icon( $icon, array( 'aria-hidden' => 'true' ) );
+	}
+
+	/**
+	 * آیکن با نشانِ پیش‌فرضِ SVG: اگر کاربر آیکنی انتخاب کرده باشد همان،
+	 * وگرنه نشانِ توکارِ SVG (بدون وابستگی به فونت‌آیکن و بدون ایموجی).
+	 */
+	private function picon( $icon, $fallback ) {
+		if ( is_array( $icon ) && ! empty( $icon['value'] ) ) { $this->icon( $icon ); return; }
+		echo $this->svg( $fallback ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	private function svg( $name ) {
+		switch ( $name ) {
+			case 'brand': // نشانِ سازان — قلهٔ انتزاعی + تیکِ رشد
+				return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 20h16L12 3Z" fill="currentColor" opacity=".16"/><path d="M12 3 4 20h16L12 3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m8.4 13.2 2-2.2 2 2.4 2.9-3.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+			case 'phone':
+				return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5 9 4l1 3.5-1.8 1.4a12 12 0 0 0 5.9 5.9L15.5 15l3.5 1 .5 2.5a2 2 0 0 1-2.2 2.3A16.5 16.5 0 0 1 3.7 6.2 2 2 0 0 1 6.5 3.5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+			case 'search':
+				return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+			case 'user':
+				return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M4.5 20c.7-3.6 3.7-5.5 7.5-5.5s6.8 1.9 7.5 5.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+			case 'cart':
+				return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9.5" cy="20" r="1.4" fill="currentColor"/><circle cx="17.5" cy="20" r="1.4" fill="currentColor"/><path d="M3 4h2l2.2 11.1a1.4 1.4 0 0 0 1.4 1.1h8.1a1.4 1.4 0 0 0 1.4-1.1L21 7.5H6.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+			case 'grid':
+				return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="2" fill="currentColor"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2" fill="currentColor"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2" fill="currentColor"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2" fill="currentColor"/></svg>';
+		}
+		return '';
 	}
 
 	private function render_menu( $slug ) {
@@ -536,8 +563,8 @@ class Header extends Widget_Base {
 		if ( ! empty( $s['logo_image']['url'] ) ) {
 			printf( '<img src="%s" alt="%s">', esc_url( $s['logo_image']['url'] ), esc_attr( $s['logo_text'] ) );
 		} else {
+			echo '<span class="sazan-header__logo-icon">'; $this->picon( $s['logo_icon'], 'brand' ); echo '</span>';
 			echo '<span class="sazan-header__logo-text">' . esc_html( $s['logo_text'] ) . '</span>';
-			echo '<span class="sazan-header__logo-icon">'; $this->icon( $s['logo_icon'] ); echo '</span>';
 		}
 		echo $tag_close;
 
@@ -547,7 +574,7 @@ class Header extends Widget_Base {
 			echo '<div class="sazan-header__contact">';
 			echo '<div class="sazan-header__c-texts"><span class="sazan-header__c-label">' . esc_html( $s['contact_label'] ) . '</span>';
 			echo '<a class="sazan-header__c-phone" href="tel:' . esc_attr( $tel ) . '">' . esc_html( $s['contact_phone'] ) . '</a></div>';
-			echo '<span class="sazan-header__c-icon">'; $this->icon( $s['contact_icon'] ); echo '</span>';
+			echo '<span class="sazan-header__c-icon">'; $this->picon( $s['contact_icon'], 'phone' ); echo '</span>';
 			echo '</div>';
 		}
 		echo '<button type="button" class="sazan-header__burger" aria-label="menu"><span></span><span></span><span></span></button>';
@@ -558,7 +585,7 @@ class Header extends Widget_Base {
 		echo '<div class="sazan-header__bottom"><div class="sazan-header__bottom-inner">';
 		if ( 'yes' === $s['cats_show'] ) {
 			echo '<div class="sazan-header__categories"><button type="button" class="sazan-header__cat-btn">';
-			echo '<span class="sazan-header__cat-icon">'; $this->icon( $s['cats_icon'] ); echo '</span>';
+			echo '<span class="sazan-header__cat-icon">'; $this->picon( $s['cats_icon'], 'grid' ); echo '</span>';
 			echo '<span class="sazan-header__cat-text">' . esc_html( $s['cats_text'] ) . '</span>';
 			if ( 'yes' === $s['cats_chevron'] ) { echo '<span class="sazan-header__cat-chev">' . $chev . '</span>'; }
 			echo '</button>';
@@ -606,7 +633,7 @@ class Header extends Widget_Base {
 	private function render_search( $s ) {
 		if ( 'yes' !== $s['search_show'] ) { return; }
 		echo '<div class="sazan-header__search">';
-		echo '<button type="button" class="sazan-header__search-toggle" aria-label="search">'; $this->icon( $s['search_icon'] ); echo '</button>';
+		echo '<button type="button" class="sazan-header__search-toggle" aria-label="search">'; $this->picon( $s['search_icon'], 'search' ); echo '</button>';
 		echo '<div class="sazan-header__search-panel" data-source="' . esc_attr( $s['search_source'] ) . '" data-count="' . esc_attr( (int) $s['search_count'] ) . '">';
 		echo '<form class="sazan-header__search-form" role="search" method="get" action="' . esc_url( home_url( '/' ) ) . '">';
 		echo '<input type="search" name="s" class="sazan-header__search-input" placeholder="' . esc_attr( $s['search_placeholder'] ) . '" autocomplete="off">';
@@ -626,7 +653,7 @@ class Header extends Widget_Base {
 			echo '<div class="sazan-header__account-wrap" data-trigger="' . esc_attr( $trigger ) . '">';
 			echo '<a class="sazan-header__account" href="' . esc_url( $href ) . '">';
 			echo '<span class="sazan-header__acc-text">' . esc_html( trim( $s['acc_greeting'] . ' ' . $name ) ) . '</span>';
-			echo '<span class="sazan-header__acc-icon">'; $this->icon( $s['acc_icon'] ); echo '</span>';
+			echo '<span class="sazan-header__acc-icon">'; $this->picon( $s['acc_icon'], 'user' ); echo '</span>';
 			echo '</a>';
 			if ( ! empty( $s['acc_menu'] ) && '0' !== $s['acc_menu'] ) {
 				echo '<div class="sazan-header__acc-dropdown">'; $this->render_menu( $s['acc_menu'] ); echo '</div>';
@@ -636,7 +663,7 @@ class Header extends Widget_Base {
 			$href = ! empty( $s['acc_link']['url'] ) ? $s['acc_link']['url'] : '#';
 			echo '<a class="sazan-header__account" href="' . esc_url( $href ) . '">';
 			echo '<span class="sazan-header__acc-text">' . esc_html( $s['acc_text'] ) . '</span>';
-			echo '<span class="sazan-header__acc-icon">'; $this->icon( $s['acc_icon'] ); echo '</span>';
+			echo '<span class="sazan-header__acc-icon">'; $this->picon( $s['acc_icon'], 'user' ); echo '</span>';
 			echo '</a>';
 		}
 	}
@@ -651,7 +678,7 @@ class Header extends Widget_Base {
 		echo '<div class="sazan-header__cart-wrap" data-trigger="' . esc_attr( $trigger ) . '">';
 		echo '<a class="sazan-header__cart" href="' . esc_url( $href ) . '">';
 		if ( 'yes' === $s['cart_show_count'] ) { echo '<span class="sazan-header__cart-count">' . esc_html( $count ) . '</span>'; }
-		echo '<span class="sazan-header__cart-icon">'; $this->icon( $s['cart_icon'] ); echo '</span>';
+		echo '<span class="sazan-header__cart-icon">'; $this->picon( $s['cart_icon'], 'cart' ); echo '</span>';
 		echo '</a>';
 		if ( $dd ) {
 			echo '<div class="sazan-header__cart-dropdown">';
