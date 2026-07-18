@@ -121,6 +121,14 @@
 			el.parentNode.insertBefore( ph, el );
 
 			floated = useFloat( el );
+			// جای و عرضِ دقیقِ ردیفِ عادی را همین‌جا (قبل از انتقال به body) بگیر
+			// تا نوارِ شناور دقیقاً هم‌عرض و هم‌راستای هدرِ عادی باشد.
+			var floatBox = null;
+			if ( floated ) {
+				var innerEl = el.querySelector( '.sazan-header__bottom-inner' );
+				var r0 = innerEl ? innerEl.getBoundingClientRect() : el.getBoundingClientRect();
+				floatBox = { left: Math.round( r0.left ), width: Math.round( r0.width ) };
+			}
 			document.body.appendChild( el );
 			el.classList.add( 'sz-fixed' );
 			el.style.position = 'fixed';
@@ -128,14 +136,13 @@
 			el.style.zIndex = '99990';
 
 			if ( floated ) {
-				// نوار را به یک کارتِ باریکِ وسط‌چین (به عرضِ محتوای هدر، پیش‌فرض ۸۰٪) تبدیل کن
+				// نوار را دقیقاً به عرض/جای ردیفِ عادی (پیش‌فرض ۸۰٪) قفل کن
 				el.classList.add( 'sz-float' );
-				var innerEl = el.querySelector( '.sazan-header__bottom-inner' );
-				var mw = innerEl ? getComputedStyle( innerEl ).maxWidth : '';
-				el.style.left = '0';
-				el.style.right = '0';
-				el.style.margin = '0 auto';
-				el.style.maxWidth = ( mw && mw !== 'none' ) ? mw : '80%';
+				el.style.left = floatBox.left + 'px';
+				el.style.right = 'auto';
+				el.style.margin = '0';
+				el.style.width = floatBox.width + 'px';
+				el.style.maxWidth = 'none';
 				// اینر داخلِ پیل، تمام‌عرض شود
 				copyInnerWidths( el, true );
 			} else {
@@ -156,7 +163,7 @@
 			var el = info.el;
 			copyInnerWidths( el, true );
 			el.classList.remove( 'sz-fixed', 'sz-shrunk', 'sz-hidden', 'sz-float' );
-			[ 'position', 'left', 'right', 'top', 'margin', 'maxWidth', 'zIndex', 'backgroundColor', 'backgroundImage', 'backdropFilter', 'webkitBackdropFilter' ].forEach( function ( p ) { el.style[ p ] = ''; } );
+			[ 'position', 'left', 'right', 'top', 'margin', 'width', 'maxWidth', 'zIndex', 'backgroundColor', 'backgroundImage', 'backdropFilter', 'webkitBackdropFilter' ].forEach( function ( p ) { el.style[ p ] = ''; } );
 			if ( info.next && info.next.parentNode === info.parent ) { info.parent.insertBefore( el, info.next ); }
 			else { info.parent.appendChild( el ); }
 			if ( ph.parentNode ) { ph.parentNode.removeChild( ph ); }

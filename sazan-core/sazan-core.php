@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sazan Core
  * Description: مجموعه ویجت‌های اختصاصی المنتور (سازان) با کنترل‌های استایلی کامل.
- * Version:     3.40.0
+ * Version:     3.40.1
  * Author:      Sazan
  * Text Domain: sazan-core
  * Requires Plugins: elementor
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /* ثابت‌های افزونه ------------------------------------------------------- */
-define( 'SAZAN_CORE_VERSION', '3.40.0' );
+define( 'SAZAN_CORE_VERSION', '3.40.1' );
 define( 'SAZAN_CORE_FILE', __FILE__ );
 define( 'SAZAN_CORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SAZAN_CORE_URL', plugin_dir_url( __FILE__ ) );

@@ -560,6 +560,9 @@ body.sazan-drawer-open{ overflow:hidden; }
 	box-shadow:0 10px 34px -12px rgba(0,0,0,.5);
 	will-change:transform;
 }
+/* پس از انتقال به body، قاعده‌ی box-sizing هدر دیگر اعمال نمی‌شود؛
+   این‌جا دوباره border-box می‌کنیم تا عرض دقیقاً برابرِ ردیفِ عادی بماند. */
+.sz-fixed, .sz-fixed *{ box-sizing:border-box; }
 .sz-fixed.sz-hidden{ transform:translateY(-100%); }
 .sz-fixed.sz-shrunk .sazan-header__bottom-inner,
 .sazan-header__bottom.sz-fixed.sz-shrunk .sazan-header__bottom-inner{ padding-top:8px !important; padding-bottom:8px !important; min-height:0 !important; }
@@ -949,11 +952,7 @@ html, body{ overflow-x:clip !important; }
 .sazan-header__bottom.sz-fixed.sz-float .sazan-header__bottom-inner{ min-height:60px; }
 @keyframes sazan-sfloat-in{ from{ transform:translateY(-16px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
 @media (prefers-reduced-motion: reduce){ .sazan-header__bottom.sz-fixed.sz-float{ animation:none; } }
-
-/* در عرض‌های میانی، نوار شناور کمی جمع‌وجورتر */
-@media (max-width:1200px) and (min-width:1025px){
-	.sazan-header__bottom.sz-fixed.sz-float{ max-width:92% !important; }
-}
+/* عرض/جای نوار شناور با JS دقیقاً برابرِ ردیفِ عادی قفل می‌شود (هم‌عرض ماندن) */
 
 /* ============================================================
    پرداختِ حرفه‌ای‌تر (میکرو-اینتراکشن‌ها و ظرافت‌های عمومی)
@@ -1064,6 +1063,11 @@ html, body{ overflow-x:clip !important; }
 /* دکمهٔ جستجو/حساب: هالهٔ ظریفِ برند هنگام هاور */
 .sazan-header__search-toggle:hover{ color:var(--sz-accent); }
 .sazan-header__account:hover{ box-shadow:0 8px 22px -12px rgba(27,144,178,.7); }
+
+/* نامِ کاربر همیشه یک‌خطی (بدونِ شکستن) */
+.sazan-header__account{ white-space:nowrap; flex:0 0 auto; }
+.sazan-header__acc-text{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:min(320px,32vw); }
+.sazan-header__acc-icon{ flex:0 0 auto; }
 
 /* شمارندهٔ سبد: کنتراستِ تمیزتر روی دکمهٔ برند */
 .sazan-header__cart-count{ box-shadow:0 2px 8px -2px rgba(0,0,0,.6); border:1.5px solid rgba(255,255,255,.9); }
