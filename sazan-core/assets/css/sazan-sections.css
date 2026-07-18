@@ -2227,3 +2227,171 @@ body.sz-hero-modal-open{ overflow:hidden; }
 	.podsec-card, .podsec-play, .podsec-all svg{ transition:none !important; }
 	.sazan-podsec.has-hoverblur .podsec-grid:hover .podsec-card{ filter:none !important; opacity:1 !important; }
 }
+
+/* ============================================================
+   فوتر سازان (sazan-footer) — حرفه‌ای، شیشه‌ای، هم‌برندِ هدر
+   رنگ برند: #1B90B2
+   ============================================================ */
+.sazan-footer{
+	--fz-accent:#1B90B2; --fz-accent-l:#2ba6c9;
+	--fz-heading:#ffffff; --fz-text:#a7bcc8; --fz-border:rgba(255,255,255,.09);
+	position:relative; direction:rtl; color:var(--fz-text);
+	background-color:#081218; overflow:hidden;
+	font-size:15px; line-height:1.7;
+}
+.sazan-footer *{ box-sizing:border-box; }
+.sazan-footer.skin-glass{ background:linear-gradient(180deg, rgba(10,22,30,.92), rgba(6,14,20,.98)); }
+.sazan-footer.skin-minimal{ background-color:#0a151c; }
+
+/* خطِ گرادینتیِ متحرکِ بالای فوتر */
+.sazan-footer.has-topline::before{
+	content:""; position:absolute; top:0; left:0; right:0; height:3px; z-index:2;
+	background:linear-gradient(90deg,var(--fz-accent),var(--fz-accent-l),var(--fz-accent));
+	background-size:200% 100%; animation:sazan-fline 6s linear infinite;
+}
+@keyframes sazan-fline{ to{ background-position:200% 0; } }
+@media (prefers-reduced-motion: reduce){ .sazan-footer.has-topline::before{ animation:none; } }
+
+/* هاله‌ی نورانیِ برند */
+.sazan-footer__glow{
+	position:absolute; top:-170px; left:50%; transform:translateX(-50%);
+	width:920px; max-width:130%; height:340px; pointer-events:none; z-index:0;
+	background:radial-gradient(ellipse at center, rgba(27,144,178,.22), transparent 70%);
+	filter:blur(10px);
+}
+
+.sazan-footer__inner{ position:relative; z-index:1; width:100%; margin:0 auto; padding:64px 24px; }
+
+/* --- خبرنامه --- */
+.sazan-footer__news{
+	display:flex; align-items:center; gap:24px; flex-wrap:wrap; justify-content:space-between;
+	padding:24px 28px; border-radius:20px; margin-bottom:46px;
+	border:1px solid var(--fz-border);
+	background:linear-gradient(120deg, rgba(27,144,178,.16), rgba(255,255,255,.03));
+	-webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+}
+.sazan-footer__news-title{ color:var(--fz-heading); font-size:20px; font-weight:800; }
+.sazan-footer__news-desc{ margin:6px 0 0; font-size:14px; }
+.sazan-footer__news-form{ display:flex; gap:10px; flex:1 1 340px; max-width:520px; }
+.sazan-footer__news-input{
+	flex:1 1 auto; min-width:0; border:1px solid var(--fz-border); background:rgba(255,255,255,.05);
+	color:#fff; border-radius:12px; padding:12px 16px; font:inherit; outline:none;
+	transition:border-color .2s, box-shadow .2s;
+}
+.sazan-footer__news-input::placeholder{ color:rgba(255,255,255,.45); }
+.sazan-footer__news-input:focus{ border-color:var(--fz-accent); box-shadow:0 0 0 3px rgba(27,144,178,.25); }
+.sazan-footer__news-btn{
+	display:inline-flex; align-items:center; gap:8px; border:0; cursor:pointer; font:inherit; font-weight:800;
+	color:#fff; padding:12px 22px; border-radius:12px; white-space:nowrap;
+	background:linear-gradient(135deg,var(--fz-accent-l),var(--fz-accent));
+	box-shadow:0 12px 26px -12px rgba(27,144,178,.9); transition:transform .2s, filter .2s;
+}
+.sazan-footer__news-btn:hover{ transform:translateY(-2px); filter:brightness(1.06); }
+.sazan-footer__news-btn svg{ width:18px; height:18px; }
+.sazan-footer__news-msg{ flex:1 1 100%; }
+.sazan-footer__news-msg.ok{ color:var(--fz-accent-l); font-size:14px; font-weight:700; }
+
+/* --- گرید اصلی --- */
+.sazan-footer__grid{ display:flex; flex-wrap:wrap; gap:34px 44px; }
+.sazan-footer__brand{ flex:1 1 320px; max-width:420px; }
+.sazan-footer__col{ flex:1 1 160px; min-width:150px; }
+.sazan-footer__contact{ flex:1 1 230px; }
+
+/* برند */
+.sazan-footer__logo{ display:inline-flex; align-items:center; gap:12px; text-decoration:none; margin-bottom:16px; }
+.sazan-footer__logo-mark{
+	width:44px; height:44px; border-radius:13px; flex:0 0 auto;
+	display:inline-flex; align-items:center; justify-content:center; color:var(--fz-accent);
+	background:linear-gradient(135deg, rgba(27,144,178,.24), rgba(27,144,178,.05));
+	border:1px solid rgba(27,144,178,.4);
+	box-shadow:0 8px 20px -10px rgba(27,144,178,.8), inset 0 1px 0 rgba(255,255,255,.14);
+}
+.sazan-footer__logo-mark svg{ width:26px; height:26px; }
+.sazan-footer__logo-text{ font-size:26px; font-weight:800; color:var(--fz-heading); letter-spacing:.5px; }
+.sazan-footer__logo img{ display:block; height:auto; }
+.sazan-footer__desc{ margin:0 0 18px; font-size:14.5px; line-height:2; max-width:40ch; }
+
+/* شبکه‌های اجتماعی */
+.sazan-footer__socials{ display:flex; flex-wrap:wrap; gap:10px; }
+.sazan-footer__social{
+	width:42px; height:42px; border-radius:12px; display:inline-flex; align-items:center; justify-content:center;
+	color:var(--fz-text); border:1px solid var(--fz-border); background:rgba(255,255,255,.04); transition:.22s ease;
+}
+.sazan-footer__social svg{ width:20px; height:20px; }
+.sazan-footer__social:hover{
+	color:#fff; border-color:transparent; transform:translateY(-3px);
+	background:linear-gradient(135deg,var(--fz-accent-l),var(--fz-accent));
+	box-shadow:0 12px 22px -12px rgba(27,144,178,.95);
+}
+
+/* ستون‌های منو */
+.sazan-footer__col-title{
+	display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%;
+	background:none; border:0; padding:0 0 18px; margin:0; text-align:right;
+	font:inherit; font-size:16px; font-weight:800; color:var(--fz-heading); cursor:default;
+}
+.sazan-footer__col-title .sazan-fchev{ display:none; width:18px; height:18px; }
+.sazan-footer-menu{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
+.sazan-footer__col a{
+	color:var(--fz-text); text-decoration:none; font-size:14.5px;
+	display:inline-flex; align-items:center; gap:8px; width:fit-content; transition:color .2s, transform .2s;
+}
+.sazan-footer__col a::before{
+	content:""; width:6px; height:6px; border-radius:50%; background:var(--fz-accent);
+	opacity:0; transform:scale(.3); transition:.2s;
+}
+.sazan-footer__col a:hover{ color:#fff; transform:translateX(-3px); }
+.sazan-footer__col a:hover::before{ opacity:1; transform:scale(1); }
+.sazan-footer__menu-empty{ opacity:.6; font-style:italic; font-size:13px; }
+
+/* تماس */
+.sazan-footer__contact-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+.sazan-footer__contact-list li{ display:flex; align-items:flex-start; gap:11px; font-size:14.5px; line-height:1.8; }
+.sazan-footer__contact-list a{ color:var(--fz-text); text-decoration:none; transition:color .2s; }
+.sazan-footer__contact-list a:hover{ color:#fff; }
+.sazan-footer__ci{
+	flex:0 0 auto; width:34px; height:34px; border-radius:10px;
+	display:inline-flex; align-items:center; justify-content:center; color:var(--fz-accent);
+	background:rgba(27,144,178,.12); border:1px solid rgba(27,144,178,.22);
+}
+.sazan-footer__ci svg{ width:18px; height:18px; }
+
+/* نوار پایین */
+.sazan-footer__bottom{ position:relative; z-index:1; border-top:1px solid var(--fz-border); }
+.sazan-footer__bottom-inner{
+	width:100%; margin:0 auto; padding:18px 24px;
+	display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+}
+.sazan-footer__copy{ font-size:13.5px; color:var(--fz-text); }
+.sazan-footer__botnav .sazan-footer-menu{ flex-direction:row; gap:18px; flex-wrap:wrap; }
+.sazan-footer__botnav a{ color:var(--fz-text); text-decoration:none; font-size:13.5px; transition:color .2s; }
+.sazan-footer__botnav a::before{ content:none; }
+.sazan-footer__botnav a:hover{ color:var(--fz-accent-l); }
+.sazan-footer__backtop{
+	display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+	border:1px solid var(--fz-border); background:rgba(255,255,255,.04); color:var(--fz-text);
+	font:inherit; font-size:13.5px; font-weight:700; padding:9px 16px; border-radius:999px; transition:.22s ease;
+}
+.sazan-footer__backtop svg{ width:16px; height:16px; transition:transform .2s; }
+.sazan-footer__backtop:hover{ color:#fff; border-color:var(--fz-accent); box-shadow:0 10px 22px -12px rgba(27,144,178,.85); }
+.sazan-footer__backtop:hover svg{ transform:translateY(-3px); }
+
+/* ریسپانسیو + آکاردئونِ موبایل */
+@media (max-width:900px){
+	.sazan-footer__inner{ padding:44px 20px; }
+	.sazan-footer__grid{ gap:0 30px; }
+	.sazan-footer__brand{ flex:1 1 100%; max-width:none; margin-bottom:10px; }
+	.sazan-footer__col{ flex:1 1 100%; min-width:0; border-top:1px solid var(--fz-border); }
+	.sazan-footer__col-title{ padding:16px 0; cursor:pointer; }
+	.sazan-footer__col-title .sazan-fchev{ display:inline-flex; transition:transform .25s ease; }
+	.sazan-footer__col.is-open .sazan-footer__col-title .sazan-fchev{ transform:rotate(180deg); }
+	.sazan-footer__col-body{ max-height:0; overflow:hidden; transition:max-height .3s ease; }
+	.sazan-footer__col.is-open .sazan-footer__col-body{ max-height:700px; padding-bottom:18px; }
+	.sazan-footer__news{ flex-direction:column; align-items:stretch; text-align:center; }
+	.sazan-footer__news-texts{ flex:0 0 auto; }
+	.sazan-footer__news-form{ flex:0 0 auto; width:100%; max-width:none; }
+	.sazan-footer__bottom-inner{ justify-content:center; text-align:center; }
+}
+@media (prefers-reduced-motion: reduce){
+	.sazan-footer__social:hover, .sazan-footer__backtop:hover svg, .sazan-footer__col a:hover{ transform:none; }
+}

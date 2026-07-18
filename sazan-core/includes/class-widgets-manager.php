@@ -35,6 +35,7 @@ final class Widgets_Manager {
 		'sticky-bar/class-sazan-sticky-bar.php' => '\Sazan\Widgets\Sticky_Bar',
 		'mobile-bar/class-sazan-mobile-bar.php' => '\Sazan\Widgets\Mobile_Bar',
 		'mobile-header/class-sazan-mobile-header.php' => '\Sazan\Widgets\Mobile_Header',
+		'footer/class-sazan-footer.php'     => '\Sazan\Widgets\Footer',
 		'heading/class-sazan-heading.php'   => '\Sazan\Widgets\Heading',
 		'marquee/class-sazan-marquee.php'   => '\Sazan\Widgets\Marquee',
 		'courses/class-sazan-courses.php'   => '\Sazan\Widgets\Courses',

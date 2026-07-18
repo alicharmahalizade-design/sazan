@@ -825,8 +825,51 @@
 		}
 	}
 
+	/* ===== فوتر سازان: آکاردئونِ موبایل + برو بالا + خبرنامه ===== */
+	function initFooter( scope ) {
+		var f = ( scope && scope.classList && scope.classList.contains( 'sazan-footer' ) ) ? scope : ( scope ? scope.querySelector( '.sazan-footer' ) : null );
+		if ( ! f || f.dataset.szFooter === '1' ) { return; }
+		f.dataset.szFooter = '1';
+
+		// آکاردئونِ ستون‌ها (فقط در موبایل تأثیر بصری دارد)
+		f.querySelectorAll( '.sazan-footer__col-title' ).forEach( function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				if ( window.innerWidth > 900 ) { return; }
+				var col = btn.closest( '.sazan-footer__col' );
+				if ( col ) { col.classList.toggle( 'is-open' ); }
+			} );
+		} );
+
+		// برو بالا
+		f.querySelectorAll( '.sazan-footer__backtop' ).forEach( function ( b ) {
+			b.addEventListener( 'click', function ( e ) {
+				e.preventDefault();
+				var rm = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+				window.scrollTo( { top: 0, behavior: rm ? 'auto' : 'smooth' } );
+			} );
+		} );
+
+		// خبرنامه: اگر action نداشت، محلی پیام بده
+		f.querySelectorAll( '.sazan-footer__news-form' ).forEach( function ( form ) {
+			form.addEventListener( 'submit', function ( e ) {
+				var action = form.getAttribute( 'action' );
+				if ( action ) { return; } // به مقصدِ واقعی ارسال شود
+				e.preventDefault();
+				var input = form.querySelector( '.sazan-footer__news-input' );
+				var msg = form.parentNode.querySelector( '.sazan-footer__news-msg' );
+				var val = input ? input.value.trim() : '';
+				var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( val );
+				if ( ! msg ) { return; }
+				if ( ! ok ) { msg.textContent = 'لطفاً یک ایمیلِ معتبر وارد کنید.'; msg.className = 'sazan-footer__news-msg'; return; }
+				msg.textContent = '✓ عضویت شما با موفقیت ثبت شد.'; msg.className = 'sazan-footer__news-msg ok';
+				if ( input ) { input.value = ''; }
+			} );
+		} );
+	}
+
 	function initAll( root ) {
 		var r = root || document;
+		r.querySelectorAll( '.sazan-footer' ).forEach( initFooter );
 		r.querySelectorAll( '.sazan-prodslider' ).forEach( initProdSlider );
 		r.querySelectorAll( '.sazan-services' ).forEach( initServices );
 		r.querySelectorAll( '.sazan-courses' ).forEach( initCourses );
@@ -854,6 +897,7 @@
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-hero-cats.default', function( $s ) { initHeroFrame( $s[0] ); } );
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-product-slider.default', function( $s ) { initProdSlider( $s[0] ); } );
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-services.default', function( $s ) { initServices( $s[0] ); } );
+				elementorFrontend.hooks.addAction( 'frontend/element_ready/sazan-footer.default', function( $s ) { initFooter( $s[0] ); } );
 			}
 		} );
 	}
