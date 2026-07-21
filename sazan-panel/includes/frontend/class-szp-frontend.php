@@ -277,8 +277,13 @@ class SZP_Frontend {
 			$ts = szp_ts_from_datetime( get_post_meta( $p->ID, '_szp_datetime', true ) );
 			$items[] = array( 'id' => $p->ID, 'title' => $p->post_title, 'ts' => $ts );
 		}
+		// ترتیب صعودی: ابتدا بر اساس تاریخ؛ جلسات بدون تاریخ بر اساس شناسه (ترتیب ساخت).
+		// این‌گونه مرتب‌سازی قطعی است و «زمان‌بندی جلسات» به‌درستی جدید→قدیم می‌شود.
 		usort( $items, function( $a, $b ) {
-			return $a['ts'] <=> $b['ts'];
+			if ( $a['ts'] != $b['ts'] ) {
+				return $a['ts'] <=> $b['ts'];
+			}
+			return $a['id'] <=> $b['id'];
 		} );
 
 		$past = array();

@@ -396,6 +396,11 @@
 	transition: transform .25s, box-shadow .25s, border-color .25s, filter .35s, opacity .35s;
 }
 .szp-poster.szp-poster-nobg { background: linear-gradient(155deg, rgba(0,182,241,.30), rgba(247,148,29,.20)); }
+/* کارت‌های بدون تصویر: باریک و جمع‌وجور (فقط به‌اندازه‌ی محتوا) به‌جای پوستر بلند */
+.szp-poster.szp-poster-nobg { aspect-ratio: auto; min-height: 0; display: flex; align-items: flex-end; }
+.szp-poster.szp-poster-nobg .szp-poster-ov { display: none; }
+.szp-poster.szp-poster-nobg .szp-poster-body { position: static; width: 100%; padding: 14px; gap: 4px; }
+.szp-poster.szp-poster-nobg .szp-poster-title { font-size: 14px; line-height: 1.5; }
 .szp-poster:hover { transform: translateY(-5px); border-color: var(--szp-border-2); box-shadow: var(--szp-glow); }
 .szp-poster-ov { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,20,.94) 6%, rgba(0,0,20,.30) 55%, rgba(0,0,20,.04) 100%); }
 .szp-poster-body { position: absolute; inset: auto 0 0 0; display: flex; flex-direction: column; gap: 5px; padding: 14px; }
