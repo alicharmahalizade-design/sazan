@@ -424,6 +424,39 @@ class SZP_W_My_Eval extends SZP_Widget_Base {
 	protected function output( $id, $uid ) { return ''; }
 }
 
+class SZP_W_Coach_Sessions extends SZP_Widget_Base {
+	protected $ctx = 'none';
+	public function get_name() { return 'szp_coach_sessions'; }
+	public function get_title() { return 'سازان: زمان‌بندی جلسات کوچینگ'; }
+	public function get_icon() { return 'eicon-calendar'; }
+	public function get_keywords() { return array( 'sazan', 'session', 'coach', 'schedule', 'جلسه', 'کوچ', 'زمان‌بندی', 'سازان' ); }
+
+	protected function register_controls() {
+		$this->start_controls_section( 'szp_cs', array( 'label' => 'تنظیمات' ) );
+		$this->add_control( 'title', array(
+			'label'   => 'عنوان',
+			'type'    => \Elementor\Controls_Manager::TEXT,
+			'default' => 'زمان‌بندی جلسات کوچینگ',
+		) );
+		$this->end_controls_section();
+	}
+
+	public function render() {
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_script( 'szp-front' );
+		wp_enqueue_style( 'szp-sessions' );
+		wp_enqueue_script( 'szp-sessions' );
+		if ( ! is_user_logged_in() ) {
+			$this->empty_box( 'برای مشاهده ابتدا وارد شوید.' );
+			return;
+		}
+		$s = $this->get_settings_for_display();
+		echo SZP_Sessions_Render::render( get_current_user_id(), $s['title'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput
+	}
+
+	protected function output( $id, $uid ) { return ''; }
+}
+
 class SZP_W_Eval_Board extends SZP_Widget_Base {
 	protected $ctx = 'none';
 	public function get_name() { return 'szp_eval_board'; }
@@ -448,6 +481,11 @@ class SZP_W_Eval_Board extends SZP_Widget_Base {
 			'type'        => \Elementor\Controls_Manager::NUMBER,
 			'description' => 'برای محدود کردن تابلو به اعضای یک گروه؛ خالی = همه.',
 		) );
+		$this->add_control( 'viewers', array(
+			'label'       => 'کاربران مجاز به مشاهده (اختیاری)',
+			'type'        => \Elementor\Controls_Manager::TEXTAREA,
+			'description' => 'نام‌کاربری/ایمیل/شناسه، جداشده با کاما. علاوه بر تنظیمات کلی. خالی = طبق تنظیمات ارزیابی.',
+		) );
 		$this->end_controls_section();
 	}
 
@@ -459,6 +497,54 @@ class SZP_W_Eval_Board extends SZP_Widget_Base {
 			'title'    => $s['title'] ?? '',
 			'currency' => $s['currency'] ?? '',
 			'group'    => (int) ( $s['group'] ?? 0 ),
+			'viewers'  => $s['viewers'] ?? '',
+		) );
+	}
+
+	protected function output( $id, $uid ) { return ''; }
+}
+
+class SZP_W_Eval_Ledger extends SZP_Widget_Base {
+	protected $ctx = 'none';
+	public function get_name() { return 'szp_eval_ledger'; }
+	public function get_title() { return 'سازان: دفتر ارزیابی (همه تارگت‌ها و نتایج)'; }
+	public function get_icon() { return 'eicon-table-of-contents'; }
+	public function get_keywords() { return array( 'sazan', 'eval', 'ledger', 'ارزیابی', 'دفتر', 'تارگت', 'سازان' ); }
+
+	protected function register_controls() {
+		$this->start_controls_section( 'szp_evl', array( 'label' => 'تنظیمات' ) );
+		$this->add_control( 'title', array(
+			'label'   => 'عنوان',
+			'type'    => \Elementor\Controls_Manager::TEXT,
+			'default' => 'دفتر ارزیابی — همه‌ی تارگت‌ها و نتایج',
+		) );
+		$this->add_control( 'currency', array(
+			'label'   => 'واحد پول',
+			'type'    => \Elementor\Controls_Manager::TEXT,
+			'default' => 'تومان',
+		) );
+		$this->add_control( 'group', array(
+			'label'       => 'فقط یک گروه (شناسه گروه، اختیاری)',
+			'type'        => \Elementor\Controls_Manager::NUMBER,
+			'description' => 'برای محدود کردن به اعضای یک گروه؛ خالی = همه.',
+		) );
+		$this->add_control( 'viewers', array(
+			'label'       => 'کاربران مجاز به مشاهده (اختیاری)',
+			'type'        => \Elementor\Controls_Manager::TEXTAREA,
+			'description' => 'نام‌کاربری/ایمیل/شناسه، جداشده با کاما. علاوه بر تنظیمات کلی. خالی = طبق تنظیمات ارزیابی.',
+		) );
+		$this->end_controls_section();
+	}
+
+	public function render() {
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_style( 'szp-eval' );
+		$s = $this->get_settings_for_display();
+		echo SZP_Eval::board_full( array( // phpcs:ignore WordPress.Security.EscapeOutput
+			'title'    => $s['title'] ?? '',
+			'currency' => $s['currency'] ?? '',
+			'group'    => (int) ( $s['group'] ?? 0 ),
+			'viewers'  => $s['viewers'] ?? '',
 		) );
 	}
 
@@ -479,6 +565,145 @@ class SZP_W_Canvas_Grid extends SZP_W_Canvas_Gallery {
 	public function get_icon() { return 'eicon-gallery-grid'; }
 }
 
+class SZP_W_Courses_Slider extends SZP_Widget_Base {
+	protected $ctx = 'none';
+	public function get_name() { return 'szp_courses_slider'; }
+	public function get_title() { return 'سازان: اسلایدر دوره‌ها'; }
+	public function get_icon() { return 'eicon-slider-push'; }
+	public function get_keywords() { return array( 'sazan', 'slider', 'courses', 'hero', 'اسلایدر', 'دوره', 'سازان' ); }
+
+	protected function register_controls() {
+		$variants = class_exists( 'SZP_Courses_Slider' ) ? SZP_Courses_Slider::variants() : array();
+		$default  = class_exists( 'SZP_Courses_Slider' ) ? SZP_Courses_Slider::default_design() : '6a';
+
+		/* ---- طرح ---- */
+		$this->start_controls_section( 'szp_cs_design', array( 'label' => 'طرح' ) );
+		$this->add_control( 'design', array(
+			'label'   => 'طرح اسلایدر',
+			'type'    => \Elementor\Controls_Manager::SELECT,
+			'default' => $default,
+			'options' => $variants,
+		) );
+		$this->add_control( 'show_switcher', array(
+			'label'        => 'نوار انتخاب طرح برای بازدیدکننده',
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => '',
+			'description'  => 'اگر فعال باشد، بازدیدکننده می‌تواند بین طرح‌ها جابه‌جا شود.',
+		) );
+		$this->add_control( 'designs', array(
+			'label'       => 'طرح‌های موجود در نوار (خالی = همه)',
+			'type'        => \Elementor\Controls_Manager::SELECT2,
+			'multiple'    => true,
+			'options'     => $variants,
+			'condition'   => array( 'show_switcher' => 'yes' ),
+		) );
+		$this->add_control( 'title', array(
+			'label' => 'عنوان بالای اسلایدر (اختیاری)',
+			'type'  => \Elementor\Controls_Manager::TEXT,
+		) );
+		$this->end_controls_section();
+
+		/* ---- محتوا ---- */
+		$this->start_controls_section( 'szp_cs_content', array( 'label' => 'محتوا' ) );
+		$this->add_control( 'source', array(
+			'label'   => 'منبع اسلایدها',
+			'type'    => \Elementor\Controls_Manager::SELECT,
+			'default' => 'auto',
+			'options' => array(
+				'auto'   => 'خودکار از دوره‌ها',
+				'manual' => 'دستی',
+				'both'   => 'هر دو (دوره‌ها + دستی)',
+			),
+		) );
+		$this->add_control( 'count', array(
+			'label'       => 'حداکثر تعداد اسلاید (۰ = همه)',
+			'type'        => \Elementor\Controls_Manager::NUMBER,
+			'default'     => 0,
+		) );
+
+		$rep = new \Elementor\Repeater();
+		$rep->add_control( 'name', array( 'label' => 'عنوان دوره', 'type' => \Elementor\Controls_Manager::TEXT ) );
+		$rep->add_control( 'desc', array( 'label' => 'توضیح کوتاه', 'type' => \Elementor\Controls_Manager::TEXTAREA ) );
+		$rep->add_control( 'date', array( 'label' => 'تاریخ شروع (متن)', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '' ) );
+		$rep->add_control( 'ghost', array( 'label' => 'کلمه‌ی سایه‌ای (اختیاری)', 'type' => \Elementor\Controls_Manager::TEXT ) );
+		$rep->add_control( 'url', array( 'label' => 'لینک ثبت‌نام', 'type' => \Elementor\Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
+		$this->add_control( 'manual', array(
+			'label'       => 'اسلایدهای دستی',
+			'type'        => \Elementor\Controls_Manager::REPEATER,
+			'fields'      => $rep->get_controls(),
+			'title_field' => '{{{ name }}}',
+			'condition'   => array( 'source' => array( 'manual', 'both' ) ),
+			'default'     => array(),
+		) );
+		$this->end_controls_section();
+
+		/* ---- رفتار ---- */
+		$this->start_controls_section( 'szp_cs_behavior', array( 'label' => 'رفتار و نمایش' ) );
+		$this->add_control( 'autoplay', array(
+			'label'   => 'پخش خودکار',
+			'type'    => \Elementor\Controls_Manager::SWITCHER,
+			'default' => 'yes',
+		) );
+		$this->add_control( 'interval', array(
+			'label'     => 'فاصله‌ی زمانی (ثانیه)',
+			'type'      => \Elementor\Controls_Manager::NUMBER,
+			'default'   => 5,
+			'min'       => 2,
+			'max'       => 12,
+			'condition' => array( 'autoplay' => 'yes' ),
+		) );
+		$this->add_control( 'archer', array(
+			'label'   => 'نمایش تصویر کماندار',
+			'type'    => \Elementor\Controls_Manager::SWITCHER,
+			'default' => 'yes',
+		) );
+		$this->add_control( 'archer_img', array(
+			'label'     => 'جایگزینی تصویر کماندار (اختیاری)',
+			'type'      => \Elementor\Controls_Manager::MEDIA,
+			'condition' => array( 'archer' => 'yes' ),
+		) );
+		$this->end_controls_section();
+	}
+
+	public function render() {
+		wp_enqueue_style( 'szp-courses-slider' );
+		wp_enqueue_script( 'szp-courses-slider' );
+		if ( ! class_exists( 'SZP_Courses_Slider' ) ) {
+			return;
+		}
+		$s = $this->get_settings_for_display();
+
+		$manual = array();
+		if ( ! empty( $s['manual'] ) && is_array( $s['manual'] ) ) {
+			foreach ( $s['manual'] as $row ) {
+				$manual[] = array(
+					'name'  => $row['name'] ?? '',
+					'desc'  => $row['desc'] ?? '',
+					'date'  => $row['date'] ?? '',
+					'ghost' => $row['ghost'] ?? '',
+					'url'   => isset( $row['url']['url'] ) ? $row['url']['url'] : '',
+				);
+			}
+		}
+
+		echo SZP_Courses_Slider::render( array( // phpcs:ignore WordPress.Security.EscapeOutput
+			'design'        => $s['design'] ?? '',
+			'source'        => $s['source'] ?? 'auto',
+			'count'         => (int) ( $s['count'] ?? 0 ),
+			'autoplay'      => ( ( $s['autoplay'] ?? 'yes' ) === 'yes' ),
+			'interval'      => (int) ( $s['interval'] ?? 5 ),
+			'archer'        => ( ( $s['archer'] ?? 'yes' ) === 'yes' ),
+			'archer_url'    => ( ! empty( $s['archer_img']['url'] ) ) ? $s['archer_img']['url'] : '',
+			'manual'        => $manual,
+			'show_switcher' => ( ( $s['show_switcher'] ?? '' ) === 'yes' ),
+			'designs'       => isset( $s['designs'] ) && is_array( $s['designs'] ) ? $s['designs'] : array(),
+			'title'         => $s['title'] ?? '',
+		) );
+	}
+
+	protected function output( $id, $uid ) { return ''; }
+}
+
 /** List of widget class names to register. */
 function szp_elementor_widget_list() {
 	return array(
@@ -486,6 +711,9 @@ function szp_elementor_widget_list() {
 		'SZP_W_Coaching',
 		'SZP_W_My_Eval',
 		'SZP_W_Eval_Board',
+		'SZP_W_Eval_Ledger',
+		'SZP_W_Courses_Slider',
+		'SZP_W_Coach_Sessions',
 		'SZP_W_Service_Canvas',
 		'SZP_W_Canvas_Carousel',
 		'SZP_W_Canvas_Grid',

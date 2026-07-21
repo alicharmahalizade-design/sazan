@@ -373,8 +373,13 @@ class SZP_Coach_Render {
 		$growth  = SZP_Coach::week_growth( $kpis, $metrics );
 		?>
 		<section class="szp-sec szp-co-week <?php echo $open ? 'open' : ''; ?>" data-week="<?php echo (int) $w->week_no; ?>" data-journey="<?php echo (int) $j->id; ?>" data-course="<?php echo (int) $j->course_id; ?>">
+			<?php
+			$sess_ts   = ! empty( $w->session_at ) ? szp_ts_from_datetime( $w->session_at ) : 0;
+			$sess_disp = $sess_ts ? szp_format_datetime( $sess_ts ) : '';
+			?>
 			<div class="szp-co-weekhead" data-toggle="week">
 				<h3 class="szp-sec-h"><?php echo esc_html( $title ); ?></h3>
+				<?php if ( $sess_disp ) : ?><span class="szp-co-weeksession">🗓 جلسه: <?php echo esc_html( $sess_disp ); ?></span><?php endif; ?>
 				<span class="szp-co-weekgrowth">رشد: <?php echo esc_html( szp_fa_digits( $growth ) ); ?>٪</span>
 				<span class="szp-co-caret">▾</span>
 			</div>
@@ -592,8 +597,23 @@ class SZP_Coach_Render {
 		$fb   = $w ? (string) $w->coach_feedback : '';
 		$ttl  = $w ? (string) $w->title : '';
 		?>
+		<?php
+		$session_at = $w ? (string) $w->session_at : '';
+		$session_disp = '';
+		if ( $session_at !== '' ) {
+			$sts          = szp_ts_from_datetime( $session_at );
+			$session_disp = $sts ? szp_format_datetime( $sts ) : '';
+		}
+		?>
 		<div class="szp-co-editor">
 			<label class="szp-co-fld"><span>عنوان هفته</span><input type="text" data-w="title" value="<?php echo esc_attr( $ttl ); ?>" placeholder="هفته <?php echo esc_attr( szp_fa_digits( $wn ) ); ?>"></label>
+
+			<label class="szp-co-fld"><span>تاریخ و ساعت جلسه‌ی کوچینگ</span>
+				<span class="szp-jp" data-jp="datetime">
+					<input type="text" class="szp-jp-disp" readonly placeholder="انتخاب تاریخ و ساعت جلسه" value="<?php echo esc_attr( $session_disp ); ?>">
+					<input type="hidden" class="szp-jp-val" data-w="session_at" value="<?php echo esc_attr( $session_at ); ?>">
+				</span>
+			</label>
 
 			<h4 class="szp-co-subh">اقدامات (Action)</h4>
 			<div class="szp-co-rep" data-repeater="action">
@@ -635,7 +655,7 @@ class SZP_Coach_Render {
 		<div class="szp-co-reprow task">
 			<input type="text" data-r="t" value="<?php echo esc_attr( $t ); ?>" placeholder="عنوان تکلیف">
 			<input type="text" data-r="d" value="<?php echo esc_attr( $d ); ?>" placeholder="توضیح (اختیاری)">
-			<input type="text" data-r="due" value="<?php echo esc_attr( $due ); ?>" placeholder="مهلت (مثلاً ۱۴۰۳/۰۵/۱۲)">
+			<input type="text" data-r="due" class="szp-jp-date" readonly value="<?php echo esc_attr( $due ); ?>" placeholder="مهلت (انتخاب از تقویم)">
 			<button type="button" class="szp-co-del" data-del="rep" aria-label="حذف">×</button>
 		</div>
 		<?php

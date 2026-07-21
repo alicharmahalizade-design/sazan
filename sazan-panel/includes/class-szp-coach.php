@@ -237,6 +237,7 @@ class SZP_Coach {
 		$fmt  = array();
 		$map  = array(
 			'title'          => '%s',
+			'session_at'     => '%s',
 			'actions'        => '%s',
 			'tasks'          => '%s',
 			'metrics'        => '%s',

@@ -41,6 +41,19 @@
 		var currency = root.getAttribute('data-currency') || '';
 		var near = parseFloat(root.getAttribute('data-near')) || 0.85;
 
+		if (root.getAttribute('data-can-edit') === '1') {
+			initEditField(root, currency, {
+				btn: 'szp-ev-edit-target', cell: 'szp-ev-targetcell', val: 'szp-ev-target-val',
+				attr: 'data-target', action: 'szp_eval_edit_target', allowZero: false, label: 'تارگت'
+			});
+		}
+		if (root.getAttribute('data-can-edit-result') === '1') {
+			initEditField(root, currency, {
+				btn: 'szp-ev-edit-result', cell: 'szp-ev-resultcell', val: 'szp-ev-result-val',
+				attr: 'data-result', action: 'szp_eval_edit_result', allowZero: true, label: 'نتیجه'
+			});
+		}
+
 		var form = root.querySelector('.szp-ev-form');
 		if (!form) return;
 		var mode = form.getAttribute('data-mode');
@@ -97,6 +110,98 @@
 			msg.textContent = text;
 			msg.className = 'szp-ev-msg is-show' + (kind ? ' is-' + kind : '');
 		}
+	}
+
+	/* ویرایش درجای تارگت/نتیجه‌ی هفته‌های ثبت‌شده در جدول تاریخچه */
+	function initEditField(root, currency, cfg) {
+		root.querySelectorAll('.' + cfg.btn).forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var cell = btn.closest('.' + cfg.cell);
+				if (!cell || cell.querySelector('.szp-ev-edit-box')) return;
+
+				var week = btn.getAttribute('data-week');
+				var cur = parseFloat(btn.getAttribute(cfg.attr)) || 0;
+				var valSpan = cell.querySelector('.' + cfg.val);
+
+				btn.style.display = 'none';
+				if (valSpan) valSpan.style.display = 'none';
+
+				var box = document.createElement('div');
+				box.className = 'szp-ev-edit-box';
+
+				var inp = document.createElement('input');
+				inp.type = 'text';
+				inp.inputMode = 'numeric';
+				inp.className = 'szp-ev-edit-input';
+				inp.placeholder = cfg.label;
+				inp.value = cur > 0 ? group(cur) : '';
+
+				var save = document.createElement('button');
+				save.type = 'button';
+				save.className = 'szp-ev-edit-save';
+				save.textContent = 'ذخیره';
+
+				var cancel = document.createElement('button');
+				cancel.type = 'button';
+				cancel.className = 'szp-ev-edit-cancel';
+				cancel.textContent = 'انصراف';
+
+				var note = document.createElement('span');
+				note.className = 'szp-ev-edit-note';
+
+				box.appendChild(inp);
+				box.appendChild(save);
+				box.appendChild(cancel);
+				box.appendChild(note);
+				cell.appendChild(box);
+				inp.focus();
+
+				function close() {
+					box.remove();
+					btn.style.display = '';
+					if (valSpan) valSpan.style.display = '';
+				}
+
+				function invalid() {
+					var raw = inp.value.trim();
+					if (raw === '') return true;
+					var v = toNumber(inp.value);
+					return cfg.allowZero ? (v < 0) : (!v || v <= 0);
+				}
+
+				inp.addEventListener('input', function () {
+					var raw = inp.value.trim();
+					var v = toNumber(inp.value);
+					note.textContent = raw === '' ? '' : group(v) + ' ' + currency;
+				});
+				inp.addEventListener('keydown', function (e) {
+					if (e.key === 'Enter') { e.preventDefault(); save.click(); }
+					else if (e.key === 'Escape') { close(); }
+				});
+				cancel.addEventListener('click', close);
+
+				save.addEventListener('click', function () {
+					if (invalid()) { note.textContent = 'یک عدد معتبر وارد کنید.'; return; }
+					var v = toNumber(inp.value);
+					save.disabled = true;
+					cancel.disabled = true;
+					note.textContent = 'در حال ذخیره…';
+					var d = new FormData();
+					d.append('week', String(week));
+					d.append('amount', String(v));
+					ajax(cfg.action, d, function (res) {
+						if (res && res.success) {
+							note.textContent = 'ذخیره شد ✓';
+							setTimeout(function () { window.location.reload(); }, 600);
+						} else {
+							save.disabled = false;
+							cancel.disabled = false;
+							note.textContent = (res && res.data && res.data.msg) || 'خطا در ویرایش.';
+						}
+					});
+				});
+			});
+		});
 	}
 
 	function init() { document.querySelectorAll('.szp-eval').forEach(initEval); }

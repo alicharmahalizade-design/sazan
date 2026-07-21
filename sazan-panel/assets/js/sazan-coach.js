@@ -186,6 +186,7 @@
 				publish: 1
 			};
 			d6.title = (ed.querySelector('[data-w="title"]') || {}).value || '';
+			d6.session_at = (ed.querySelector('[data-w="session_at"]') || {}).value || '';
 			d6.feedback = (ed.querySelector('[data-w="feedback"]') || {}).value || '';
 			Object.assign(d6, collectRepeater(ed, 'action'));
 			Object.assign(d6, collectRepeater(ed, 'task'));
@@ -319,6 +320,143 @@
 			else drawGrowth(host, data);
 		});
 	}
+
+	/* ============ تقویم شمسی (انتخابگر تاریخ/ساعت) ============ */
+	function latinDigits(s) { return String(s).replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }); }
+	function pad2(n) { return (n < 10 ? '0' : '') + n; }
+	var jMonths = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+	var jDow = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
+	function g2j(gy, gm, gd) {
+		var gdm = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+		var gy2 = (gm > 2) ? (gy + 1) : gy;
+		var days = 355666 + (365 * gy) + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100)
+			+ Math.floor((gy2 + 399) / 400) + gd + gdm[gm - 1];
+		var jy = -1595 + (33 * Math.floor(days / 12053)); days %= 12053;
+		jy += 4 * Math.floor(days / 1461); days %= 1461;
+		if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
+		var jm, jd;
+		if (days < 186) { jm = 1 + Math.floor(days / 31); jd = 1 + (days % 31); }
+		else { jm = 7 + Math.floor((days - 186) / 30); jd = 1 + ((days - 186) % 30); }
+		return [jy, jm, jd];
+	}
+	function j2g(jy, jm, jd) {
+		jy += 1595;
+		var days = -355668 + (365 * jy) + (Math.floor(jy / 33) * 8) + Math.floor(((jy % 33) + 3) / 4)
+			+ jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
+		var gy = 400 * Math.floor(days / 146097); days %= 146097;
+		if (days > 36524) { gy += 100 * Math.floor(--days / 36524); days %= 36524; if (days >= 365) days++; }
+		gy += 4 * Math.floor(days / 1461); days %= 1461;
+		if (days > 365) { gy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
+		var gd = days + 1;
+		var leap = ((gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0));
+		var sal = [0, 31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+		var gm;
+		for (gm = 1; gm <= 12; gm++) { if (gd <= sal[gm]) break; gd -= sal[gm]; }
+		return [gy, gm, gd];
+	}
+	function jDays(jy, jm) {
+		if (jm <= 6) return 31;
+		if (jm <= 11) return 30;
+		var g = j2g(jy, 12, 30), b = g2j(g[0], g[1], g[2]);
+		return (b[0] === jy && b[1] === 12 && b[2] === 30) ? 30 : 29;
+	}
+
+	var jpPop = null;
+	function closePop() { if (jpPop) { jpPop.remove(); jpPop = null; } }
+
+	function openPicker(anchor, mode, init, onConfirm) {
+		closePop();
+		var today = g2j(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate());
+		var sel = init && init.sel ? init.sel.slice() : null;
+		var hh = init && init.hh != null ? init.hh : 9;
+		var mm = init && init.mm != null ? init.mm : 0;
+		var view = sel ? [sel[0], sel[1]] : [today[0], today[1]];
+
+		var pop = document.createElement('div');
+		pop.className = 'szp-jp-pop';
+		jpPop = pop;
+
+		function render() {
+			var jy = view[0], jm = view[1];
+			var g1 = j2g(jy, jm, 1);
+			var dow = (new Date(g1[0], g1[1] - 1, g1[2]).getDay() + 1) % 7;
+			var total = jDays(jy, jm);
+			var h = '<div class="szp-jp-nav"><button type="button" class="szp-jp-pm">‹</button>'
+				+ '<span>' + jMonths[jm] + ' ' + toFa(jy) + '</span>'
+				+ '<button type="button" class="szp-jp-nm">›</button></div><div class="szp-jp-grid">';
+			for (var d = 0; d < 7; d++) h += '<span class="szp-jp-dow">' + jDow[d] + '</span>';
+			for (var i = 0; i < dow; i++) h += '<span></span>';
+			for (var day = 1; day <= total; day++) {
+				var on = sel && sel[0] === jy && sel[1] === jm && sel[2] === day;
+				h += '<button type="button" class="szp-jp-day' + (on ? ' on' : '') + '" data-d="' + day + '">' + toFa(day) + '</button>';
+			}
+			h += '</div>';
+			if (mode === 'datetime') {
+				h += '<div class="szp-jp-time"><span>ساعت جلسه</span>'
+					+ '<input type="time" dir="ltr" class="szp-jp-tinput" value="' + pad2(hh) + ':' + pad2(mm) + '"></div>';
+			}
+			h += '<div class="szp-jp-foot"><button type="button" class="szp-co-btn primary szp-jp-ok">تأیید</button>'
+				+ '<button type="button" class="szp-co-btn ghost szp-jp-clear">پاک کردن</button></div>';
+			pop.innerHTML = h;
+		}
+		render();
+		document.body.appendChild(pop);
+		var r = anchor.getBoundingClientRect();
+		pop.style.position = 'absolute';
+		pop.style.top = (window.scrollY + r.bottom + 6) + 'px';
+		pop.style.left = (window.scrollX + r.left) + 'px';
+
+		pop.addEventListener('click', function (e) {
+			var t = e.target;
+			if (t.classList.contains('szp-jp-pm')) { if (--view[1] < 1) { view[1] = 12; view[0]--; } render(); }
+			else if (t.classList.contains('szp-jp-nm')) { if (++view[1] > 12) { view[1] = 1; view[0]++; } render(); }
+			else if (t.classList.contains('szp-jp-day')) { sel = [view[0], view[1], parseInt(t.getAttribute('data-d'), 10)]; $all('.szp-jp-day', pop).forEach(function (x) { x.classList.remove('on'); }); t.classList.add('on'); }
+			else if (t.classList.contains('szp-jp-clear')) { onConfirm(null); closePop(); }
+			else if (t.classList.contains('szp-jp-ok')) {
+				if (!sel) { closePop(); return; }
+				if (mode === 'datetime') { var tv = (pop.querySelector('.szp-jp-tinput').value || '').split(':'); hh = parseInt(tv[0], 10) || 0; mm = parseInt(tv[1], 10) || 0; }
+				onConfirm({ sel: sel, hh: hh, mm: mm });
+				closePop();
+			}
+		});
+	}
+
+	// باز کردن انتخابگر با کلیک روی فیلدها (delegation، سازگار با ردیف‌های داینامیک).
+	document.addEventListener('click', function (e) {
+		var dt = e.target.closest('.szp-jp [data-jp="datetime"] .szp-jp-disp, .szp-jp-disp');
+		if (dt && dt.closest('.szp-co-editor, .szp-co-week, .szp')) {
+			e.preventDefault();
+			var wrap = dt.closest('.szp-jp');
+			var hidden = wrap ? wrap.querySelector('.szp-jp-val') : null;
+			var init = null;
+			if (hidden && hidden.value) {
+				var d = new Date(hidden.value.replace('T', ' ').replace(/-/g, '/'));
+				if (!isNaN(d.getTime())) init = { sel: g2j(d.getFullYear(), d.getMonth() + 1, d.getDate()), hh: d.getHours(), mm: d.getMinutes() };
+			}
+			openPicker(dt, 'datetime', init, function (res) {
+				if (!res) { if (hidden) hidden.value = ''; dt.value = ''; return; }
+				var g = j2g(res.sel[0], res.sel[1], res.sel[2]);
+				if (hidden) hidden.value = g[0] + '-' + pad2(g[1]) + '-' + pad2(g[2]) + 'T' + pad2(res.hh) + ':' + pad2(res.mm);
+				dt.value = toFa(res.sel[2] + ' ' + jMonths[res.sel[1]] + ' ' + res.sel[0] + ' - ' + pad2(res.hh) + ':' + pad2(res.mm));
+			});
+			return;
+		}
+		var dd = e.target.closest('.szp-jp-date');
+		if (dd) {
+			e.preventDefault();
+			var init2 = null;
+			var v = latinDigits(dd.value || '').match(/(\d{3,4})\D+(\d{1,2})\D+(\d{1,2})/);
+			if (v) init2 = { sel: [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3], 10)] };
+			openPicker(dd, 'date', init2, function (res) {
+				if (!res) { dd.value = ''; return; }
+				dd.value = toFa(res.sel[0] + '/' + pad2(res.sel[1]) + '/' + pad2(res.sel[2]));
+			});
+		}
+	});
+	document.addEventListener('mousedown', function (e) {
+		if (jpPop && !jpPop.contains(e.target) && !e.target.closest('.szp-jp-disp, .szp-jp-date')) closePop();
+	});
+	document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePop(); });
 
 	function init() {
 		$all('.szp-co-gaugeval').forEach(countUp);

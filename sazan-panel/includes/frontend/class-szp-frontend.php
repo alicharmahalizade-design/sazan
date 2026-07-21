@@ -13,6 +13,9 @@ class SZP_Frontend {
 		add_shortcode( 'sazan_canvas_gallery', array( __CLASS__, 'sc_canvas_gallery' ) );
 		add_shortcode( 'sazan_my_eval', array( __CLASS__, 'sc_eval' ) );
 		add_shortcode( 'sazan_eval_board', array( __CLASS__, 'sc_eval_board' ) );
+		add_shortcode( 'sazan_eval_ledger', array( __CLASS__, 'sc_eval_ledger' ) );
+		add_shortcode( 'sazan_courses_slider', array( __CLASS__, 'sc_courses_slider' ) );
+		add_shortcode( 'sazan_coach_sessions', array( __CLASS__, 'sc_sessions_scheduler' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
 
@@ -50,6 +53,16 @@ class SZP_Frontend {
 		$evjs  = SZP_DIR . 'assets/js/sazan-eval.js';
 		wp_register_style( 'szp-eval', SZP_URL . 'assets/css/sazan-eval.css', array( 'szp-front' ), file_exists( $evcss ) ? filemtime( $evcss ) : SZP_VERSION );
 		wp_register_script( 'szp-eval', SZP_URL . 'assets/js/sazan-eval.js', array( 'szp-front' ), file_exists( $evjs ) ? filemtime( $evjs ) : SZP_VERSION, true );
+
+		$cscss = SZP_DIR . 'assets/css/sazan-courses-slider.css';
+		$csjs  = SZP_DIR . 'assets/js/sazan-courses-slider.js';
+		wp_register_style( 'szp-courses-slider', SZP_URL . 'assets/css/sazan-courses-slider.css', array(), file_exists( $cscss ) ? filemtime( $cscss ) : SZP_VERSION );
+		wp_register_script( 'szp-courses-slider', SZP_URL . 'assets/js/sazan-courses-slider.js', array(), file_exists( $csjs ) ? filemtime( $csjs ) : SZP_VERSION, true );
+
+		$secss = SZP_DIR . 'assets/css/sazan-sessions.css';
+		$sejs  = SZP_DIR . 'assets/js/sazan-sessions.js';
+		wp_register_style( 'szp-sessions', SZP_URL . 'assets/css/sazan-sessions.css', array( 'szp-front' ), file_exists( $secss ) ? filemtime( $secss ) : SZP_VERSION );
+		wp_register_script( 'szp-sessions', SZP_URL . 'assets/js/sazan-sessions.js', array( 'szp-front' ), file_exists( $sejs ) ? filemtime( $sejs ) : SZP_VERSION, true );
 	}
 
 	/* ---------------- «ارزیابی من» shortcode ---------------- */
@@ -65,12 +78,61 @@ class SZP_Frontend {
 		return SZP_Eval::render( $a );
 	}
 
+	/** زمان‌بندی جلسات کوچینگ — مخصوص کوچ/مانتور. */
+	public static function sc_sessions_scheduler( $atts ) {
+		$a = shortcode_atts( array( 'title' => '' ), $atts, 'sazan_coach_sessions' );
+		if ( ! is_user_logged_in() ) {
+			return self::login_box();
+		}
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_script( 'szp-front' );
+		wp_enqueue_style( 'szp-sessions' );
+		wp_enqueue_script( 'szp-sessions' );
+		return SZP_Sessions_Render::render( get_current_user_id(), $a['title'] );
+	}
+
 	/** تابلوی ارزیابی همه‌ی اشخاص (شبکه‌ای) — مخصوص مدیر/مدرّب. */
 	public static function sc_eval_board( $atts ) {
-		$a = shortcode_atts( array( 'title' => '', 'currency' => '', 'group' => '0' ), $atts, 'sazan_eval_board' );
+		$a = shortcode_atts( array( 'title' => '', 'currency' => '', 'group' => '0', 'viewers' => '' ), $atts, 'sazan_eval_board' );
 		wp_enqueue_style( 'szp-front' );
 		wp_enqueue_style( 'szp-eval' );
 		return SZP_Eval::board( $a );
+	}
+
+	/** دفتر کامل ارزیابی: همه‌ی اشخاص + ریز همه‌ی هفته‌ها — مخصوص مدیر/مدرّب. */
+	public static function sc_eval_ledger( $atts ) {
+		$a = shortcode_atts( array( 'title' => '', 'currency' => '', 'group' => '0', 'viewers' => '' ), $atts, 'sazan_eval_ledger' );
+		wp_enqueue_style( 'szp-front' );
+		wp_enqueue_style( 'szp-eval' );
+		return SZP_Eval::board_full( $a );
+	}
+
+	/** اسلایدر دوره‌ها. مثال: [sazan_courses_slider design="6a" source="auto" count="6"] */
+	public static function sc_courses_slider( $atts ) {
+		$a = shortcode_atts( array(
+			'design'   => '',
+			'source'   => 'auto',
+			'count'    => '0',
+			'autoplay' => '1',
+			'interval' => '5',
+			'archer'   => '1',
+			'title'    => '',
+			'switcher' => '0',
+			'designs'  => '',
+		), $atts, 'sazan_courses_slider' );
+		wp_enqueue_style( 'szp-courses-slider' );
+		wp_enqueue_script( 'szp-courses-slider' );
+		return SZP_Courses_Slider::render( array(
+			'design'        => $a['design'],
+			'source'        => $a['source'],
+			'count'         => (int) $a['count'],
+			'autoplay'      => ( $a['autoplay'] !== '0' && $a['autoplay'] !== 'no' ),
+			'interval'      => (int) $a['interval'],
+			'archer'        => ( $a['archer'] !== '0' && $a['archer'] !== 'no' ),
+			'title'         => $a['title'],
+			'show_switcher' => ( $a['switcher'] === '1' || $a['switcher'] === 'yes' ),
+			'designs'       => array_filter( array_map( 'trim', explode( ',', $a['designs'] ) ) ),
+		) );
 	}
 
 	/* ---------------- service canvas shortcode ---------------- */

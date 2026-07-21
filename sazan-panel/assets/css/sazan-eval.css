@@ -99,6 +99,20 @@ body.dark .szp-eval,body.dark-mode .szp-eval,.dark .szp-eval,.dark-mode .szp-eva
 .szp-ev-table thead th{background:var(--ev-bg2);font-weight:700;color:var(--ev-text2);font-size:13px}
 .szp-ev-table tbody tr:last-child td{border-bottom:0}
 .szp-ev-date{font-size:12.5px;color:var(--ev-text2)}
+
+/* ویرایش درجای تارگت/نتیجه */
+.szp-ev-targetcell,.szp-ev-resultcell{white-space:nowrap}
+.szp-ev-edit-target,.szp-ev-edit-result{margin-inline-start:6px;border:0;background:transparent;cursor:pointer;font-size:13px;line-height:1;padding:2px 4px;border-radius:6px;opacity:.65;vertical-align:middle}
+.szp-ev-edit-target:hover,.szp-ev-edit-result:hover{opacity:1;background:var(--ev-bg2)}
+.szp-ev-edit-box{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}
+.szp-ev-edit-input{width:150px;max-width:100%;padding:7px 10px;border:1px solid var(--ev-line);border-radius:9px;font-size:14px;font-weight:700;background:var(--ev-input-bg);color:var(--ev-input-text);text-align:left;direction:ltr}
+.szp-ev-edit-input:focus{outline:none;border-color:var(--ev-accent);box-shadow:0 0 0 3px rgba(15,159,179,.18)}
+.szp-ev-edit-save{border:0;background:var(--ev-accent);color:#fff;border-radius:8px;padding:7px 13px;font-weight:700;cursor:pointer;font-size:13px}
+.szp-ev-edit-save:hover{filter:brightness(1.05)}
+.szp-ev-edit-save:disabled,.szp-ev-edit-cancel:disabled{opacity:.55;cursor:not-allowed}
+.szp-ev-edit-cancel{border:1px solid var(--ev-line);background:var(--ev-bg);color:var(--ev-text2);border-radius:8px;padding:7px 12px;font-weight:700;cursor:pointer;font-size:13px}
+.szp-ev-edit-cancel:hover{color:var(--ev-text)}
+.szp-ev-edit-note{font-size:12px;color:var(--ev-text2)}
 .szp-ev-notecell{white-space:normal;min-width:160px;color:var(--ev-text2);font-size:13px}
 .szp-ev-badge{display:inline-flex;align-items:center;gap:4px;background:color-mix(in srgb,var(--c) 16%,var(--ev-bg));color:var(--c);border:1px solid color-mix(in srgb,var(--c) 38%,var(--ev-bg));border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700}
 @supports not (background:color-mix(in srgb,#000 10%,#fff)){
@@ -118,6 +132,14 @@ body.dark .szp-eval,body.dark-mode .szp-eval,.dark .szp-eval,.dark-mode .szp-eva
 .szp-ev-pc-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--ev-text2)}
 .szp-ev-pc-row b{color:var(--ev-text);font-weight:700}
 .szp-ev-pc-foot{display:flex;justify-content:space-between;gap:6px;margin-top:10px;padding-top:9px;border-top:1px solid var(--ev-line);font-size:12px;color:var(--ev-text2)}
+
+/* دفتر کامل ارزیابی (همه‌ی اشخاص + ریز هفته‌ها) */
+.szp-eval-ledger .szp-ev-person{background:var(--ev-bg2);border:1px solid var(--ev-line);border-radius:16px;padding:14px;margin-bottom:16px;box-shadow:var(--ev-shadow)}
+.szp-ev-person-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.szp-ev-person-head .szp-ev-pc-avatar img{border-radius:50%;display:block}
+.szp-ev-person-stats{margin-inline-start:auto;display:flex;gap:14px;font-size:12.5px;color:var(--ev-text2);font-weight:600}
+.szp-ev-person-stats span{white-space:nowrap}
+.szp-eval-ledger .szp-ev-table-wrap{background:var(--ev-bg)}
 
 /* ریسپانسیو */
 @media (max-width:560px){
