@@ -154,6 +154,27 @@ class SZP_SMS {
 		return self::send_text( $to, self::fill( $s['sms_text_survey'] ?? '', $vars ) );
 	}
 
+	/**
+	 * پیامک اطلاع‌رسانیِ «ثبت تارگت/نتیجه» به مدیر سازمان و کوچ‌ها.
+	 * $kind: target | result. $vars: name, session, amount, status.
+	 */
+	public static function send_registration_notice( $to, $kind, $vars ) {
+		$s = SZP_Eval::settings();
+		if ( $s['sms_mode'] === 'pattern' ) {
+			$code = ( $kind === 'result' )
+				? (string) ( $s['sms_pattern_notify_result'] ?? '' )
+				: (string) ( $s['sms_pattern_notify_target'] ?? '' );
+			if ( trim( $code ) === '' ) {
+				return array( 'ok' => false, 'msg' => 'کد پترن اطلاع‌رسانی تنظیم نشده است.' );
+			}
+			return self::send_pattern( $to, $code, $vars );
+		}
+		$tpl = ( $kind === 'result' )
+			? (string) ( $s['sms_text_notify_result'] ?? '' )
+			: (string) ( $s['sms_text_notify_target'] ?? '' );
+		return self::send_text( $to, self::fill( $tpl, $vars ) );
+	}
+
 	protected static function post( $path, $body ) {
 		$res = wp_remote_post( self::base() . $path, array(
 			'timeout' => 20,

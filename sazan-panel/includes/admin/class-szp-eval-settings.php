@@ -38,9 +38,21 @@ class SZP_Eval_Settings {
 				<h2>عمومی</h2>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><label>هفته‌ی شروعِ کاربر</label></th>
+						<th scope="row"><label>تاریخ «جلسه ۱» (سه‌شنبه)</label></th>
+						<td>
+							<input type="date" name="session1_date" value="<?php echo esc_attr( $s['session1_date'] ); ?>">
+							<p class="description">
+								تاریخِ میلادیِ سه‌شنبه‌ای که «جلسه ۱» برگزار شد. جلسات بعدی هر سه‌شنبه یک‌بار جلوتر می‌روند و شماره‌ی جلسه برای همه یکسان است.
+								<?php
+								echo '<br>هم‌اکنون: <b>' . esc_html( SZP_Eval::session_label( SZP_Eval::current_session() ) ) . '</b> — جلسه ۱: ' . esc_html( SZP_Eval::session_date_fa( 1, true ) );
+								?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label>شماره‌ی شروعِ ثبت کاربر</label></th>
 						<td><input type="number" name="start_week" min="1" value="<?php echo esc_attr( $s['start_week'] ); ?>" class="small-text">
-							<p class="description">اولین هفته‌ای که خودِ کاربر ثبت می‌کند (پیش‌فرض ۶). هفته‌های قبل را شما از صفحه «ارزیابی» وارد می‌کنید.</p></td>
+							<p class="description">(اختیاری) جلسات قبل را می‌توانید از صفحه «ارزیابی» به‌صورت دستی وارد کنید.</p></td>
 					</tr>
 					<tr>
 						<th scope="row"><label>واحد پول</label></th>
@@ -61,18 +73,53 @@ class SZP_Eval_Settings {
 					</tr>
 				</table>
 
-				<h2>دسترسی مشاهده‌ی تابلو/دفتر ارزیابی</h2>
+				<h2>نقش‌ها و دسترسی</h2>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><label>کاربران مجاز به مشاهده</label></th>
+						<th scope="row"><label>کاربران «کوچینگ»</label></th>
 						<td>
-							<textarea name="board_viewers" rows="3" class="large-text" dir="ltr" placeholder="username1, user@mail.com, 42"><?php echo esc_textarea( $s['board_viewers'] ?? '' ); ?></textarea>
+							<textarea name="coaching_users" rows="2" class="large-text" dir="ltr" placeholder="username1, user@mail.com, 42"><?php echo esc_textarea( $s['coaching_users'] ?? '' ); ?></textarea>
 							<p class="description">
-								نام‌کاربری، ایمیل یا شناسه‌ی کاربران — جداشده با کاما، فاصله یا خط جدید.
-								فقط این افراد (به‌علاوه‌ی مدیران) می‌توانند «تابلوی ارزیابی» و «دفتر ارزیابی» را ببینند.
-								خالی گذاشتن یعنی فقط مدیران سایت.
+								این افراد نقشِ «کوچینگ» دارند و <b>همه‌ی نفرات و همه‌ی گروه‌ها</b> را در ویجت ارزیابی می‌بینند و پیامکِ ثبت تارگت/نتیجه هم برایشان می‌رود.
+								نام‌کاربری/ایمیل/شناسه، جداشده با کاما یا خط جدید. (نقشِ «کوچینگ»، «مدیر سازمان» و «تیم فروش» را می‌توانید از صفحه‌ی کاربر هم تعیین کنید.)
 							</p>
 						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label>کاربران مجاز به مشاهده‌ی تابلو</label></th>
+						<td>
+							<textarea name="board_viewers" rows="2" class="large-text" dir="ltr" placeholder="username1, user@mail.com, 42"><?php echo esc_textarea( $s['board_viewers'] ?? '' ); ?></textarea>
+							<p class="description">
+								(اختیاری) افرادِ اضافه‌ای که می‌توانند «تابلوی ارزیابی» و «دفتر ارزیابی» را ببینند — علاوه بر مدیران، کوچینگ و مدیران سازمان.
+							</p>
+						</td>
+					</tr>
+				</table>
+
+				<h2>پیامک اطلاع‌رسانی ثبت تارگت/نتیجه (به مدیر سازمان و کوچ‌ها)</h2>
+				<p class="description">وقتی «تیم فروش» تارگت یا نتیجه ثبت می‌کند، برای مدیر سازمانِ او و همه‌ی کوچ‌ها پیامک می‌رود. از همان سرویس‌دهنده/کلید/خط ارسال و حالتِ (پترن/متن) پایین استفاده می‌شود. متغیرها: <code>name</code>، <code>session</code>، <code>amount</code>، <code>status</code>.</p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row">فعال‌سازی</th>
+						<td><label><input type="checkbox" name="notify_enabled" value="1" <?php checked( ! empty( $s['notify_enabled'] ) ); ?>> ارسال پیامک اطلاع‌رسانی هنگام ثبت تارگت/نتیجه‌ی تیم فروش</label></td>
+					</tr>
+					<tr>
+						<th scope="row"><label>کد پترن اطلاع‌رسانی تارگت</label></th>
+						<td><input type="text" name="sms_pattern_notify_target" value="<?php echo esc_attr( $s['sms_pattern_notify_target'] ?? '' ); ?>" class="regular-text" dir="ltr"></td>
+					</tr>
+					<tr>
+						<th scope="row"><label>کد پترن اطلاع‌رسانی نتیجه</label></th>
+						<td><input type="text" name="sms_pattern_notify_result" value="<?php echo esc_attr( $s['sms_pattern_notify_result'] ?? '' ); ?>" class="regular-text" dir="ltr"></td>
+					</tr>
+					<tr>
+						<th scope="row"><label>متن اطلاع‌رسانی تارگت (حالت متن)</label></th>
+						<td><textarea name="sms_text_notify_target" rows="2" class="large-text"><?php echo esc_textarea( $s['sms_text_notify_target'] ?? '' ); ?></textarea>
+							<p class="description">جایگزین‌ها: <code>%name%</code>، <code>%session%</code>، <code>%amount%</code>.</p></td>
+					</tr>
+					<tr>
+						<th scope="row"><label>متن اطلاع‌رسانی نتیجه (حالت متن)</label></th>
+						<td><textarea name="sms_text_notify_result" rows="2" class="large-text"><?php echo esc_textarea( $s['sms_text_notify_result'] ?? '' ); ?></textarea>
+							<p class="description">جایگزین‌ها: <code>%name%</code>، <code>%session%</code>، <code>%amount%</code>، <code>%status%</code>.</p></td>
 					</tr>
 				</table>
 
@@ -195,8 +242,19 @@ class SZP_Eval_Settings {
 		}
 		$p   = wp_unslash( $_POST );
 		$cur = SZP_Eval::settings();
+		$s1 = trim( (string) ( $p['session1_date'] ?? '' ) );
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $s1 ) ) {
+			$s1 = '';
+		}
 		$new = array(
-			'start_week'         => max( 1, absint( $p['start_week'] ?? 6 ) ),
+			'start_week'         => max( 1, absint( $p['start_week'] ?? 1 ) ),
+			'session1_date'      => $s1,
+			'coaching_users'     => sanitize_textarea_field( $p['coaching_users'] ?? '' ),
+			'notify_enabled'     => empty( $p['notify_enabled'] ) ? 0 : 1,
+			'sms_pattern_notify_target' => sanitize_text_field( $p['sms_pattern_notify_target'] ?? '' ),
+			'sms_pattern_notify_result' => sanitize_text_field( $p['sms_pattern_notify_result'] ?? '' ),
+			'sms_text_notify_target'    => sanitize_textarea_field( $p['sms_text_notify_target'] ?? '' ),
+			'sms_text_notify_result'    => sanitize_textarea_field( $p['sms_text_notify_result'] ?? '' ),
 			'currency'           => sanitize_text_field( $p['currency'] ?? 'تومان' ),
 			'near'               => min( 99, max( 1, absint( $p['near'] ?? 85 ) ) ),
 			'day_target'         => min( 7, max( 1, absint( $p['day_target'] ?? 2 ) ) ),

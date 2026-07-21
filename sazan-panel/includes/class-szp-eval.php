@@ -2,24 +2,25 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * «ارزیابی من» — ثبت تارگت مالی هفتگی هر کاربر و سنجش وضعیت تحقق آن.
+ * «ارزیابی» — تارگت مالیِ هر «جلسه» و سنجش تحقق آن. موبایل‌اول و ساده برای کاربران غیرفنی.
  *
- * چرخه‌ی هر هفته:
- *   - روز ثبت تارگت: سه‌شنبه  (DAY_TARGET)
- *   - روز ثبت نتیجه: دوشنبه   (DAY_RESULT)
- * کاربر از هفته‌ی جاری به بعد خودش ثبت می‌کند؛ هفته‌های گذشته را مدیر از پیشخوان وارد می‌کند.
+ * مدل جلسه (سراسری، تاریخ‌محور):
+ *   - جلسات هر «سه‌شنبه‌ی شمسی» برگزار می‌شوند؛ تاریخِ «جلسه ۱» در تنظیمات تعیین می‌شود.
+ *   - جلسه N برای همه یک سه‌شنبه‌ی مشخص است: تاریخِ جلسه ۱ + (N-۱) هفته.
  *
- * وضعیت تحقق تارگت بر اساس نسبت نتیجه به تارگت:
- *   نتیجه  >  تارگت            → فراتر از تارگت (beyond)
- *   نتیجه  == تارگت            → موفق (success)
- *   نتیجه  >= NEAR×تارگت       → قابل بهبود (improve)
- *   در غیر این صورت            → در مسیر (ontrack)
+ * چرخه‌ی هر جلسه:
+ *   ۱) ثبت تارگت: در هفته‌ی همان جلسه.
+ *   ۲) ثبت نتیجه: «دوشنبه و سه‌شنبه‌ی هفته‌ی بعد» (خودکار از روی تاریخ جلسه محاسبه می‌شود).
+ *
+ * نقش‌ها (SZP_Eval_Roles):
+ *   کوچینگ → همه را می‌بیند | مدیر سازمان → زیرمجموعه را | تیم فروش → خودش ثبت می‌کند |
+ *   مدیر سازمان/تیم فروش → هم تیمش را می‌بیند هم خودش ثبت می‌کند.
  */
 class SZP_Eval {
 
-	const DAY_TARGET = 2; // سه‌شنبه (wp_date('N'): دوشنبه=1 … یکشنبه=7)
+	const DAY_TARGET = 2; // سه‌شنبه
 	const DAY_RESULT = 1; // دوشنبه
-	const NEAR       = 0.85; // مرز پیش‌فرض «قابل بهبود» در برابر «در مسیر»
+	const NEAR       = 0.85;
 	const OPTION     = 'szp_eval_settings';
 
 	public static function table() {
@@ -31,30 +32,37 @@ class SZP_Eval {
 
 	public static function defaults() {
 		return array(
-			'start_week'         => 6,
+			'start_week'         => 1,
 			'currency'           => 'تومان',
-			'near'               => 85,   // درصد مرز «قابل بهبود»
-			'day_target'         => 2,    // سه‌شنبه
-			'day_result'         => 1,    // دوشنبه
+			'near'               => 85,
+			'day_target'         => 2,
+			'day_result'         => 1,
+			'session1_date'      => '', // تاریخ میلادی سه‌شنبه‌ی «جلسه ۱» (Y-m-d)
+			'coaching_users'     => '', // کاربران نقش کوچینگ (نام‌کاربری/ایمیل/شناسه)
 			'sms_enabled'        => 0,
-			'sms_provider'       => 'ippanel', // ippanel | smsir
-			'sms_base'           => 'https://rest.ippanel.com/v1',
+			'sms_provider'       => 'smsir',
+			'sms_base'           => '',
 			'sms_apikey'         => '',
 			'sms_originator'     => '',
-			'sms_mode'           => 'pattern', // pattern | text
+			'sms_mode'           => 'pattern',
 			'sms_var'            => 'name',
 			'sms_pattern_target' => '',
 			'sms_pattern_result' => '',
-			'sms_text_target'    => '%name% عزیز، امروز روز ثبت تارگت هفتگی شماست. لطفاً تارگت این هفته را در پنل ثبت کنید.',
-			'sms_text_result'    => '%name% عزیز، امروز آخرین مهلت ثبت نتیجه‌ی تارگت این هفته است. لطفاً نتیجه را در پنل وارد کنید.',
-			'board_viewers'      => '', // کاربران مجاز به مشاهده‌ی تابلو/دفتر ارزیابی (نام‌کاربری/ایمیل/شناسه)
-			// جلسات کوچینگ (زمان‌بندی + نظرسنجی)
+			'sms_text_target'    => '%name% عزیز، امروز روز ثبت تارگت این جلسه است. لطفاً تارگت را در پنل ثبت کنید.',
+			'sms_text_result'    => '%name% عزیز، امروز مهلت ثبت نتیجه‌ی تارگت جلسه‌ی قبل است. لطفاً نتیجه را در پنل وارد کنید.',
+			// پیامک اطلاع‌رسانی به مدیر سازمان و کوچ‌ها هنگام ثبت تارگت/نتیجه‌ی تیم فروش.
+			'notify_enabled'            => 1,
+			'sms_pattern_notify_target' => '',
+			'sms_pattern_notify_result' => '',
+			'sms_text_notify_target'    => 'تیم فروش «%name%» برای %session% تارگت %amount% ثبت کرد.',
+			'sms_text_notify_result'    => 'تیم فروش «%name%» نتیجه‌ی %session% را %amount% ثبت کرد (وضعیت: %status%).',
+			'board_viewers'      => '',
 			'sms_pattern_session' => '',
 			'sms_pattern_survey'  => '',
 			'sms_text_session'    => '%name% عزیز، جلسه‌ی «%title%» با کوچ %coach% در تاریخ %date% ساعت %time% ثبت شد.',
 			'sms_text_survey'     => '%name% عزیز، از حضور شما در جلسه سپاسگزاریم. لطفاً نظرسنجی کوتاه را تکمیل کنید: %link%',
 			'survey_url'          => '',
-			'survey_delay'        => 60, // دقیقه پس از پایان جلسه
+			'survey_delay'        => 60,
 		);
 	}
 
@@ -81,16 +89,122 @@ class SZP_Eval {
 	public static function start_week() { return max( 1, (int) self::opt( 'start_week' ) ); }
 	public static function currency() { return (string) self::opt( 'currency' ); }
 
+	/* ==================== تقویم جلسات (سراسری، سه‌شنبه‌ها) ==================== */
+
+	/** تاریخ میلادیِ «جلسه ۱» به‌صورت Y-m-d. اگر تنظیم نشده باشد، نزدیک‌ترین سه‌شنبه‌ی گذشته. */
+	public static function session1_date() {
+		$d = trim( (string) self::opt( 'session1_date' ) );
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $d ) ) {
+			return $d;
+		}
+		$now  = new DateTime( 'now', wp_timezone() );
+		$dow  = (int) $now->format( 'N' ); // دوشنبه=۱ … سه‌شنبه=۲
+		$back = ( $dow - self::DAY_TARGET + 7 ) % 7;
+		if ( $back ) {
+			$now->modify( '-' . $back . ' days' );
+		}
+		return $now->format( 'Y-m-d' );
+	}
+
+	/** DateTime تاریخِ جلسه N (ظهرِ همان روز، برای مصونیت از تغییر ساعت). */
+	public static function session_date( $n ) {
+		$n   = (int) $n;
+		$dt  = new DateTime( self::session1_date() . ' 12:00:00', wp_timezone() );
+		$off = 7 * ( $n - 1 );
+		if ( $off > 0 ) {
+			$dt->modify( '+' . $off . ' days' );
+		} elseif ( $off < 0 ) {
+			$dt->modify( $off . ' days' );
+		}
+		return $dt;
+	}
+
+	/** شماره‌ی روز (از مبدأ) در منطقه‌ی زمانی سایت. */
+	protected static function daynum( DateTime $dt ) {
+		return (int) floor( ( $dt->getTimestamp() + $dt->getOffset() ) / DAY_IN_SECONDS );
+	}
+
+	protected static function today_daynum() {
+		return self::daynum( new DateTime( 'now', wp_timezone() ) );
+	}
+
+	protected static function session_daynum( $n ) {
+		return self::daynum( self::session_date( $n ) );
+	}
+
+	/** جلسه‌ی «جاری» برای ثبت تارگت (بر اساس امروز). */
+	public static function current_session() {
+		$mon1 = self::session_daynum( 1 ) - 1; // دوشنبه‌ی هفته‌ی جلسه ۱
+		$diff = self::today_daynum() - $mon1;
+		$n    = 1 + (int) floor( $diff / 7 );
+		return max( 1, $n );
+	}
+
+	/** جلسه‌ای که «امروز» زمان ثبت نتیجه‌اش است (۰ اگر امروز روز نتیجه نیست). */
+	public static function due_result_session() {
+		$cand = self::current_session() - 1;
+		return ( $cand >= 1 && self::result_open( $cand ) ) ? $cand : 0;
+	}
+
+	/** آیا امروز در بازه‌ی ثبتِ تارگتِ جلسه N است؟ (هفته‌ی همان جلسه) */
+	public static function target_open( $n ) {
+		$d = self::session_daynum( $n );
+		$t = self::today_daynum();
+		return $t >= ( $d - 1 ) && $t <= ( $d + 5 );
+	}
+
+	/** آیا امروز در بازه‌ی ثبتِ نتیجه‌ی جلسه N است؟ (دوشنبه و سه‌شنبه‌ی هفته‌ی بعد) */
+	public static function result_open( $n ) {
+		$d = self::session_daynum( $n );
+		$t = self::today_daynum();
+		return $t >= ( $d + 6 ) && $t <= ( $d + 7 );
+	}
+
+	/** برچسب فارسیِ جلسه: «جلسه ۹». */
+	public static function session_label( $n ) {
+		return 'جلسه ' . szp_fa_digits( (int) $n );
+	}
+
+	/** تاریخ شمسیِ روز جلسه N (با نام روز هفته). */
+	public static function session_date_fa( $n, $with_year = false ) {
+		return self::fa_date_of( self::session_date( $n ), $with_year );
+	}
+
+	/** تاریخ شمسی نتیجه‌ی جلسه N (دوشنبه‌ی هفته‌ی بعد). */
+	public static function result_date_fa( $n ) {
+		$dt = self::session_date( $n );
+		$dt->modify( '+6 days' );
+		return self::fa_date_of( $dt );
+	}
+
+	protected static function fa_date_of( DateTime $dt, $with_year = false ) {
+		list( $jy, $jm, $jd ) = szp_g2j( (int) $dt->format( 'Y' ), (int) $dt->format( 'n' ), (int) $dt->format( 'j' ) );
+		$months = array( '', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند' );
+		$dow    = self::day_name( (int) $dt->format( 'N' ) );
+		$out    = $dow . ' ' . $jd . ' ' . $months[ $jm ] . ( $with_year ? ( ' ' . $jy ) : '' );
+		return szp_fa_digits( $out );
+	}
+
+	/** آیا کاربر می‌تواند قفلِ روزها را دور بزند؟ (ادمین/کوچ/مدیر سازمان) */
+	public static function can_bypass( $uid = 0 ) {
+		$uid = $uid ? (int) $uid : get_current_user_id();
+		if ( user_can( $uid, 'manage_options' ) ) {
+			return true;
+		}
+		if ( ! apply_filters( 'szp_eval_enforce_days', true ) ) {
+			return true;
+		}
+		return class_exists( 'SZP_Eval_Roles' ) && ( SZP_Eval_Roles::is_coaching( $uid ) || SZP_Eval_Roles::is_org_manager( $uid ) );
+	}
+
 	/* ==================== داده ==================== */
 
-	/** همه‌ی هفته‌های یک کاربر، مرتب بر اساس شماره هفته (صعودی). */
 	public static function weeks( $user_id ) {
 		global $wpdb;
 		return $wpdb->get_results( $wpdb->prepare(
 			'SELECT * FROM ' . self::table() . ' WHERE user_id=%d ORDER BY week_no ASC', (int) $user_id ) );
 	}
 
-	/** آخرین هفته (بیشترین شماره) یا null. */
 	public static function latest( $user_id ) {
 		global $wpdb;
 		return $wpdb->get_row( $wpdb->prepare(
@@ -103,29 +217,26 @@ class SZP_Eval {
 			'SELECT * FROM ' . self::table() . ' WHERE user_id=%d AND week_no=%d', (int) $user_id, (int) $week_no ) );
 	}
 
-	/**
-	 * ثبت/به‌روزرسانی تارگت. اگر هفته‌ی باز همان امروز ساخته شده باشد، تارگتش به‌روز می‌شود؛
-	 * در غیر این صورت یک هفته‌ی جدید باز می‌شود. خروجی: array( week, created ).
-	 */
-	public static function save_target( $user_id, $amount ) {
+	/** ثبت/به‌روزرسانیِ تارگتِ یک جلسه‌ی مشخص. خروجی: array( ok, session, created, status ). */
+	public static function set_session_target( $user_id, $session_no, $amount ) {
 		global $wpdb;
-		$user_id = (int) $user_id;
-		$amount  = max( 0, (float) $amount );
-		$now     = current_time( 'mysql' );
-		$today   = substr( $now, 0, 10 );
-		$latest  = self::latest( $user_id );
-
-		if ( $latest && ! $latest->has_result && substr( (string) $latest->target_set_at, 0, 10 ) === $today ) {
+		$user_id    = (int) $user_id;
+		$session_no = (int) $session_no;
+		$amount     = max( 0, (float) $amount );
+		if ( $user_id < 1 || $session_no < 1 ) {
+			return array( 'ok' => false );
+		}
+		$now = current_time( 'mysql' );
+		$row = self::get_week( $user_id, $session_no );
+		if ( $row ) {
 			$wpdb->update( self::table(),
 				array( 'target' => $amount, 'target_set_at' => $now, 'updated_at' => $now ),
-				array( 'id' => (int) $latest->id ), array( '%f', '%s', '%s' ), array( '%d' ) );
-			return array( 'week' => (int) $latest->week_no, 'created' => false );
+				array( 'id' => (int) $row->id ), array( '%f', '%s', '%s' ), array( '%d' ) );
+			return array( 'ok' => true, 'session' => $session_no, 'created' => false, 'status' => self::compute_status( $amount, $row->result, (bool) $row->has_result ) );
 		}
-
-		$week_no = $latest ? ( (int) $latest->week_no + 1 ) : (int) apply_filters( 'szp_eval_start_week', self::start_week(), $user_id );
 		$wpdb->insert( self::table(), array(
 			'user_id'       => $user_id,
-			'week_no'       => $week_no,
+			'week_no'       => $session_no,
 			'target'        => $amount,
 			'result'        => 0,
 			'has_result'    => 0,
@@ -133,23 +244,30 @@ class SZP_Eval {
 			'created_at'    => $now,
 			'updated_at'    => $now,
 		), array( '%d', '%d', '%f', '%f', '%d', '%s', '%s', '%s' ) );
-		return array( 'week' => $week_no, 'created' => true );
+		return array( 'ok' => true, 'session' => $session_no, 'created' => true, 'status' => 'pending' );
 	}
 
-	/** آیا کاربر اجازه‌ی ویرایش تارگت هفته‌های خودش را دارد؟ (قابل کنترل با فیلتر) */
-	public static function can_edit_target() {
-		return (bool) apply_filters( 'szp_eval_allow_edit_target', true );
+	/** ثبتِ نتیجه‌ی یک جلسه‌ی مشخص (باید تارگت داشته باشد). خروجی: array( ok, session, status، reason? ). */
+	public static function set_session_result( $user_id, $session_no, $amount, $note = '' ) {
+		global $wpdb;
+		$user_id    = (int) $user_id;
+		$session_no = (int) $session_no;
+		$amount     = max( 0, (float) $amount );
+		$note       = sanitize_textarea_field( $note );
+		$row        = self::get_week( $user_id, $session_no );
+		if ( ! $row || (float) $row->target <= 0 ) {
+			return array( 'ok' => false, 'reason' => 'notarget' );
+		}
+		$now = current_time( 'mysql' );
+		$wpdb->update( self::table(),
+			array( 'result' => $amount, 'has_result' => 1, 'note' => $note, 'result_set_at' => $row->result_set_at ?: $now, 'updated_at' => $now ),
+			array( 'id' => (int) $row->id ), array( '%f', '%d', '%s', '%s', '%s' ), array( '%d' ) );
+		return array( 'ok' => true, 'session' => $session_no, 'status' => self::compute_status( $row->target, $amount, true ) );
 	}
 
-	/** آیا کاربر اجازه‌ی ویرایش نتیجه‌ی هفته‌های خودش را دارد؟ (قابل کنترل با فیلتر) */
-	public static function can_edit_result() {
-		return (bool) apply_filters( 'szp_eval_allow_edit_result', true );
-	}
+	public static function can_edit_target() { return (bool) apply_filters( 'szp_eval_allow_edit_target', true ); }
+	public static function can_edit_result() { return (bool) apply_filters( 'szp_eval_allow_edit_result', true ); }
 
-	/**
-	 * ویرایش تارگت یک هفته‌ی موجودِ متعلق به همین کاربر (تصحیح تارگت ثبت‌شده).
-	 * خروجی: array( ok, week?, target?, status?, pct? )
-	 */
 	public static function edit_target( $user_id, $week_no, $amount ) {
 		global $wpdb;
 		$user_id = (int) $user_id;
@@ -172,10 +290,6 @@ class SZP_Eval {
 		);
 	}
 
-	/**
-	 * ویرایش نتیجه‌ی یک هفته‌ی موجودِ متعلق به همین کاربر. اگر هفته هنوز نتیجه نداشته باشد،
-	 * با این کار نتیجه‌دار می‌شود. خروجی: array( ok, week?, result?, status?, pct? )
-	 */
 	public static function edit_result( $user_id, $week_no, $amount ) {
 		global $wpdb;
 		$user_id = (int) $user_id;
@@ -187,12 +301,7 @@ class SZP_Eval {
 		}
 		$now = current_time( 'mysql' );
 		$wpdb->update( self::table(),
-			array(
-				'result'        => $amount,
-				'has_result'    => 1,
-				'result_set_at' => $row->result_set_at ?: $now,
-				'updated_at'    => $now,
-			),
+			array( 'result' => $amount, 'has_result' => 1, 'result_set_at' => $row->result_set_at ?: $now, 'updated_at' => $now ),
 			array( 'id' => (int) $row->id ), array( '%f', '%d', '%s', '%s' ), array( '%d' ) );
 		return array(
 			'ok'     => true,
@@ -203,28 +312,7 @@ class SZP_Eval {
 		);
 	}
 
-	/** ثبت نتیجه روی آخرین هفته‌ی باز. خروجی: array( ok, week?, status? ) */
-	public static function save_result( $user_id, $amount, $note = '' ) {
-		global $wpdb;
-		$user_id = (int) $user_id;
-		$amount  = max( 0, (float) $amount );
-		$note    = sanitize_textarea_field( $note );
-		$now     = current_time( 'mysql' );
-		$latest  = self::latest( $user_id );
-		if ( ! $latest || $latest->has_result ) {
-			return array( 'ok' => false );
-		}
-		$wpdb->update( self::table(),
-			array( 'result' => $amount, 'has_result' => 1, 'note' => $note, 'result_set_at' => $now, 'updated_at' => $now ),
-			array( 'id' => (int) $latest->id ), array( '%f', '%d', '%s', '%s', '%s' ), array( '%d' ) );
-		return array(
-			'ok'     => true,
-			'week'   => (int) $latest->week_no,
-			'status' => self::compute_status( $latest->target, $amount, true ),
-		);
-	}
-
-	/** درج/به‌روزرسانی دستی یک هفته (برای مدیر). $result=null یعنی بدون نتیجه. */
+	/** درج/به‌روزرسانی دستی یک جلسه (برای مدیر/پیشخوان). */
 	public static function upsert( $user_id, $week_no, $target, $result = null, $note = null ) {
 		global $wpdb;
 		$user_id = (int) $user_id;
@@ -311,7 +399,6 @@ class SZP_Eval {
 		return 'ontrack';
 	}
 
-	/** درصد تحقق (نتیجه/تارگت). */
 	public static function pct( $target, $result ) {
 		$target = (float) $target;
 		if ( $target <= 0 ) {
@@ -320,9 +407,8 @@ class SZP_Eval {
 		return (int) round( ( (float) $result / $target ) * 100 );
 	}
 
-	/* ==================== قفل روز ==================== */
+	/* ==================== قفل روز (سازگاری قدیمی) ==================== */
 
-	/** آیا ثبت در این روز قفل است؟ مدیران و فیلتر می‌توانند آزاد کنند. */
 	public static function day_locked( $which ) {
 		if ( current_user_can( 'manage_options' ) ) {
 			return false;
@@ -339,39 +425,17 @@ class SZP_Eval {
 		return isset( $names[ $n ] ) ? $names[ $n ] : '';
 	}
 
-	/** تعداد روز تا رسیدن روز هفته‌ی موردنظر (۰ = همین امروز). */
 	public static function days_until( $target_dow ) {
 		$today = (int) wp_date( 'N' );
-		$diff  = ( (int) $target_dow - $today + 7 ) % 7;
-		return $diff;
+		return ( (int) $target_dow - $today + 7 ) % 7;
 	}
 
 	/* ==================== دسترسی به تابلو/دفتر ==================== */
 
-	/** تبدیل رشته‌ی «نام‌کاربری/ایمیل/شناسه» (جداشده با کاما، فاصله یا خط جدید) به آرایه‌ی شناسه‌ها. */
 	protected static function parse_viewers( $str ) {
-		$ids = array();
-		foreach ( preg_split( '/[\s,،؛]+/u', (string) $str ) as $tok ) {
-			$tok = trim( $tok );
-			if ( $tok === '' ) {
-				continue;
-			}
-			if ( ctype_digit( $tok ) ) {
-				$ids[] = (int) $tok;
-				continue;
-			}
-			$u = is_email( $tok ) ? get_user_by( 'email', $tok ) : get_user_by( 'login', $tok );
-			if ( ! $u ) {
-				$u = get_user_by( 'slug', $tok );
-			}
-			if ( $u ) {
-				$ids[] = (int) $u->ID;
-			}
-		}
-		return $ids;
+		return class_exists( 'SZP_Eval_Roles' ) ? SZP_Eval_Roles::parse_user_list( $str ) : array();
 	}
 
-	/** شناسه‌ی کاربران مجاز به مشاهده (از تنظیمات + رشته‌ی اضافیِ اختیاری). */
 	public static function board_viewer_ids( $extra = '' ) {
 		$ids = self::parse_viewers( (string) self::opt( 'board_viewers' ) );
 		if ( $extra !== '' ) {
@@ -380,87 +444,272 @@ class SZP_Eval {
 		return array_values( array_unique( array_filter( $ids ) ) );
 	}
 
-	/**
-	 * آیا کاربر جاری اجازه‌ی دیدن تابلو/دفتر ارزیابی را دارد؟
-	 * مدیران (cap تابلو) همیشه؛ به‌علاوه کاربرانِ صریحاً مجازشده در تنظیمات یا در همان ویجت.
-	 */
 	public static function can_view_board( $extra = '' ) {
 		$cap = apply_filters( 'szp_eval_board_cap', 'manage_options' );
 		if ( current_user_can( $cap ) ) {
 			return true;
 		}
 		$uid = get_current_user_id();
+		if ( $uid && class_exists( 'SZP_Eval_Roles' ) && SZP_Eval_Roles::sees_team( $uid ) ) {
+			return true;
+		}
 		if ( $uid && in_array( $uid, self::board_viewer_ids( $extra ), true ) ) {
 			return true;
 		}
 		return (bool) apply_filters( 'szp_eval_can_view_board', false, $uid, $extra );
 	}
 
-	/** شناسه‌ی همه‌ی کاربرانی که حداقل یک هفته‌ی ثبت‌شده دارند. */
 	public static function participants() {
 		global $wpdb;
 		return array_map( 'intval', $wpdb->get_col( 'SELECT DISTINCT user_id FROM ' . self::table() ) );
 	}
 
-	/* ==================== رندر ==================== */
+	/* ==================== رندرِ ویجت نقش‌محور ==================== */
 
-	/** $atts: title، currency. */
 	public static function render( $atts = array() ) {
-		$title    = ( isset( $atts['title'] ) && $atts['title'] !== '' ) ? $atts['title'] : 'ارزیابی من';
+		$title    = ( isset( $atts['title'] ) && $atts['title'] !== '' ) ? $atts['title'] : 'ارزیابی';
 		$currency = ( isset( $atts['currency'] ) && $atts['currency'] !== '' ) ? (string) $atts['currency'] : self::currency();
 
 		if ( ! is_user_logged_in() ) {
-			return '<div class="szp"><div class="szp-empty">برای مشاهده «ارزیابی من» ابتدا وارد شوید.</div></div>';
+			return '<div class="szp"><div class="szp-empty">برای مشاهده‌ی ارزیابی ابتدا وارد شوید.</div></div>';
 		}
-		$uid   = get_current_user_id();
-		$weeks = self::weeks( $uid );
+		$uid = get_current_user_id();
 
-		$latest = $weeks ? end( $weeks ) : null;
-		reset( $weeks );
-		$phase = ( $latest && ! $latest->has_result ) ? 'result' : 'target';
+		$has_roles    = class_exists( 'SZP_Eval_Roles' );
+		$can_register = ! $has_roles || SZP_Eval_Roles::registers_own( $uid );
+		$sees_team    = $has_roles && SZP_Eval_Roles::sees_team( $uid );
+		// اگر هیچ نقشی نداشت، مثل «تیم فروش» فقط ثبتِ خودش را ببیند (سازگاری قدیمی).
+		if ( $has_roles && ! $can_register && ! $sees_team ) {
+			$can_register = true;
+		}
+
+		$role_slug  = $has_roles ? SZP_Eval_Roles::primary_role( $uid ) : '';
+		$role_label = $role_slug ? SZP_Eval_Roles::role_label( $role_slug ) : '';
+		if ( $sees_team && $has_roles && SZP_Eval_Roles::is_coaching( $uid ) && ! $role_label ) {
+			$role_label = 'کوچینگ';
+		}
 
 		ob_start(); ?>
 		<div class="szp">
-			<div class="szp-eval" data-currency="<?php echo esc_attr( $currency ); ?>"
-				data-near="<?php echo esc_attr( self::near() ); ?>"
-				data-can-target="<?php echo self::day_locked( 'target' ) ? '0' : '1'; ?>"
-				data-can-result="<?php echo self::day_locked( 'result' ) ? '0' : '1'; ?>"
-				data-can-edit="<?php echo self::can_edit_target() ? '1' : '0'; ?>"
-				data-can-edit-result="<?php echo self::can_edit_result() ? '1' : '0'; ?>">
-
-				<div class="szp-eval-head">
-					<h3 class="szp-eval-title"><?php echo esc_html( $title ); ?></h3>
-					<div class="szp-eval-legend"><?php echo self::legend_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+			<div class="szp-eval2" data-currency="<?php echo esc_attr( $currency ); ?>" data-near="<?php echo esc_attr( self::near() ); ?>">
+				<div class="szp-ev2-top">
+					<h3 class="szp-ev2-title"><?php echo esc_html( $title ); ?></h3>
+					<?php if ( $role_label ) : ?><span class="szp-ev2-role"><?php echo esc_html( $role_label ); ?></span><?php endif; ?>
 				</div>
 
-				<?php echo self::summary_html( $weeks ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-
-				<?php echo self::current_html( $latest, $phase, $currency ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-
-				<?php echo self::chart_html( $weeks ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-
-				<?php echo self::history_html( $weeks, $currency ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-
+				<?php
+				if ( $can_register ) {
+					echo self::self_panel( $uid, $currency ); // phpcs:ignore WordPress.Security.EscapeOutput
+				}
+				if ( $sees_team ) {
+					echo self::team_panel( $uid, $currency ); // phpcs:ignore WordPress.Security.EscapeOutput
+				}
+				?>
 			</div>
 		</div>
 		<?php
 		return ob_get_clean();
 	}
 
-	protected static function legend_html() {
-		$out = '';
-		foreach ( array( 'beyond', 'success', 'improve', 'ontrack' ) as $k ) {
-			$m    = self::status_meta( $k );
-			$out .= '<span class="szp-ev-leg"><i style="background:' . esc_attr( $m['color'] ) . '"></i>' . esc_html( $m['label'] ) . '</span>';
-		}
-		return $out;
+	/** پنلِ «ثبتِ خودم»: انتخاب جلسه، مرحله‌ی تارگت و نتیجه (کاملاً متمایز)، خلاصه و سوابق. */
+	protected static function self_panel( $uid, $currency ) {
+		$weeks   = self::weeks( $uid );
+		$sel     = self::selected_session( $uid );
+		$row     = self::get_week( $uid, $sel );
+		$bypass  = self::can_bypass( $uid );
+		$manager = class_exists( 'SZP_Eval_Roles' ) ? SZP_Eval_Roles::manager_name( $uid ) : '';
+
+		ob_start(); ?>
+		<div class="szp-ev2-self">
+			<?php if ( $manager !== '' ) : ?>
+				<div class="szp-ev2-manager">زیرمجموعه‌ی مدیر سازمان: <b><?php echo esc_html( $manager ); ?></b></div>
+			<?php endif; ?>
+
+			<?php echo self::session_picker( $uid, $sel, $weeks ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+
+			<?php echo self::step_card( $uid, $sel, $row, $currency, $bypass ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+
+			<?php echo self::summary_html( $weeks ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+
+			<?php echo self::history_html( $weeks, $currency, true ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
-	/** کارت‌های خلاصه: تعداد هفته‌ها، تحقق‌یافته، میانگین درصد. */
+	/** جلسه‌ی انتخاب‌شده: از پارامتر URL یا پیش‌فرضِ هوشمند. */
+	protected static function selected_session( $uid ) {
+		if ( isset( $_GET['szpev'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return max( 1, (int) $_GET['szpev'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		}
+		return self::default_session( $uid );
+	}
+
+	/** پیش‌فرض: اگر نتیجه‌ی جلسه‌ای امروز موعد دارد و هنوز ثبت نشده، همان؛ وگرنه جلسه‌ی جاری. */
+	protected static function default_session( $uid ) {
+		$due = self::due_result_session();
+		if ( $due ) {
+			$r = self::get_week( $uid, $due );
+			if ( $r && (float) $r->target > 0 && ! $r->has_result ) {
+				return $due;
+			}
+		}
+		return self::current_session();
+	}
+
+	/** انتخابگرِ جلسه (کشویی) — با تغییر، به همان جلسه می‌رود. */
+	protected static function session_picker( $uid, $sel, $weeks ) {
+		$cur = self::current_session();
+		$max = max( $cur + 1, $sel );
+		foreach ( $weeks as $w ) {
+			$max = max( $max, (int) $w->week_no );
+		}
+		$have = array();
+		foreach ( $weeks as $w ) {
+			$have[ (int) $w->week_no ] = $w;
+		}
+
+		ob_start(); ?>
+		<div class="szp-ev2-picker">
+			<label class="szp-ev2-picker-lbl">جلسه:</label>
+			<select class="szp-ev2-session" onchange="if(this.value)window.location.href=this.value">
+				<?php for ( $n = $max; $n >= 1; $n-- ) :
+					$url  = esc_url( add_query_arg( 'szpev', $n ) );
+					$mark = '';
+					if ( isset( $have[ $n ] ) ) {
+						$mark = $have[ $n ]->has_result ? ' ✓' : ( (float) $have[ $n ]->target > 0 ? ' •' : '' );
+					}
+					$is_cur = ( $n === $cur ) ? ' (جاری)' : '';
+					?>
+					<option value="<?php echo $url; ?>" <?php selected( $n, $sel ); ?>>
+						<?php echo esc_html( self::session_label( $n ) . ' — ' . self::session_date_fa( $n ) . $is_cur . $mark ); ?>
+					</option>
+				<?php endfor; ?>
+			</select>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/** کارتِ مرحله‌ای: تارگت (آبی) و نتیجه (سبز) کاملاً متمایز از هم. */
+	protected static function step_card( $uid, $sel, $row, $currency, $bypass ) {
+		$has_target = $row && (float) $row->target > 0;
+		$has_result = $row && $row->has_result;
+		$t_open     = self::target_open( $sel ) || $bypass;
+		$r_open     = self::result_open( $sel ) || $bypass;
+		$date_fa    = self::session_date_fa( $sel, true );
+
+		ob_start(); ?>
+		<div class="szp-ev2-card">
+			<div class="szp-ev2-card-head">
+				<span class="szp-ev2-badge-session"><?php echo esc_html( self::session_label( $sel ) ); ?></span>
+				<span class="szp-ev2-card-date">🗓 <?php echo esc_html( $date_fa ); ?></span>
+			</div>
+
+			<?php
+			/* ---- مرحله ۱: تارگت ---- */
+			if ( ! $has_target ) :
+				if ( $t_open ) :
+					echo self::form_target( $sel, $currency ); // phpcs:ignore WordPress.Security.EscapeOutput
+				else :
+					?>
+					<div class="szp-ev2-step szp-ev2-step-locked">
+						<div class="szp-ev2-step-t"><span class="szp-ev2-step-n step-blue">۱</span> ثبت تارگت</div>
+						<p class="szp-ev2-lock">⏳ زمان ثبت تارگت این جلسه فرا نرسیده یا گذشته است. تارگت را در هفته‌ی جلسه (حدود <?php echo esc_html( self::session_date_fa( $sel ) ); ?>) ثبت کنید.</p>
+					</div>
+					<?php
+				endif;
+			else :
+				/* تارگت ثبت‌شده — کارت خلاصه‌ی آبی */
+				?>
+				<div class="szp-ev2-done szp-ev2-done-target">
+					<div class="szp-ev2-done-row">
+						<span class="szp-ev2-step-n step-blue">۱</span>
+						<span class="szp-ev2-done-lbl">تارگت این جلسه</span>
+						<b class="szp-ev2-done-val"><?php echo esc_html( szp_money( $row->target, $currency ) ); ?></b>
+						<button type="button" class="szp-ev2-editbtn szp-ev-edit-target" data-week="<?php echo esc_attr( $sel ); ?>" data-target="<?php echo esc_attr( $row->target ); ?>" title="ویرایش تارگت">✏️</button>
+					</div>
+				</div>
+				<?php
+			endif;
+
+			/* ---- مرحله ۲: نتیجه ---- */
+			if ( $has_target ) :
+				if ( $has_result ) :
+					$st   = self::compute_status( $row->target, $row->result, true );
+					$meta = self::status_meta( $st );
+					$pct  = self::pct( $row->target, $row->result );
+					?>
+					<div class="szp-ev2-done szp-ev2-done-result">
+						<div class="szp-ev2-done-row">
+							<span class="szp-ev2-step-n step-green">۲</span>
+							<span class="szp-ev2-done-lbl">نتیجه‌ی این جلسه</span>
+							<b class="szp-ev2-done-val"><?php echo esc_html( szp_money( $row->result, $currency ) ); ?></b>
+							<button type="button" class="szp-ev2-editbtn szp-ev-edit-result" data-week="<?php echo esc_attr( $sel ); ?>" data-result="<?php echo esc_attr( $row->result ); ?>" title="ویرایش نتیجه">✏️</button>
+						</div>
+						<div class="szp-ev2-result-status">
+							<span class="szp-ev2-statusbadge" style="--c:<?php echo esc_attr( $meta['color'] ); ?>"><?php echo esc_html( $meta['emoji'] . ' ' . $meta['label'] ); ?></span>
+							<span class="szp-ev2-pct"><?php echo esc_html( szp_fa_digits( $pct ) ); ?>٪ تحقق</span>
+						</div>
+					</div>
+					<?php
+				elseif ( $r_open ) :
+					echo self::form_result( $sel, $row->target, $currency ); // phpcs:ignore WordPress.Security.EscapeOutput
+				else :
+					?>
+					<div class="szp-ev2-step szp-ev2-step-locked szp-ev2-step-green-locked">
+						<div class="szp-ev2-step-t"><span class="szp-ev2-step-n step-green">۲</span> ثبت نتیجه</div>
+						<p class="szp-ev2-lock">🔒 ثبت نتیجه از <b><?php echo esc_html( self::result_date_fa( $sel ) ); ?></b> (دوشنبه و سه‌شنبه‌ی هفته‌ی بعد) باز می‌شود.</p>
+					</div>
+					<?php
+				endif;
+			endif;
+			?>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/** فرمِ ثبتِ تارگت (تم آبی، مرحله ۱). */
+	protected static function form_target( $session_no, $currency ) {
+		ob_start(); ?>
+		<div class="szp-ev2-step szp-ev2-step-target szp-ev-form" data-mode="target" data-session="<?php echo esc_attr( $session_no ); ?>">
+			<div class="szp-ev2-step-t"><span class="szp-ev2-step-n step-blue">۱</span> ثبت تارگت این جلسه</div>
+			<p class="szp-ev2-step-hint">می‌خواهی این هفته چقدر بفروشی؟ عدد تارگت را وارد کن.</p>
+			<div class="szp-ev2-inrow">
+				<input type="text" inputmode="numeric" class="szp-ev-amount" placeholder="مثلاً ۵۰۰٬۰۰۰٬۰۰۰">
+				<span class="szp-ev2-unit"><?php echo esc_html( $currency ); ?></span>
+			</div>
+			<div class="szp-ev-preview" aria-live="polite"></div>
+			<button type="button" class="szp-ev-submit szp-ev2-btn szp-ev2-btn-blue">ثبت تارگت 🎯</button>
+			<div class="szp-ev-msg" aria-live="polite"></div>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/** فرمِ ثبتِ نتیجه (تم سبز، مرحله ۲). */
+	protected static function form_result( $session_no, $target, $currency ) {
+		ob_start(); ?>
+		<div class="szp-ev2-step szp-ev2-step-result szp-ev-form" data-mode="result" data-session="<?php echo esc_attr( $session_no ); ?>" data-target="<?php echo esc_attr( $target ); ?>">
+			<div class="szp-ev2-step-t"><span class="szp-ev2-step-n step-green">۲</span> ثبت نتیجه‌ی این جلسه</div>
+			<p class="szp-ev2-step-hint">این هفته واقعاً چقدر فروختی؟ عدد واقعی را وارد کن. (تارگت: <b><?php echo esc_html( szp_money( $target, $currency ) ); ?></b>)</p>
+			<div class="szp-ev2-inrow">
+				<input type="text" inputmode="numeric" class="szp-ev-amount" placeholder="نتیجه‌ی واقعی (عدد)">
+				<span class="szp-ev2-unit"><?php echo esc_html( $currency ); ?></span>
+			</div>
+			<textarea class="szp-ev-note" rows="2" placeholder="یادداشت (اختیاری) — چرا رسیدی/نرسیدی؟"></textarea>
+			<div class="szp-ev-preview" aria-live="polite"></div>
+			<button type="button" class="szp-ev-submit szp-ev2-btn szp-ev2-btn-green">ثبت نتیجه ✅</button>
+			<div class="szp-ev-msg" aria-live="polite"></div>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/** کارت‌های خلاصه: تعداد جلسات، محقق‌شده، میانگین تحقق. */
 	protected static function summary_html( $weeks ) {
-		$done = 0;
-		$hit  = 0;
-		$sum  = 0;
+		$done = 0; $hit = 0; $sum = 0;
 		foreach ( $weeks as $w ) {
 			if ( ! $w->has_result ) {
 				continue;
@@ -475,259 +724,160 @@ class SZP_Eval {
 		$avg = $done ? (int) round( $sum / $done ) : 0;
 
 		ob_start(); ?>
-		<div class="szp-eval-summary">
-			<div class="szp-ev-stat"><span class="szp-ev-stat-n"><?php echo esc_html( szp_fa_digits( count( $weeks ) ) ); ?></span><span class="szp-ev-stat-l">هفته ثبت‌شده</span></div>
-			<div class="szp-ev-stat"><span class="szp-ev-stat-n"><?php echo esc_html( szp_fa_digits( $hit ) ); ?></span><span class="szp-ev-stat-l">تارگت محقق‌شده</span></div>
-			<div class="szp-ev-stat"><span class="szp-ev-stat-n"><?php echo esc_html( szp_fa_digits( $avg ) ); ?>٪</span><span class="szp-ev-stat-l">میانگین تحقق</span></div>
+		<div class="szp-ev2-summary">
+			<div class="szp-ev2-stat"><span class="szp-ev2-stat-n"><?php echo esc_html( szp_fa_digits( count( $weeks ) ) ); ?></span><span class="szp-ev2-stat-l">جلسه ثبت‌شده</span></div>
+			<div class="szp-ev2-stat"><span class="szp-ev2-stat-n"><?php echo esc_html( szp_fa_digits( $hit ) ); ?></span><span class="szp-ev2-stat-l">تارگت محقق‌شده</span></div>
+			<div class="szp-ev2-stat"><span class="szp-ev2-stat-n"><?php echo esc_html( szp_fa_digits( $avg ) ); ?>٪</span><span class="szp-ev2-stat-l">میانگین تحقق</span></div>
 		</div>
 		<?php
 		return ob_get_clean();
 	}
 
-	/** شمارش معکوس تا روز هدف به‌صورت متن فارسی. */
-	protected static function countdown_text( $dow, $label ) {
-		$d = self::days_until( $dow );
-		if ( $d === 0 ) {
-			return 'امروز روز ' . $label . ' است.';
-		}
-		return szp_fa_digits( $d ) . ' روز تا ' . $label . ' (' . self::day_name( $dow ) . ').';
-	}
-
-	/** بخش هفته‌ی جاری: فرم ثبت تارگت یا فرم ثبت نتیجه. */
-	protected static function current_html( $latest, $phase, $currency ) {
-		$can_target = ! self::day_locked( 'target' );
-		$can_result = ! self::day_locked( 'result' );
-		$d_target   = self::day_target();
-		$d_result   = self::day_result();
-
-		ob_start();
-
-		if ( $phase === 'result' ) :
-			$wk     = (int) $latest->week_no;
-			$target = (float) $latest->target;
-			?>
-			<div class="szp-ev-current szp-ev-phase-result">
-				<div class="szp-ev-cur-top">
-					<span class="szp-ev-week-badge">هفته <?php echo esc_html( szp_fa_digits( $wk ) ); ?></span>
-					<span class="szp-ev-cur-target">تارگت این هفته: <b><?php echo esc_html( szp_money( $target, $currency ) ); ?></b></span>
-					<span class="szp-ev-countdown">⏳ <?php echo esc_html( self::countdown_text( $d_result, 'ثبت نتیجه' ) ); ?></span>
-				</div>
-				<p class="szp-ev-cur-hint">نتیجه‌ی این هفته را وارد کنید (روز ثبت نتیجه: <b><?php echo esc_html( self::day_name( $d_result ) ); ?></b>).</p>
-				<div class="szp-ev-form" data-mode="result" data-target="<?php echo esc_attr( $target ); ?>">
-					<div class="szp-ev-inrow">
-						<input type="text" inputmode="numeric" class="szp-ev-amount" placeholder="نتیجه‌ی واقعی (عدد)" <?php disabled( ! $can_result ); ?>>
-						<span class="szp-ev-cur-unit"><?php echo esc_html( $currency ); ?></span>
-						<button type="button" class="szp-ev-submit button-primary" <?php disabled( ! $can_result ); ?>>ثبت نتیجه</button>
-					</div>
-					<textarea class="szp-ev-note" rows="2" placeholder="یادداشت این هفته (اختیاری) — مثلاً چرا به تارگت رسیدم/نرسیدم" <?php disabled( ! $can_result ); ?>></textarea>
-					<div class="szp-ev-preview" aria-live="polite"></div>
-					<?php if ( ! $can_result ) : ?>
-						<p class="szp-ev-locked">ثبت نتیجه فقط در روز <b><?php echo esc_html( self::day_name( $d_result ) ); ?></b> امکان‌پذیر است.</p>
-					<?php endif; ?>
-					<div class="szp-ev-msg" aria-live="polite"></div>
-				</div>
-			</div>
-			<?php
-		else :
-			$next = $latest ? ( (int) $latest->week_no + 1 ) : self::start_week();
-			?>
-			<div class="szp-ev-current szp-ev-phase-target">
-				<div class="szp-ev-cur-top">
-					<span class="szp-ev-week-badge">هفته <?php echo esc_html( szp_fa_digits( $next ) ); ?></span>
-					<span class="szp-ev-cur-target">تارگت جدید را مشخص کنید</span>
-					<span class="szp-ev-countdown">⏳ <?php echo esc_html( self::countdown_text( $d_target, 'ثبت تارگت' ) ); ?></span>
-				</div>
-				<p class="szp-ev-cur-hint">تارگت مالی این هفته را ثبت کنید (روز ثبت تارگت: <b><?php echo esc_html( self::day_name( $d_target ) ); ?></b>).</p>
-				<div class="szp-ev-form" data-mode="target">
-					<div class="szp-ev-inrow">
-						<input type="text" inputmode="numeric" class="szp-ev-amount" placeholder="تارگت هفته (مثلاً ۵۰۰٬۰۰۰٬۰۰۰)" <?php disabled( ! $can_target ); ?>>
-						<span class="szp-ev-cur-unit"><?php echo esc_html( $currency ); ?></span>
-						<button type="button" class="szp-ev-submit button-primary" <?php disabled( ! $can_target ); ?>>ثبت تارگت</button>
-					</div>
-					<div class="szp-ev-preview" aria-live="polite"></div>
-					<?php if ( ! $can_target ) : ?>
-						<p class="szp-ev-locked">ثبت تارگت فقط در روز <b><?php echo esc_html( self::day_name( $d_target ) ); ?></b> امکان‌پذیر است.</p>
-					<?php endif; ?>
-					<div class="szp-ev-msg" aria-live="polite"></div>
-				</div>
-			</div>
-			<?php
-		endif;
-
-		return ob_get_clean();
-	}
-
-	/** نمودار ستونی تحقق + نمودار خطی روند درآمد. مقیاس کاملاً پویا. */
-	protected static function chart_html( $weeks ) {
-		$rows = array();
-		foreach ( $weeks as $w ) {
-			if ( $w->has_result ) {
-				$rows[] = $w;
-			}
-		}
-		if ( ! $rows ) {
-			return '';
-		}
-
-		// --- مقیاس پویا برای نمودار ستونی (درصد تحقق) ---
-		$max_pct = 0;
-		$max_res = 0;
-		foreach ( $rows as $w ) {
-			$max_pct = max( $max_pct, self::pct( $w->target, $w->result ) );
-			$max_res = max( $max_res, (float) $w->result );
-		}
-		$scale    = max( 120, $max_pct );          // همیشه خط ۱۰۰٪ دیده شود
-		$scale    = (int) ( ceil( $scale / 10 ) * 10 );
-		$baseline = round( 100 / $scale * 100, 3 ); // ارتفاع خط ۱۰۰٪
-
-		ob_start(); ?>
-		<div class="szp-eval-chartwrap">
-			<h4 class="szp-ev-sec-title">نمودار تحقق تارگت</h4>
-			<div class="szp-eval-chart">
-				<div class="szp-ev-plot" style="--baseline:<?php echo esc_attr( $baseline ); ?>%">
-					<span class="szp-ev-base"><span class="szp-ev-base-lbl">تارگت ۱۰۰٪</span></span>
-					<?php foreach ( $rows as $w ) :
-						$pct  = self::pct( $w->target, $w->result );
-						$st   = self::compute_status( $w->target, $w->result, true );
-						$meta = self::status_meta( $st );
-						$h    = round( max( 2, $pct / $scale * 100 ), 2 );
-						?>
-						<div class="szp-ev-bar" title="هفته <?php echo esc_attr( szp_fa_digits( $w->week_no ) ); ?> — <?php echo esc_attr( szp_fa_digits( $pct ) ); ?>٪ (<?php echo esc_attr( $meta['label'] ); ?>)">
-							<span class="szp-ev-bar-fill" style="height:<?php echo esc_attr( $h ); ?>%;background:<?php echo esc_attr( $meta['color'] ); ?>">
-								<span class="szp-ev-bar-val"><?php echo esc_html( szp_fa_digits( $pct ) ); ?>٪</span>
-							</span>
-						</div>
-					<?php endforeach; ?>
-				</div>
-				<div class="szp-ev-xaxis">
-					<?php foreach ( $rows as $w ) : ?>
-						<span class="szp-ev-xlbl">هفته <?php echo esc_html( szp_fa_digits( $w->week_no ) ); ?></span>
-					<?php endforeach; ?>
-				</div>
-			</div>
-
-			<?php echo self::trend_svg( $rows, $max_res ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-		</div>
-		<?php
-		return ob_get_clean();
-	}
-
-	/** نمودار خطی روند درآمد (SVG، بدون وابستگی). */
-	protected static function trend_svg( $rows, $max_res ) {
-		if ( $max_res <= 0 ) {
-			$max_res = 1;
-		}
-		$n   = count( $rows );
-		$pad = 4;
-		$top = 6;
-		$bot = 40;
-		$pts = array();
-		foreach ( array_values( $rows ) as $i => $w ) {
-			$x = ( $n <= 1 ) ? 50 : round( $pad + ( $i / ( $n - 1 ) ) * ( 100 - 2 * $pad ), 2 );
-			$y = round( $bot - ( (float) $w->result / $max_res ) * ( $bot - $top ), 2 );
-			$pts[] = array( $x, $y, $w );
-		}
-		$poly = '';
-		foreach ( $pts as $p ) {
-			$poly .= $p[0] . ',' . $p[1] . ' ';
-		}
-		$area = 'M' . $pts[0][0] . ',' . $bot . ' L' . trim( str_replace( ' ', ' L', trim( $poly ) ) ) . ' L' . end( $pts )[0] . ',' . $bot . ' Z';
-
-		ob_start(); ?>
-		<h4 class="szp-ev-sec-title" style="margin-top:18px">روند رشد درآمد</h4>
-		<div class="szp-eval-trend">
-			<svg viewBox="0 0 100 44" preserveAspectRatio="none" class="szp-ev-svg" role="img" aria-label="نمودار روند درآمد">
-				<path d="<?php echo esc_attr( $area ); ?>" class="szp-ev-area"></path>
-				<?php if ( $n > 1 ) : ?>
-					<polyline points="<?php echo esc_attr( trim( $poly ) ); ?>" class="szp-ev-line"></polyline>
-				<?php endif; ?>
-				<?php foreach ( $pts as $p ) : ?>
-					<circle cx="<?php echo esc_attr( $p[0] ); ?>" cy="<?php echo esc_attr( $p[1] ); ?>" r="1.4" class="szp-ev-dot"></circle>
-				<?php endforeach; ?>
-			</svg>
-			<div class="szp-ev-xaxis">
-				<?php foreach ( $rows as $w ) : ?>
-					<span class="szp-ev-xlbl">هفته <?php echo esc_html( szp_fa_digits( $w->week_no ) ); ?></span>
-				<?php endforeach; ?>
-			</div>
-		</div>
-		<?php
-		return ob_get_clean();
-	}
-
-	protected static function jalali_or_dash( $datetime ) {
-		if ( empty( $datetime ) ) {
-			return '—';
-		}
-		$ts = strtotime( $datetime );
-		return $ts ? szp_format_datetime( $ts ) : '—';
-	}
-
-	/** جدول هفته‌های قبل با وضعیت، درصد، تاریخ شمسی و یادداشت. */
-	protected static function history_html( $weeks, $currency ) {
+	/** فهرست جلساتِ گذشته (کارتی، موبایل‌اول). $editable=true دکمه‌های ویرایش را نشان می‌دهد. */
+	protected static function history_html( $weeks, $currency, $editable = false ) {
 		if ( ! $weeks ) {
-			return '<div class="szp-eval-history"><h4 class="szp-ev-sec-title">هفته‌های قبل</h4><p class="szp-empty">هنوز هفته‌ای ثبت نشده است.</p></div>';
+			return '<div class="szp-ev2-history"><h4 class="szp-ev2-sec">سوابق جلسات</h4><p class="szp-empty">هنوز جلسه‌ای ثبت نشده است.</p></div>';
 		}
-		$list       = array_reverse( $weeks ); // جدیدترین بالا
-		$can_edit   = self::can_edit_target();
-		$can_edit_r = self::can_edit_result();
+		$list       = array_reverse( $weeks );
+		$can_edit   = $editable && self::can_edit_target();
+		$can_edit_r = $editable && self::can_edit_result();
 
 		ob_start(); ?>
-		<div class="szp-eval-history">
-			<h4 class="szp-ev-sec-title">هفته‌های قبل</h4>
-			<div class="szp-ev-table-wrap">
-				<table class="szp-ev-table">
-					<thead><tr>
-						<th>هفته</th><th>تارگت</th><th>نتیجه</th><th>تحقق</th><th>وضعیت</th><th>تاریخ ثبت</th><th>یادداشت</th>
-					</tr></thead>
-					<tbody>
-					<?php foreach ( $list as $w ) :
-						$st   = self::compute_status( $w->target, $w->result, $w->has_result );
-						$meta = self::status_meta( $st );
-						$pct  = $w->has_result ? self::pct( $w->target, $w->result ) : 0;
-						$date = $w->has_result ? self::jalali_or_dash( $w->result_set_at ) : self::jalali_or_dash( $w->target_set_at );
-						?>
-						<tr>
-							<td data-th="هفته"><span class="szp-ev-week-badge sm">هفته <?php echo esc_html( szp_fa_digits( $w->week_no ) ); ?></span></td>
-							<td data-th="تارگت" class="szp-ev-targetcell">
-								<span class="szp-ev-target-val"><?php echo esc_html( szp_money( $w->target, $currency ) ); ?></span>
-								<?php if ( $can_edit ) : ?>
-									<button type="button" class="szp-ev-edit-target" data-week="<?php echo esc_attr( $w->week_no ); ?>" data-target="<?php echo esc_attr( $w->target ); ?>" title="ویرایش تارگت" aria-label="ویرایش تارگت هفته <?php echo esc_attr( szp_fa_digits( $w->week_no ) ); ?>">✏️</button>
-								<?php endif; ?>
-							</td>
-							<td data-th="نتیجه" class="szp-ev-resultcell">
-								<span class="szp-ev-result-val"><?php echo $w->has_result ? esc_html( szp_money( $w->result, $currency ) ) : '—'; ?></span>
-								<?php if ( $can_edit_r ) : ?>
-									<button type="button" class="szp-ev-edit-result" data-week="<?php echo esc_attr( $w->week_no ); ?>" data-result="<?php echo esc_attr( $w->has_result ? $w->result : '' ); ?>" title="ویرایش نتیجه" aria-label="ویرایش نتیجه هفته <?php echo esc_attr( szp_fa_digits( $w->week_no ) ); ?>">✏️</button>
-								<?php endif; ?>
-							</td>
-							<td data-th="تحقق"><?php echo $w->has_result ? esc_html( szp_fa_digits( $pct ) . '٪' ) : '—'; ?></td>
-							<td data-th="وضعیت">
-								<span class="szp-ev-badge" style="--c:<?php echo esc_attr( $meta['color'] ); ?>">
-									<?php echo esc_html( $meta['emoji'] . ' ' . $meta['label'] ); ?>
-								</span>
-							</td>
-							<td data-th="تاریخ ثبت" class="szp-ev-date"><?php echo esc_html( $date ); ?></td>
-							<td data-th="یادداشت" class="szp-ev-notecell"><?php echo ! empty( $w->note ) ? esc_html( $w->note ) : '—'; ?></td>
-						</tr>
-					<?php endforeach; ?>
-					</tbody>
-				</table>
+		<div class="szp-ev2-history">
+			<h4 class="szp-ev2-sec">سوابق جلسات</h4>
+			<div class="szp-ev2-hlist">
+				<?php foreach ( $list as $w ) :
+					$st   = self::compute_status( $w->target, $w->result, $w->has_result );
+					$meta = self::status_meta( $st );
+					$pct  = $w->has_result ? self::pct( $w->target, $w->result ) : 0;
+					?>
+					<div class="szp-ev2-hrow">
+						<div class="szp-ev2-hrow-top">
+							<span class="szp-ev2-hsession"><?php echo esc_html( self::session_label( $w->week_no ) ); ?></span>
+							<span class="szp-ev2-hdate"><?php echo esc_html( self::session_date_fa( $w->week_no ) ); ?></span>
+							<span class="szp-ev2-statusbadge sm" style="--c:<?php echo esc_attr( $meta['color'] ); ?>"><?php echo esc_html( $meta['emoji'] . ' ' . $meta['label'] ); ?></span>
+						</div>
+						<div class="szp-ev2-hrow-body">
+							<div class="szp-ev2-hcell szp-ev-targetcell">
+								<span class="szp-ev2-hk">تارگت</span>
+								<span class="szp-ev2-hv szp-ev-target-val"><?php echo esc_html( szp_money( $w->target, $currency ) ); ?></span>
+								<?php if ( $can_edit ) : ?><button type="button" class="szp-ev2-editbtn szp-ev-edit-target" data-week="<?php echo esc_attr( $w->week_no ); ?>" data-target="<?php echo esc_attr( $w->target ); ?>" title="ویرایش تارگت">✏️</button><?php endif; ?>
+							</div>
+							<div class="szp-ev2-hcell szp-ev-resultcell">
+								<span class="szp-ev2-hk">نتیجه</span>
+								<span class="szp-ev2-hv szp-ev-result-val"><?php echo $w->has_result ? esc_html( szp_money( $w->result, $currency ) ) : '—'; ?></span>
+								<?php if ( $can_edit_r ) : ?><button type="button" class="szp-ev2-editbtn szp-ev-edit-result" data-week="<?php echo esc_attr( $w->week_no ); ?>" data-result="<?php echo esc_attr( $w->has_result ? $w->result : '' ); ?>" title="ویرایش نتیجه">✏️</button><?php endif; ?>
+							</div>
+							<div class="szp-ev2-hcell">
+								<span class="szp-ev2-hk">تحقق</span>
+								<span class="szp-ev2-hv"><?php echo $w->has_result ? esc_html( szp_fa_digits( $pct ) . '٪' ) : '—'; ?></span>
+							</div>
+						</div>
+						<?php if ( ! empty( $w->note ) ) : ?>
+							<div class="szp-ev2-hnote">📝 <?php echo esc_html( $w->note ); ?></div>
+						<?php endif; ?>
+					</div>
+				<?php endforeach; ?>
 			</div>
 		</div>
 		<?php
 		return ob_get_clean();
 	}
 
-	/* ==================== تابلوی ارزیابی (همه‌ی اشخاص) ==================== */
+	/* ==================== پنلِ تیم (کوچینگ / مدیر سازمان) ==================== */
 
-	/** خلاصه‌ی وضعیت یک کاربر برای کارت تابلو. */
+	protected static function team_panel( $uid, $currency ) {
+		$coaching = class_exists( 'SZP_Eval_Roles' ) && SZP_Eval_Roles::is_coaching( $uid );
+		if ( $coaching ) {
+			$ids   = SZP_Eval_Roles::all_people_ids();
+			$title = 'همه‌ی نفرات';
+			$hint  = 'شما به‌عنوان کوچینگ، تارگت و نتیجه‌ی همه‌ی نفرات را می‌بینید.';
+		} else {
+			$ids   = class_exists( 'SZP_Eval_Roles' ) ? SZP_Eval_Roles::subordinates( $uid ) : array();
+			$title = 'زیرمجموعه‌ی من';
+			$hint  = 'تارگت و نتیجه‌ی اعضای تیم شما.';
+		}
+		$ids = array_values( array_filter( array_map( 'intval', $ids ), function ( $id ) use ( $uid ) {
+			return $id && $id !== (int) $uid;
+		} ) );
+
+		// مرتب‌سازی: میانگین تحقق نزولی.
+		$people = array();
+		foreach ( $ids as $id ) {
+			$info = SZP_Groups::user_info( $id );
+			if ( ! $info ) {
+				continue;
+			}
+			$people[] = array( 'info' => $info, 'sum' => self::user_summary( $id ), 'weeks' => self::weeks( $id ), 'id' => $id );
+		}
+		usort( $people, function ( $a, $b ) {
+			return $b['sum']['avg'] <=> $a['sum']['avg'];
+		} );
+
+		ob_start(); ?>
+		<div class="szp-ev2-team">
+			<div class="szp-ev2-team-head">
+				<h4 class="szp-ev2-sec"><?php echo esc_html( $title ); ?></h4>
+				<span class="szp-ev2-team-hint"><?php echo esc_html( $hint ); ?></span>
+			</div>
+			<?php echo self::legend_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+			<?php if ( ! $people ) : ?>
+				<p class="szp-empty">هنوز کسی در تیم شما تعریف/ثبت نشده است.</p>
+			<?php else : ?>
+				<div class="szp-ev2-people">
+					<?php foreach ( $people as $p ) :
+						$info  = $p['info'];
+						$sum   = $p['sum'];
+						$lw    = $sum['latest'];
+						$st    = $lw ? self::compute_status( $lw->target, $lw->result, $lw->has_result ) : 'pending';
+						$meta  = self::status_meta( $st );
+						$mname = $coaching && class_exists( 'SZP_Eval_Roles' ) ? SZP_Eval_Roles::manager_name( $p['id'] ) : '';
+						?>
+						<details class="szp-ev2-person">
+							<summary class="szp-ev2-person-sum">
+								<span class="szp-ev2-person-av"><?php echo get_avatar( $info['id'], 38 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+								<span class="szp-ev2-person-id">
+									<span class="szp-ev2-person-name"><?php echo esc_html( $info['name'] ); ?></span>
+									<span class="szp-ev2-person-meta">
+										<?php if ( $mname !== '' ) : ?>مدیر: <?php echo esc_html( $mname ); ?> · <?php endif; ?>
+										میانگین <?php echo esc_html( szp_fa_digits( $sum['avg'] ) ); ?>٪
+									</span>
+								</span>
+								<span class="szp-ev2-statusbadge sm" style="--c:<?php echo esc_attr( $meta['color'] ); ?>"><?php echo esc_html( $meta['emoji'] . ' ' . $meta['label'] ); ?></span>
+							</summary>
+							<div class="szp-ev2-person-body">
+								<?php if ( $lw ) : ?>
+									<div class="szp-ev2-person-latest">
+										<span><?php echo esc_html( self::session_label( $lw->week_no ) ); ?></span>
+										<span>تارگت: <b><?php echo esc_html( szp_money( $lw->target, $currency ) ); ?></b></span>
+										<span>نتیجه: <b><?php echo $lw->has_result ? esc_html( szp_money( $lw->result, $currency ) ) : '—'; ?></b></span>
+									</div>
+								<?php endif; ?>
+								<?php echo self::history_html( $p['weeks'], $currency, false ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+							</div>
+						</details>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	protected static function legend_html() {
+		$out = '<div class="szp-ev2-legend">';
+		foreach ( array( 'beyond', 'success', 'improve', 'ontrack' ) as $k ) {
+			$m    = self::status_meta( $k );
+			$out .= '<span class="szp-ev2-leg"><i style="background:' . esc_attr( $m['color'] ) . '"></i>' . esc_html( $m['label'] ) . '</span>';
+		}
+		return $out . '</div>';
+	}
+
+	/* ==================== خلاصه‌ی کاربر و تابلوها (سازگاری) ==================== */
+
 	public static function user_summary( $user_id ) {
-		$weeks = self::weeks( $user_id );
-		$done  = 0;
-		$hit   = 0;
-		$sum   = 0;
-		$latest = null;
+		$weeks  = self::weeks( $user_id );
+		$done   = 0; $hit = 0; $sum = 0; $latest = null;
 		foreach ( $weeks as $w ) {
 			$latest = $w;
 			if ( ! $w->has_result ) {
@@ -749,7 +899,31 @@ class SZP_Eval {
 		);
 	}
 
-	/** $atts: title، currency، group (شناسه گروه برای فیلتر). نمایش شبکه‌ای همه‌ی اشخاص دارای تارگت. */
+	/** فهرست افرادِ قابل‌نمایش در تابلو بر اساس نقشِ بیننده (+فیلتر گروه اختیاری). */
+	protected static function board_people_ids( $group = 0 ) {
+		$uid = get_current_user_id();
+		if ( current_user_can( 'manage_options' ) || ( class_exists( 'SZP_Eval_Roles' ) && SZP_Eval_Roles::is_coaching( $uid ) ) ) {
+			$ids = self::participants();
+			if ( class_exists( 'SZP_Eval_Roles' ) ) {
+				$ids = array_merge( $ids, SZP_Eval_Roles::all_people_ids() );
+			}
+		} elseif ( class_exists( 'SZP_Eval_Roles' ) && SZP_Eval_Roles::is_org_manager( $uid ) ) {
+			$ids = SZP_Eval_Roles::subordinates( $uid );
+		} else {
+			$ids = self::participants();
+		}
+		$ids = array_values( array_unique( array_map( 'intval', $ids ) ) );
+
+		if ( $group && class_exists( 'SZP_Groups' ) ) {
+			$members = array_flip( SZP_Groups::members( $group ) );
+			$ids     = array_values( array_filter( $ids, function ( $id ) use ( $members ) {
+				return isset( $members[ $id ] );
+			} ) );
+		}
+		return $ids;
+	}
+
+	/** تابلوی افراد (سازگاری با ویجت‌های المنتور). */
 	public static function board( $atts = array() ) {
 		if ( ! self::can_view_board( isset( $atts['viewers'] ) ? (string) $atts['viewers'] : '' ) ) {
 			return '<div class="szp"><div class="szp-empty">شما به تابلوی ارزیابی دسترسی ندارید.</div></div>';
@@ -758,15 +932,7 @@ class SZP_Eval {
 		$currency = ( isset( $atts['currency'] ) && $atts['currency'] !== '' ) ? (string) $atts['currency'] : self::currency();
 		$group    = isset( $atts['group'] ) ? absint( $atts['group'] ) : 0;
 
-		$ids = self::participants();
-		if ( $group && class_exists( 'SZP_Groups' ) ) {
-			$members = array_flip( SZP_Groups::members( $group ) );
-			$ids     = array_values( array_filter( $ids, function ( $id ) use ( $members ) {
-				return isset( $members[ $id ] );
-			} ) );
-		}
-
-		// مرتب‌سازی بر اساس میانگین تحقق (نزولی).
+		$ids   = self::board_people_ids( $group );
 		$cards = array();
 		foreach ( $ids as $id ) {
 			$info = SZP_Groups::user_info( $id );
@@ -781,15 +947,13 @@ class SZP_Eval {
 
 		ob_start(); ?>
 		<div class="szp">
-			<div class="szp-eval szp-eval-board">
-				<div class="szp-eval-head">
-					<h3 class="szp-eval-title"><?php echo esc_html( $title ); ?></h3>
-					<div class="szp-eval-legend"><?php echo self::legend_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
-				</div>
+			<div class="szp-eval2 szp-eval-board">
+				<div class="szp-ev2-top"><h3 class="szp-ev2-title"><?php echo esc_html( $title ); ?></h3></div>
+				<?php echo self::legend_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				<?php if ( ! $cards ) : ?>
 					<p class="szp-empty">هنوز هیچ کاربری تارگتی ثبت نکرده است.</p>
 				<?php else : ?>
-					<div class="szp-ev-grid">
+					<div class="szp-ev2-people">
 						<?php foreach ( $cards as $c ) :
 							$info = $c['info'];
 							$sum  = $c['sum'];
@@ -797,27 +961,22 @@ class SZP_Eval {
 							$st   = $lw ? self::compute_status( $lw->target, $lw->result, $lw->has_result ) : 'pending';
 							$meta = self::status_meta( $st );
 							?>
-							<div class="szp-ev-pcard">
-								<div class="szp-ev-pc-head">
-									<span class="szp-ev-pc-avatar"><?php echo get_avatar( $info['id'], 40 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
-									<span class="szp-ev-pc-id">
-										<span class="szp-ev-pc-name"><?php echo esc_html( $info['name'] ); ?></span>
-										<?php if ( $info['mobile'] !== '' ) : ?><span class="szp-ev-pc-mobile"><?php echo esc_html( szp_fa_digits( $info['mobile'] ) ); ?></span><?php endif; ?>
+							<div class="szp-ev2-person szp-ev2-person-static">
+								<div class="szp-ev2-person-sum">
+									<span class="szp-ev2-person-av"><?php echo get_avatar( $info['id'], 38 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+									<span class="szp-ev2-person-id">
+										<span class="szp-ev2-person-name"><?php echo esc_html( $info['name'] ); ?></span>
+										<span class="szp-ev2-person-meta">میانگین <?php echo esc_html( szp_fa_digits( $sum['avg'] ) ); ?>٪ · <?php echo esc_html( szp_fa_digits( $sum['hit'] ) ); ?> محقق</span>
 									</span>
-									<span class="szp-ev-badge" style="--c:<?php echo esc_attr( $meta['color'] ); ?>"><?php echo esc_html( $meta['emoji'] . ' ' . $meta['label'] ); ?></span>
+									<span class="szp-ev2-statusbadge sm" style="--c:<?php echo esc_attr( $meta['color'] ); ?>"><?php echo esc_html( $meta['emoji'] . ' ' . $meta['label'] ); ?></span>
 								</div>
-								<div class="szp-ev-pc-body">
-									<?php if ( $lw ) : ?>
-										<div class="szp-ev-pc-row"><span>هفته جاری</span><b>هفته <?php echo esc_html( szp_fa_digits( $lw->week_no ) ); ?></b></div>
-										<div class="szp-ev-pc-row"><span>تارگت</span><b><?php echo esc_html( szp_money( $lw->target, $currency ) ); ?></b></div>
-										<div class="szp-ev-pc-row"><span>نتیجه</span><b><?php echo $lw->has_result ? esc_html( szp_money( $lw->result, $currency ) ) : '—'; ?></b></div>
-									<?php endif; ?>
-								</div>
-								<div class="szp-ev-pc-foot">
-									<span><?php echo esc_html( szp_fa_digits( $sum['weeks'] ) ); ?> هفته</span>
-									<span><?php echo esc_html( szp_fa_digits( $sum['hit'] ) ); ?> محقق</span>
-									<span>میانگین <?php echo esc_html( szp_fa_digits( $sum['avg'] ) ); ?>٪</span>
-								</div>
+								<?php if ( $lw ) : ?>
+									<div class="szp-ev2-person-latest">
+										<span><?php echo esc_html( self::session_label( $lw->week_no ) ); ?></span>
+										<span>تارگت: <b><?php echo esc_html( szp_money( $lw->target, $currency ) ); ?></b></span>
+										<span>نتیجه: <b><?php echo $lw->has_result ? esc_html( szp_money( $lw->result, $currency ) ) : '—'; ?></b></span>
+									</div>
+								<?php endif; ?>
 							</div>
 						<?php endforeach; ?>
 					</div>
@@ -828,10 +987,7 @@ class SZP_Eval {
 		return ob_get_clean();
 	}
 
-	/**
-	 * دفتر کامل: همه‌ی اشخاصِ دارای تارگت، به‌همراه ریز تمام هفته‌ها (تارگت + نتیجه + وضعیت) یکجا.
-	 * $atts: title، currency، group (فیلتر گروه).
-	 */
+	/** دفتر کامل: همه‌ی افراد + ریز همه‌ی جلسات. */
 	public static function board_full( $atts = array() ) {
 		if ( ! self::can_view_board( isset( $atts['viewers'] ) ? (string) $atts['viewers'] : '' ) ) {
 			return '<div class="szp"><div class="szp-empty">شما به دفتر ارزیابی دسترسی ندارید.</div></div>';
@@ -840,27 +996,14 @@ class SZP_Eval {
 		$currency = ( isset( $atts['currency'] ) && $atts['currency'] !== '' ) ? (string) $atts['currency'] : self::currency();
 		$group    = isset( $atts['group'] ) ? absint( $atts['group'] ) : 0;
 
-		$ids = self::participants();
-		if ( $group && class_exists( 'SZP_Groups' ) ) {
-			$members = array_flip( SZP_Groups::members( $group ) );
-			$ids     = array_values( array_filter( $ids, function ( $id ) use ( $members ) {
-				return isset( $members[ $id ] );
-			} ) );
-		}
-
-		// جمع‌آوری + مرتب‌سازی بر اساس میانگین تحقق (نزولی).
-		$people    = array();
-		$tot_weeks = 0;
-		$tot_hit   = 0;
+		$ids    = self::board_people_ids( $group );
+		$people = array();
 		foreach ( $ids as $id ) {
 			$info = SZP_Groups::user_info( $id );
 			if ( ! $info ) {
 				continue;
 			}
-			$sum        = self::user_summary( $id );
-			$people[]   = array( 'info' => $info, 'weeks' => self::weeks( $id ), 'sum' => $sum );
-			$tot_weeks += $sum['weeks'];
-			$tot_hit   += $sum['hit'];
+			$people[] = array( 'info' => $info, 'weeks' => self::weeks( $id ), 'sum' => self::user_summary( $id ) );
 		}
 		usort( $people, function ( $a, $b ) {
 			return $b['sum']['avg'] <=> $a['sum']['avg'];
@@ -868,70 +1011,29 @@ class SZP_Eval {
 
 		ob_start(); ?>
 		<div class="szp">
-			<div class="szp-eval szp-eval-ledger">
-				<div class="szp-eval-head">
-					<h3 class="szp-eval-title"><?php echo esc_html( $title ); ?></h3>
-					<div class="szp-eval-legend"><?php echo self::legend_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
-				</div>
-
+			<div class="szp-eval2 szp-eval-ledger">
+				<div class="szp-ev2-top"><h3 class="szp-ev2-title"><?php echo esc_html( $title ); ?></h3></div>
+				<?php echo self::legend_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				<?php if ( ! $people ) : ?>
 					<p class="szp-empty">هنوز هیچ کاربری تارگتی ثبت نکرده است.</p>
 				<?php else : ?>
-					<div class="szp-eval-summary">
-						<div class="szp-ev-stat"><span class="szp-ev-stat-n"><?php echo esc_html( szp_fa_digits( count( $people ) ) ); ?></span><span class="szp-ev-stat-l">شخص</span></div>
-						<div class="szp-ev-stat"><span class="szp-ev-stat-n"><?php echo esc_html( szp_fa_digits( $tot_weeks ) ); ?></span><span class="szp-ev-stat-l">هفته ثبت‌شده</span></div>
-						<div class="szp-ev-stat"><span class="szp-ev-stat-n"><?php echo esc_html( szp_fa_digits( $tot_hit ) ); ?></span><span class="szp-ev-stat-l">تارگت محقق‌شده</span></div>
+					<div class="szp-ev2-people">
+						<?php foreach ( $people as $p ) :
+							$info = $p['info'];
+							$sum  = $p['sum'];
+							?>
+							<details class="szp-ev2-person" open>
+								<summary class="szp-ev2-person-sum">
+									<span class="szp-ev2-person-av"><?php echo get_avatar( $info['id'], 38 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+									<span class="szp-ev2-person-id">
+										<span class="szp-ev2-person-name"><?php echo esc_html( $info['name'] ); ?></span>
+										<span class="szp-ev2-person-meta"><?php echo esc_html( szp_fa_digits( $sum['weeks'] ) ); ?> جلسه · میانگین <?php echo esc_html( szp_fa_digits( $sum['avg'] ) ); ?>٪</span>
+									</span>
+								</summary>
+								<div class="szp-ev2-person-body"><?php echo self::history_html( $p['weeks'], $currency, false ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+							</details>
+						<?php endforeach; ?>
 					</div>
-
-					<?php foreach ( $people as $p ) :
-						$info = $p['info'];
-						$sum  = $p['sum'];
-						$list = array_reverse( $p['weeks'] ); // جدیدترین بالا
-						?>
-						<div class="szp-ev-person">
-							<div class="szp-ev-person-head">
-								<span class="szp-ev-pc-avatar"><?php echo get_avatar( $info['id'], 40 ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
-								<span class="szp-ev-pc-id">
-									<span class="szp-ev-pc-name"><?php echo esc_html( $info['name'] ); ?></span>
-									<?php if ( $info['mobile'] !== '' ) : ?><span class="szp-ev-pc-mobile"><?php echo esc_html( szp_fa_digits( $info['mobile'] ) ); ?></span><?php endif; ?>
-								</span>
-								<span class="szp-ev-person-stats">
-									<span><?php echo esc_html( szp_fa_digits( $sum['weeks'] ) ); ?> هفته</span>
-									<span><?php echo esc_html( szp_fa_digits( $sum['hit'] ) ); ?> محقق</span>
-									<span>میانگین <?php echo esc_html( szp_fa_digits( $sum['avg'] ) ); ?>٪</span>
-								</span>
-							</div>
-							<?php if ( ! $list ) : ?>
-								<p class="szp-empty">بدون هفته‌ی ثبت‌شده.</p>
-							<?php else : ?>
-							<div class="szp-ev-table-wrap">
-								<table class="szp-ev-table">
-									<thead><tr>
-										<th>هفته</th><th>تارگت</th><th>نتیجه</th><th>تحقق</th><th>وضعیت</th><th>تاریخ ثبت</th><th>یادداشت</th>
-									</tr></thead>
-									<tbody>
-									<?php foreach ( $list as $w ) :
-										$st   = self::compute_status( $w->target, $w->result, $w->has_result );
-										$meta = self::status_meta( $st );
-										$pct  = $w->has_result ? self::pct( $w->target, $w->result ) : 0;
-										$date = $w->has_result ? self::jalali_or_dash( $w->result_set_at ) : self::jalali_or_dash( $w->target_set_at );
-										?>
-										<tr>
-											<td data-th="هفته"><span class="szp-ev-week-badge sm">هفته <?php echo esc_html( szp_fa_digits( $w->week_no ) ); ?></span></td>
-											<td data-th="تارگت"><?php echo esc_html( szp_money( $w->target, $currency ) ); ?></td>
-											<td data-th="نتیجه"><?php echo $w->has_result ? esc_html( szp_money( $w->result, $currency ) ) : '—'; ?></td>
-											<td data-th="تحقق"><?php echo $w->has_result ? esc_html( szp_fa_digits( $pct ) . '٪' ) : '—'; ?></td>
-											<td data-th="وضعیت"><span class="szp-ev-badge" style="--c:<?php echo esc_attr( $meta['color'] ); ?>"><?php echo esc_html( $meta['emoji'] . ' ' . $meta['label'] ); ?></span></td>
-											<td data-th="تاریخ ثبت" class="szp-ev-date"><?php echo esc_html( $date ); ?></td>
-											<td data-th="یادداشت" class="szp-ev-notecell"><?php echo ! empty( $w->note ) ? esc_html( $w->note ) : '—'; ?></td>
-										</tr>
-									<?php endforeach; ?>
-									</tbody>
-								</table>
-							</div>
-							<?php endif; ?>
-						</div>
-					<?php endforeach; ?>
 				<?php endif; ?>
 			</div>
 		</div>

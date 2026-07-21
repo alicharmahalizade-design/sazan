@@ -8,6 +8,9 @@ class SZP_Install {
 	public static function activate() {
 		self::create_tables();
 		SZP_CPT::register();
+		if ( class_exists( 'SZP_Eval_Roles' ) ) {
+			SZP_Eval_Roles::ensure_roles();
+		}
 		flush_rewrite_rules();
 		update_option( 'szp_db_version', self::DB_VERSION );
 	}

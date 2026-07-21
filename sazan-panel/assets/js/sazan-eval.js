@@ -41,32 +41,42 @@
 		var currency = root.getAttribute('data-currency') || '';
 		var near = parseFloat(root.getAttribute('data-near')) || 0.85;
 
-		if (root.getAttribute('data-can-edit') === '1') {
-			initEditField(root, currency, {
-				btn: 'szp-ev-edit-target', cell: 'szp-ev-targetcell', val: 'szp-ev-target-val',
-				attr: 'data-target', action: 'szp_eval_edit_target', allowZero: false, label: 'تارگت'
-			});
-		}
-		if (root.getAttribute('data-can-edit-result') === '1') {
-			initEditField(root, currency, {
-				btn: 'szp-ev-edit-result', cell: 'szp-ev-resultcell', val: 'szp-ev-result-val',
-				attr: 'data-result', action: 'szp_eval_edit_result', allowZero: true, label: 'نتیجه'
-			});
-		}
+		// دکمه‌های ویرایش درجای تارگت/نتیجه (کارت مرحله‌ای + سوابق).
+		initEditField(root, currency, {
+			btn: 'szp-ev-edit-target', cell: 'szp-ev-targetcell', val: 'szp-ev-target-val',
+			attr: 'data-target', action: 'szp_eval_edit_target', allowZero: false, label: 'تارگت'
+		});
+		initEditField(root, currency, {
+			btn: 'szp-ev-edit-result', cell: 'szp-ev-resultcell', val: 'szp-ev-result-val',
+			attr: 'data-result', action: 'szp_eval_edit_result', allowZero: true, label: 'نتیجه'
+		});
 
-		var form = root.querySelector('.szp-ev-form');
-		if (!form) return;
+		// فرمِ فعالِ ثبت (تارگت یا نتیجه) — همیشه یکی در کارت است.
+		root.querySelectorAll('.szp-ev-form').forEach(function (form) {
+			initForm(form, currency, near);
+		});
+	}
+
+	function initForm(form, currency, near) {
 		var mode = form.getAttribute('data-mode');
+		var session = form.getAttribute('data-session') || '';
 		var target = parseFloat(form.getAttribute('data-target')) || 0;
 		var input = form.querySelector('.szp-ev-amount');
 		var btn = form.querySelector('.szp-ev-submit');
 		var preview = form.querySelector('.szp-ev-preview');
 		var msg = form.querySelector('.szp-ev-msg');
 		var noteEl = form.querySelector('.szp-ev-note');
+		if (!input || !btn) return;
+
+		function showMsg(text, kind) {
+			if (!msg) return;
+			msg.textContent = text;
+			msg.className = 'szp-ev-msg is-show' + (kind ? ' is-' + kind : '');
+		}
 
 		function renderPreview() {
 			var val = toNumber(input.value);
-			if (!val) { preview.textContent = ''; preview.removeAttribute('style'); return; }
+			if (!val) { preview.textContent = ''; preview.className = 'szp-ev-preview'; return; }
 			if (mode === 'result' && target > 0) {
 				var pct = Math.round(val / target * 100);
 				var st = STATUS[computeStatus(target, val, near)];
@@ -85,38 +95,33 @@
 		btn.addEventListener('click', function () {
 			if (btn.disabled) return;
 			var val = toNumber(input.value);
-			if (!val || val <= 0) { showMsg('یک عدد معتبر وارد کنید.', 'err'); return; }
-			if (mode === 'result' && val > target * 3) {
+			if (!val || val <= 0) { showMsg('یک عدد معتبر وارد کنید.', 'err'); input.focus(); return; }
+			if (mode === 'result' && target > 0 && val > target * 3) {
 				if (!confirm('نتیجه‌ای که وارد کردید چند برابر تارگت است. مطمئنید؟')) return;
 			}
 			btn.disabled = true;
 			showMsg('در حال ثبت…', '');
 			var d = new FormData();
 			d.append('amount', String(val));
+			d.append('session', session);
 			if (mode === 'result' && noteEl) d.append('note', noteEl.value);
 			ajax(mode === 'result' ? 'szp_eval_result' : 'szp_eval_target', d, function (res) {
 				if (res && res.success) {
 					showMsg((res.data && res.data.msg) || 'ثبت شد ✓', 'ok');
-					setTimeout(function () { window.location.reload(); }, 700);
+					setTimeout(function () { window.location.reload(); }, 800);
 				} else {
 					btn.disabled = false;
 					showMsg((res && res.data && res.data.msg) || 'خطا در ثبت.', 'err');
 				}
 			});
 		});
-
-		function showMsg(text, kind) {
-			if (!msg) return;
-			msg.textContent = text;
-			msg.className = 'szp-ev-msg is-show' + (kind ? ' is-' + kind : '');
-		}
 	}
 
-	/* ویرایش درجای تارگت/نتیجه‌ی هفته‌های ثبت‌شده در جدول تاریخچه */
+	/* ویرایش درجای تارگت/نتیجه‌ی جلسات ثبت‌شده */
 	function initEditField(root, currency, cfg) {
 		root.querySelectorAll('.' + cfg.btn).forEach(function (btn) {
 			btn.addEventListener('click', function () {
-				var cell = btn.closest('.' + cfg.cell);
+				var cell = btn.closest('.' + cfg.cell) || btn.parentNode;
 				if (!cell || cell.querySelector('.szp-ev-edit-box')) return;
 
 				var week = btn.getAttribute('data-week');
@@ -204,7 +209,7 @@
 		});
 	}
 
-	function init() { document.querySelectorAll('.szp-eval').forEach(initEval); }
+	function init() { document.querySelectorAll('.szp-eval2').forEach(initEval); }
 	if (document.readyState !== 'loading') init();
 	else document.addEventListener('DOMContentLoaded', init);
 })();
