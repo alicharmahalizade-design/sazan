@@ -49,7 +49,7 @@ class SZP_Render {
 		}
 		ob_start(); ?>
 		<section class="szp-sec">
-			<h3 class="szp-sec-h">📘 اطلاعات و شناسنامه دوره</h3>
+			<h3 class="szp-sec-h">اطلاعات و شناسنامه دوره</h3>
 			<?php if ( trim( $course->post_content ) !== '' ) : ?>
 				<div class="szp-rich"><?php echo wp_kses_post( apply_filters( 'the_content', $course->post_content ) ); ?></div>
 			<?php endif; ?>
@@ -82,7 +82,7 @@ class SZP_Render {
 		$now      = time();
 		ob_start(); ?>
 		<section class="szp-sec szp-sec-schedule">
-			<h3 class="szp-sec-h">🗓 زمان‌بندی جلسات</h3>
+			<h3 class="szp-sec-h">زمان‌بندی جلسات</h3>
 			<?php if ( $ordered ) : ?><p class="szp-sched-hint">برای دیدن هر جلسه، روی آن بزنید.</p><?php endif; ?>
 
 			<div class="szp-sched-classic">
@@ -148,7 +148,7 @@ class SZP_Render {
 		}
 		ob_start(); ?>
 		<section class="szp-sec">
-			<h3 class="szp-sec-h">📢 تابلو اعلانات کلاس</h3>
+			<h3 class="szp-sec-h">تابلو اعلانات کلاس</h3>
 			<ul class="szp-announce">
 				<?php foreach ( $ann['text'] as $i => $t ) :
 					if ( $t === '' ) {
@@ -173,7 +173,7 @@ class SZP_Render {
 		}
 		ob_start(); ?>
 		<section class="szp-sec">
-			<h3 class="szp-sec-h">📁 فولدر فایل‌ها و منابع تکمیلی</h3>
+			<h3 class="szp-sec-h">فولدر فایل‌ها و منابع تکمیلی</h3>
 			<div class="szp-files">
 				<?php foreach ( $files as $fid ) :
 					$url = wp_get_attachment_url( $fid );
@@ -214,7 +214,7 @@ class SZP_Render {
 		}
 		ob_start(); ?>
 		<section class="szp-sec">
-			<h3 class="szp-sec-h">🧰 میز کار تمرین‌ها</h3>
+			<h3 class="szp-sec-h">میز کار تمرین‌ها</h3>
 			<table class="szp-table">
 				<thead><tr><th>جلسه</th><th>ددلاین</th><th>وضعیت</th></tr></thead>
 				<tbody>
@@ -258,7 +258,7 @@ class SZP_Render {
 		}
 		ob_start(); ?>
 		<section class="szp-sec">
-			<h3 class="szp-sec-h">👥 پنل گروه من</h3>
+			<h3 class="szp-sec-h">پنل گروه من</h3>
 			<div class="szp-mates">
 				<?php foreach ( $mates as $m ) :
 					$u = get_userdata( $m );
@@ -278,7 +278,7 @@ class SZP_Render {
 			return '';
 		}
 		$ans = SZP_Data::get_survey( 'course', $course_id, $user_id );
-		return self::survey_form( 'course', $course_id, $questions, $ans, '⭐ نظرسنجی‌های دوره' );
+		return self::survey_form( 'course', $course_id, $questions, $ans, 'نظرسنجی‌های دوره' );
 	}
 
 	/* ==================== SESSION ==================== */
@@ -315,7 +315,7 @@ class SZP_Render {
 		$skeys = array_filter( (array) get_post_meta( $session_id, '_szp_skeys', true ), 'strlen' );
 		ob_start(); ?>
 		<section class="szp-sec">
-			<h3 class="szp-sec-h">📋 شناسنامه جلسه</h3>
+			<h3 class="szp-sec-h">شناسنامه جلسه</h3>
 			<?php if ( trim( $s->post_content ) !== '' ) : ?>
 				<div class="szp-rich"><?php echo wp_kses_post( apply_filters( 'the_content', $s->post_content ) ); ?></div>
 			<?php endif; ?>
@@ -391,7 +391,7 @@ class SZP_Render {
 		}
 		ob_start(); ?>
 		<section class="szp-sec">
-			<h3 class="szp-sec-h">🎒 توشه دیجیتال جلسه</h3>
+			<h3 class="szp-sec-h">توشه دیجیتال جلسه</h3>
 
 			<?php if ( $audio_list ) : ?>
 				<div class="szp-audio-parts-front<?php echo count( $audio_list ) > 1 ? ' szp-multi' : ''; ?>">
@@ -440,7 +440,7 @@ class SZP_Render {
 		$sub = ( $task !== '' ) ? SZP_Data::get_submission( $session_id, $user_id ) : null;
 		ob_start(); ?>
 		<section class="szp-sec">
-			<h3 class="szp-sec-h">✍️ تکلیف اختصاصی جلسه</h3>
+			<h3 class="szp-sec-h">تکلیف اختصاصی جلسه</h3>
 
 			<?php if ( $quiz_ok ) : ?>
 				<div class="szp-quiz-box">
@@ -482,7 +482,7 @@ class SZP_Render {
 		$ck_state = SZP_Data::get_checklist( $session_id, $user_id );
 		ob_start(); ?>
 		<section class="szp-sec">
-			<h3 class="szp-sec-h">✅ چک‌لیست جلسه</h3>
+			<h3 class="szp-sec-h">چک‌لیست جلسه</h3>
 			<ul class="szp-check">
 				<?php $ci = 0; foreach ( $check as $c ) :
 					$done = ! empty( $ck_state[ $ci ] ); ?>
@@ -505,7 +505,7 @@ class SZP_Render {
 			return '';
 		}
 		$ans = SZP_Data::get_survey( 'session', $session_id, $user_id );
-		return self::survey_form( 'session', $session_id, $questions, $ans, '⭐ نظرسنجی بازخورد سریع' );
+		return self::survey_form( 'session', $session_id, $questions, $ans, 'نظرسنجی بازخورد سریع' );
 	}
 
 	/* ==================== shared ==================== */
