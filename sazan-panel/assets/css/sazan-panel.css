@@ -533,3 +533,100 @@
 .szp[data-szp-theme="light"] .szp-hero::before { background: radial-gradient(closest-side, rgba(247,148,29,.16), transparent 70%); }
 
 .szp[data-szp-theme="light"] .szp-textarea { background: rgba(0,0,20,.04); }
+
+/* ============================================================================
+   بازطراحی موبایل‌اول و خوانا برای کاربران سالمند/غیرفنی
+   (افزودنی و روی استایل‌های بالا؛ خوانایی، هدف لمسی بزرگ، سادگی و روانی)
+   ========================================================================== */
+.szp { font-size: 16.5px; line-height: 1.85; }
+.szp-course, .szp-session { -webkit-tap-highlight-color: transparent; }
+
+/* دکمه‌ی بازگشت: بزرگ، حبابی و کاملاً واضح */
+.szp-back {
+	display: inline-flex; align-items: center; gap: 8px;
+	min-height: 48px; padding: 0 20px; margin-bottom: 18px;
+	border-radius: 30px; background: var(--szp-glass-2);
+	border: 1px solid var(--szp-border); font-size: 15.5px; font-weight: 800;
+}
+.szp-back:hover { gap: 10px; background: rgba(0,182,241,.12); }
+
+/* بخش‌ها: فاصله‌ی بیشتر، گوشه‌های نرم‌تر، سربرگ بزرگ‌تر */
+.szp-sec { padding: 20px 20px; border-radius: 22px; margin-bottom: 16px; }
+.szp-sec-h { font-size: 19px; margin-bottom: 16px; }
+.szp-sec-h::before { width: 6px; height: 24px; }
+
+/* متن‌ها: کنتراست و اندازه‌ی بیشتر برای چشمِ سالمند */
+.szp-rich { color: #e0ebf3; font-size: 16.5px; line-height: 2.05; }
+.szp-rich p { margin: 0 0 12px; }
+.szp-text { color: #c6d3dd; font-size: 16px; line-height: 2; }
+.szp-list > li { font-size: 16.5px; margin: 10px 0; line-height: 1.9; }
+.szp-sublist li { font-size: 15px; }
+.szp h4 { font-size: 16px; margin-top: 16px; }
+
+/* عنوان دوره/جلسه */
+.szp-hero { padding: 26px 24px; border-radius: 24px; }
+.szp-hero h2 { font-size: 23px; line-height: 1.5; }
+.szp-hero-sub { font-size: 15.5px; }
+@media (min-width: 700px) { .szp-hero h2 { font-size: 28px; } }
+
+/* راهنمای کوتاه زیر سربرگ زمان‌بندی جلسات */
+.szp-sched-hint { margin: -8px 0 14px; color: var(--szp-muted); font-size: 14px; }
+
+/* ---- کارت‌های «زمان‌بندی جلسات»: هدف لمسی بزرگ + نشانه‌ی «باز کردن» ---- */
+.szp-poster-title { font-size: 16px; }
+.szp-poster.szp-poster-nobg { min-height: 62px; }
+.szp-poster.szp-poster-nobg .szp-poster-body {
+	flex-direction: row; align-items: center; padding: 14px 44px 14px 16px; gap: 8px;
+}
+.szp-poster.szp-poster-nobg .szp-poster-title { font-size: 16px; font-weight: 800; }
+/* فلش راهنما که یعنی «برای ورود بزن» */
+.szp-poster.szp-poster-nobg::after {
+	content: "‹"; position: absolute; inset-inline-start: 16px; top: 50%;
+	transform: translateY(-50%); color: var(--szp-primary); font-size: 24px; font-weight: 900; opacity: .85;
+}
+.szp-poster.szp-poster-nobg:hover::after { inset-inline-start: 12px; }
+
+/* روی موبایل: جلسات تک‌ستونی و بزرگ برای لمس راحت */
+@media (max-width: 600px) {
+	.szp-posters { grid-template-columns: 1fr; gap: 12px; }
+	.szp-poster.szp-poster-nobg { min-height: 58px; }
+}
+
+/* فایل‌ها و منابع: دکمه‌های بزرگ و قابل‌لمس */
+.szp-file { min-height: 54px; font-size: 15.5px; border-radius: 14px; padding: 12px 16px; }
+.szp-file-ic { font-size: 20px; }
+
+/* پخش‌کننده صوت: دکمه‌ی پخش بزرگ‌تر */
+.szp-ap-play { min-width: 54px; min-height: 54px; }
+
+/* دکمه‌ها: بزرگ و واضح */
+.szp-btn { min-height: 52px; font-size: 16.5px; padding: 0 24px; border-radius: 14px; }
+.szp-quiz-btn, .szp-task-form .szp-btn { width: 100%; justify-content: center; }
+
+/* تکلیف: ورودی بزرگ‌تر */
+.szp-textarea { font-size: 16.5px; min-height: 130px; line-height: 1.9; }
+.szp-file-label { font-size: 14.5px; }
+
+/* چک‌لیست: هدف لمسی درشت */
+.szp-check li { padding: 4px 0; }
+.szp-check label { font-size: 16.5px; padding: 10px 0; gap: 12px; }
+.szp-check-item { width: 26px; height: 26px; }
+.szp-check-item:checked::after { font-size: 16px; }
+
+/* ستاره‌های نظرسنجی: بزرگ و انگشتی */
+.szp-q-text { font-size: 16.5px; margin-bottom: 12px; }
+.szp-stars { gap: 10px; }
+.szp-star { min-width: 52px; min-height: 52px; font-size: 17px; }
+
+/* کارت جلسه‌ی بعدی */
+.szp-next { border-radius: 20px; }
+.szp-next-title { font-size: 17px; }
+
+/* عناصر پنل روی موبایل: فاصله‌ی بیشتر و اسکرول روان‌تر */
+@media (max-width: 600px) {
+	.szp { font-size: 16px; }
+	.szp-course-grid, .szp-session-grid { gap: 14px; }
+	.szp-sec { padding: 18px 16px; }
+	.szp-hero { padding: 22px 18px; }
+	.szp-hero h2 { font-size: 21px; }
+}
