@@ -37,7 +37,9 @@ class SZP_Eval {
 			'near'               => 85,
 			'day_target'         => 2,
 			'day_result'         => 1,
-			'session1_date'      => '', // تاریخ میلادی سه‌شنبه‌ی «جلسه ۱» (Y-m-d)
+			'session1_date'      => '', // (قدیمی) تاریخ میلادی سه‌شنبه‌ی «جلسه ۱»
+			'anchor_session'     => 0,  // «الان جلسه چند هستیم»
+			'anchor_date'        => '', // تاریخ میلادیِ همان جلسه (یک سه‌شنبه، Y-m-d)
 			'coaching_users'     => '', // کاربران نقش کوچینگ (نام‌کاربری/ایمیل/شناسه)
 			'sms_enabled'        => 0,
 			'sms_provider'       => 'smsir',
@@ -91,12 +93,8 @@ class SZP_Eval {
 
 	/* ==================== تقویم جلسات (سراسری، سه‌شنبه‌ها) ==================== */
 
-	/** تاریخ میلادیِ «جلسه ۱» به‌صورت Y-m-d. اگر تنظیم نشده باشد، نزدیک‌ترین سه‌شنبه‌ی گذشته. */
-	public static function session1_date() {
-		$d = trim( (string) self::opt( 'session1_date' ) );
-		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $d ) ) {
-			return $d;
-		}
+	/** نزدیک‌ترین سه‌شنبه (امروز یا قبل‌تر) به‌صورت Y-m-d. */
+	protected static function nearest_tuesday_ymd() {
 		$now  = new DateTime( 'now', wp_timezone() );
 		$dow  = (int) $now->format( 'N' ); // دوشنبه=۱ … سه‌شنبه=۲
 		$back = ( $dow - self::DAY_TARGET + 7 ) % 7;
@@ -106,11 +104,34 @@ class SZP_Eval {
 		return $now->format( 'Y-m-d' );
 	}
 
+	/**
+	 * لنگرِ تقویم جلسات: array( شماره‌ی جلسه، تاریخ میلادی آن جلسه Y-m-d ).
+	 * ادمین می‌گوید «الان جلسه چند هستیم» و «تاریخِ همین جلسه»؛ بقیه از روی همین محاسبه می‌شود.
+	 */
+	public static function anchor() {
+		$no = (int) self::opt( 'anchor_session' );
+		$d  = trim( (string) self::opt( 'anchor_date' ) );
+		if ( $no >= 1 && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $d ) ) {
+			return array( $no, $d );
+		}
+		// سازگاری با تنظیم قدیمیِ «تاریخ جلسه ۱».
+		$s1 = trim( (string) self::opt( 'session1_date' ) );
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $s1 ) ) {
+			return array( 1, $s1 );
+		}
+		return array( 1, self::nearest_tuesday_ymd() );
+	}
+
+	/** تاریخ میلادیِ «جلسه ۱» به‌صورت Y-m-d (از روی لنگر). */
+	public static function session1_date() {
+		return self::session_date( 1 )->format( 'Y-m-d' );
+	}
+
 	/** DateTime تاریخِ جلسه N (ظهرِ همان روز، برای مصونیت از تغییر ساعت). */
 	public static function session_date( $n ) {
-		$n   = (int) $n;
-		$dt  = new DateTime( self::session1_date() . ' 12:00:00', wp_timezone() );
-		$off = 7 * ( $n - 1 );
+		list( $ano, $ad ) = self::anchor();
+		$dt  = new DateTime( $ad . ' 12:00:00', wp_timezone() );
+		$off = 7 * ( (int) $n - $ano );
 		if ( $off > 0 ) {
 			$dt->modify( '+' . $off . ' days' );
 		} elseif ( $off < 0 ) {

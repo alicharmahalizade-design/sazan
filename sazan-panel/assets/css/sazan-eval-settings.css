@@ -1,0 +1,81 @@
+/* ===== سازان: تنظیمات ارزیابی (بازطراحی) ===== */
+.szp-set{
+	--sp:#6d28d9;--sp2:#0ea5e9;
+	--bg:#f6f7fb;--card:#fff;--line:#e6e9f0;--text:#1e2430;--text2:#697386;--soft:#f2f4f9;--shadow:0 8px 30px rgba(30,40,80,.08);
+	direction:rtl;color:var(--text);max-width:1000px;margin:14px 0
+}
+@media (prefers-color-scheme:dark){
+	.szp-set{--bg:#161a22;--card:#1f2430;--line:#333b49;--text:#e8edf4;--text2:#9aa5b4;--soft:#232936;--shadow:0 8px 30px rgba(0,0,0,.4)}
+}
+.szp-set *{box-sizing:border-box}
+
+/* هدر */
+.szp-set-hero{background:linear-gradient(120deg,var(--sp),var(--sp2));border-radius:20px;padding:22px 24px;color:#fff;box-shadow:var(--shadow)}
+.szp-set-hero h1{margin:0 0 6px;font-size:23px;font-weight:800;color:#fff;padding:0}
+.szp-set-hero p{margin:0;font-size:13.5px;opacity:.92;line-height:1.8}
+.szp-set-badge{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:8px 14px;font-size:13.5px;font-weight:700}
+
+/* تب‌ها */
+.szp-set-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 16px}
+.szp-set-tab{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1.5px solid var(--line);border-radius:13px;padding:10px 16px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s}
+.szp-set-tab:hover{color:var(--text);border-color:var(--sp)}
+.szp-set-tab.active{background:var(--sp);border-color:var(--sp);color:#fff;box-shadow:0 6px 18px rgba(109,40,217,.28)}
+
+/* پنل‌ها */
+.szp-set-panel{display:none}
+.szp-set-panel.active{display:block;animation:szpFade .2s ease}
+@keyframes szpFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.szp-set-card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px 22px;margin-bottom:16px}
+.szp-set-card h2{margin:0 0 4px;font-size:16.5px;font-weight:800;color:var(--text);padding:0;display:flex;align-items:center;gap:8px}
+.szp-set-card .szp-set-sub{margin:0 0 16px;font-size:12.5px;color:var(--text2);line-height:1.8}
+
+/* فیلد */
+.szp-f{padding:14px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:start}
+.szp-f:first-of-type{border-top:0;padding-top:2px}
+.szp-f-lbl{font-size:14px;font-weight:700;color:var(--text);padding-top:8px}
+.szp-f-lbl .req{color:#e11d48}
+.szp-f-ctrl{min-width:0}
+.szp-f-hint{margin:7px 0 0;font-size:12px;color:var(--text2);line-height:1.85}
+.szp-f-hint code{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:11.5px;direction:ltr;display:inline-block}
+
+.szp-set input[type=text],.szp-set input[type=url],.szp-set input[type=number],.szp-set select,.szp-set textarea{
+	width:100%;max-width:440px;min-height:44px;border:1.5px solid var(--line);border-radius:11px;background:var(--bg);color:var(--text);padding:0 13px;font-size:14px;font-family:inherit
+}
+.szp-set textarea{padding:10px 13px;min-height:64px;resize:vertical;line-height:1.8}
+.szp-set input:focus,.szp-set select:focus,.szp-set textarea:focus{outline:none;border-color:var(--sp);box-shadow:0 0 0 3px rgba(109,40,217,.12)}
+.szp-set input.small{max-width:130px;text-align:center;font-weight:700;font-size:16px}
+.szp-set-inline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.szp-set-suffix{font-size:13px;color:var(--text2);font-weight:700}
+
+/* سوییچ */
+.szp-switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text)}
+.szp-switch input{position:absolute;opacity:0;pointer-events:none}
+.szp-switch .track{width:46px;height:26px;border-radius:999px;background:#c7ccd8;position:relative;transition:background .2s;flex:0 0 auto}
+.szp-switch .track::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.szp-switch input:checked+.track{background:#16a34a}
+.szp-switch input:checked+.track::after{transform:translateX(-20px)}
+@media (prefers-color-scheme:dark){.szp-switch .track{background:#4b5563}}
+
+/* کارت تاریخ شمسی */
+.szp-set-datehint{margin-top:8px;background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:10px 13px;font-size:12.5px;color:var(--text2);line-height:1.9}
+.szp-set-datehint b{color:var(--text)}
+
+/* فوتر ذخیره (چسبان) */
+.szp-set-save{position:sticky;bottom:0;z-index:5;margin-top:6px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 -6px 24px rgba(30,40,80,.10);padding:13px 18px;display:flex;align-items:center;gap:14px}
+.szp-set-save button{background:linear-gradient(120deg,var(--sp),var(--sp2));color:#fff;border:0;border-radius:12px;padding:0 26px;height:48px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit}
+.szp-set-save button:hover{filter:brightness(1.06)}
+.szp-set-save span{font-size:12.5px;color:var(--text2)}
+
+/* تست */
+.szp-set-test{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.szp-set-test input{max-width:220px}
+.szp-set-test .button{height:44px;border-radius:11px}
+.szp-ev-testmsg{font-weight:700;font-size:13px}
+
+.szp-set .notice{border-radius:12px}
+
+@media (max-width:782px){
+	.szp-f{grid-template-columns:1fr;gap:6px}
+	.szp-f-lbl{padding-top:0}
+}
