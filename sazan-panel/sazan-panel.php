@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان پنل (Sazan Panel)
  * Description: نمایش دوره‌ها و جلسات اختصاصی هر کاربر یا گروه در پنل کاربری از طریق شورت‌کد [sazan_panel].
- * Version: 1.20.0
+ * Version: 1.21.0
  * Author: Sazan
  * Text Domain: sazan-panel
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.20.0' );
+define( 'SZP_VERSION', '1.21.0' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -48,6 +48,7 @@ if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-metaboxes.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-groups-page.php';
+	require_once SZP_DIR . 'includes/admin/class-szp-roles-page.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-chat-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-ajax.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-reports.php';
@@ -99,6 +100,7 @@ function szp_init() {
 		SZP_Admin::init();
 		SZP_Metaboxes::init();
 		SZP_Groups_Page::init();
+		SZP_Roles_Page::init();
 		SZP_Chat_Admin::init();
 		SZP_Ajax::init();
 		SZP_Reports::init();
