@@ -1,0 +1,1131 @@
+/* ============================================================
+   استایل پایه‌ی ویجت‌های سازان
+   ============================================================ */
+.sazan-heading { display:block; }
+.sazan-heading__tag { margin:0; }
+.sazan-heading__title { display:inline-block; }
+.sazan-heading a { text-decoration:none; color:inherit; }
+
+/* ============================================================
+   هدر سازان (هلدینگ — سبز/طلایی)
+   ============================================================ */
+.sazan-header{ width:100%; direction:rtl; }
+.sazan-header *{ box-sizing:border-box; }
+
+.sazan-header__top-inner,
+.sazan-header__bottom-inner{
+	display:flex; align-items:center; justify-content:space-between;
+	margin:0 auto; width:100%;
+}
+
+/* لوگو (راست) */
+.sazan-header__logo{ display:inline-flex; align-items:center; text-decoration:none; }
+.sazan-header__logo img{ display:block; height:auto; }
+.sazan-header__logo-text{ font-weight:800; font-size:26px; color:#fff; }
+.sazan-header__logo-icon{ display:inline-flex; color:#1B90B2; }
+.sazan-header__logo-icon svg{ width:1em; height:1em; fill:currentColor; }
+
+/* تماس (چپ) */
+.sazan-header__contact{ display:inline-flex; align-items:center; gap:12px; }
+.sazan-header__c-texts{ display:flex; flex-direction:column; align-items:flex-end; line-height:1.6; text-align:right; }
+.sazan-header__c-label{ font-size:13px; color:#1B90B2; }
+.sazan-header__c-phone{ font-size:15px; color:#fff; text-decoration:none; direction:ltr; }
+.sazan-header__c-icon{ display:inline-flex; color:#1B90B2; }
+.sazan-header__c-icon svg{ width:1em; height:1em; fill:currentColor; }
+
+/* نوار پایین */
+.sazan-header__bottom{ width:100%; }
+.sazan-header__bottom-inner{ position:relative; }
+
+/* دکمه دسته‌بندی‌ها */
+.sazan-header__categories{ position:relative; }
+.sazan-header__cat-btn{
+	display:inline-flex; align-items:center; gap:10px; cursor:pointer; border:0; font:inherit;
+	background-color:#1B90B2; color:#fff; font-weight:700;
+	border-radius:50px; padding:6px 18px 6px 8px; transition:.2s ease;
+}
+.sazan-header__cat-icon{
+	display:inline-flex; align-items:center; justify-content:center;
+	width:32px; height:32px; border-radius:50%; background:#fff; color:#1B90B2; flex:0 0 auto;
+}
+.sazan-header__cat-icon svg{ width:1em; height:1em; fill:currentColor; }
+.sazan-header__cat-chev{ display:inline-flex; color:rgba(255,255,255,.85); }
+.sazan-header__cat-chev svg{ width:1em; height:1em; }
+
+.sazan-header__cat-dropdown{
+	position:absolute; top:calc(100% + 12px); right:0; min-width:240px;
+	background:#0f2735; border-radius:14px; padding:10px;
+	box-shadow:0 18px 44px -16px rgba(0,0,0,.7);
+	opacity:0; visibility:hidden; transform:translateY(8px);
+	transition:opacity .2s, transform .2s, visibility .2s; z-index:100;
+}
+.sazan-header__categories:hover .sazan-header__cat-dropdown,
+.sazan-header__categories.is-open .sazan-header__cat-dropdown{ opacity:1; visibility:visible; transform:translateY(0); }
+.sazan-header__cat-dropdown ul{ list-style:none; margin:0; padding:0; }
+.sazan-header__cat-dropdown a{ display:block; padding:9px 14px; border-radius:8px; text-decoration:none; color:#fff; transition:.18s; }
+.sazan-header__cat-dropdown a:hover{ color:#1B90B2; }
+.sazan-header__cat-dropdown .sub-menu{ padding-right:10px; }
+
+/* منوی اصلی */
+.sazan-header__nav{ flex:1 1 auto; min-width:0; display:flex; justify-content:center; }
+.sazan-header__nav > ul, .sazan-header__nav .sazan-menu{ list-style:none; margin:0; padding:0; display:flex; align-items:center; justify-content:center; gap:30px; flex-wrap:nowrap; }
+.sazan-header__nav li{ position:relative; }
+.sazan-header__nav > ul > li > a{ color:#fff; text-decoration:none; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; transition:color .2s; }
+/* فلش آیتم‌های دارای زیرمنو */
+.sazan-navchev-yes .sazan-header__nav .menu-item-has-children > a::after{
+	content:""; display:inline-block; width:6px; height:6px;
+	border-top:2px solid #fff; border-right:2px solid #fff; transform:rotate(-135deg); margin-top:-2px;
+}
+/* زیرمنو */
+.sazan-header__nav .sub-menu{
+	position:absolute; top:100%; right:0; min-width:210px; list-style:none; margin:0; padding:8px 0;
+	background:#0f2735; border-radius:10px; box-shadow:0 12px 32px rgba(0,0,0,.45);
+	opacity:0; visibility:hidden; transform:translateY(8px); transition:.2s; z-index:99;
+}
+.sazan-header__nav li:hover > .sub-menu{ opacity:1; visibility:visible; transform:translateY(0); }
+.sazan-header__nav .sub-menu a{ display:block; padding:8px 18px; color:#fff; text-decoration:none; }
+.sazan-header__nav .sub-menu a:hover{ color:#1B90B2; }
+.sazan-header__nav .sub-menu .sub-menu{ top:0; right:100%; }
+
+/* اکشن‌ها */
+.sazan-header__actions{ display:inline-flex; align-items:center; gap:14px; }
+.sazan-header__account{
+	display:inline-flex; align-items:center; gap:9px; text-decoration:none; color:#fff;
+	background:rgba(255,255,255,.06); border-radius:50px; padding:9px 18px; transition:.2s;
+}
+.sazan-header__account:hover{ background:rgba(255,255,255,.12); }
+.sazan-header__acc-icon{ display:inline-flex; }
+.sazan-header__acc-icon svg{ width:1em; height:1em; fill:currentColor; }
+
+.sazan-header__cart{
+	position:relative; display:inline-flex; align-items:center; justify-content:center;
+	width:52px; height:52px; border-radius:50%; text-decoration:none;
+	background-color:#1B90B2; flex:0 0 auto;
+}
+.sazan-header__cart-icon{ display:inline-flex; color:#0c1c28; font-size:20px; }
+.sazan-header__cart-icon svg{ width:1em; height:1em; fill:currentColor; }
+.sazan-header__cart-count{
+	position:absolute; top:-2px; right:-2px; min-width:18px; height:18px; padding:0 4px;
+	border-radius:50%; background:#0c1c28; color:#fff; font-size:11px; line-height:18px;
+	text-align:center; font-weight:700;
+}
+
+/* چسبان */
+.sazan-header-sticky-yes .sazan-header{ position:sticky; top:0; z-index:999; }
+
+/* راهنمای ادیتور */
+.sazan-header__menu-empty{ opacity:.6; font-style:italic; padding:6px 10px; color:#fff; }
+
+/* ریسپانسیو ساده (نسخه‌ی موبایل/همبرگر در مرحله بعد) */
+@media (max-width:1024px){
+	.sazan-header__nav > ul, .sazan-header__nav .sazan-menu{ flex-wrap:wrap; gap:12px 18px; }
+}
+
+/* ============================================================
+   نسخه ریسپانسیو هدر: همبرگر + کشوی کناری
+   ============================================================ */
+.sazan-header__top-left{ display:inline-flex; align-items:center; gap:16px; }
+
+.sazan-header__burger{
+	display:none; flex-direction:column; justify-content:center; gap:5px;
+	width:34px; height:34px; padding:5px; background:transparent; border:0; cursor:pointer;
+}
+.sazan-header__burger span{ display:block; height:2px; width:100%; background:#fff; border-radius:2px; transition:.25s; }
+
+/* اوورلی و کشو */
+.sazan-header__overlay{
+	position:fixed; inset:0; background:rgba(0,0,0,.5); opacity:0; visibility:hidden;
+	transition:.25s; z-index:9998;
+}
+.sazan-header__drawer{
+	position:fixed; top:0; right:0; height:100%; width:300px; max-width:85vw;
+	background:#0c1c28; color:#fff; z-index:9999; padding:60px 22px 22px;
+	transform:translateX(100%); transition:transform .3s ease; overflow-y:auto;
+	box-shadow:-12px 0 40px -10px rgba(0,0,0,.5);
+}
+.sazan-header.is-open .sazan-header__overlay{ opacity:1; visibility:visible; }
+.sazan-header.is-open .sazan-header__drawer{ transform:translateX(0); }
+
+.sazan-header__drawer-close{
+	position:absolute; top:14px; left:16px; width:34px; height:34px; border:0; cursor:pointer;
+	background:rgba(255,255,255,.08); color:#fff; border-radius:50%; font-size:22px; line-height:1;
+}
+.sazan-header__drawer-title{ font-weight:700; color:#1B90B2; margin:14px 0 6px; }
+.sazan-header__drawer-actions{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+
+/* منوهای داخل کشو: عمودی و باز */
+.sazan-header__drawer-nav .sazan-menu,
+.sazan-header__drawer-nav > ul{ flex-direction:column; align-items:stretch; gap:0; width:100%; }
+.sazan-header__drawer-nav li{ position:static; }
+.sazan-header__drawer-nav a{ display:block; padding:11px 6px; border-bottom:1px solid rgba(255,255,255,.08); }
+.sazan-header__drawer-nav .sub-menu{
+	position:static; opacity:1; visibility:visible; transform:none; box-shadow:none;
+	background:transparent; padding:0 14px 0 0; min-width:auto;
+}
+.sazan-header__drawer-nav .menu-item-has-children > a::after{ content:none !important; }
+.sazan-header__drawer-phone{ display:block; margin-top:14px; color:#1B90B2; text-decoration:none; }
+
+/* نقطه‌ی شکست */
+@media (max-width:1024px){
+	.sazan-header__bottom{ display:none; }
+	.sazan-header__contact{ display:none; }
+	.sazan-header__burger{ display:flex; }
+}
+@media (min-width:1025px){
+	.sazan-header__drawer, .sazan-header__overlay{ display:none; }
+}
+
+/* ============================================================
+   افزوده‌ها: جستجو، منوی حساب، مینی‌کارت، چسبان، جای لوگو
+   ============================================================ */
+
+/* جای لوگو */
+.sazan-logo-left .sazan-header__top-inner{ flex-direction:row-reverse; }
+
+/* چسبان (با JS کنترل می‌شود) */
+.sazan-header.sz-stuck{ position:fixed; top:0; left:0; right:0; z-index:9999; }
+.sazan-header.sz-stuck-b .sazan-header__bottom{ position:fixed; top:0; left:0; right:0; z-index:9999; }
+.sazan-header__sticky-spacer{ width:100%; }
+
+/* جستجو */
+.sazan-header__search{ position:relative; display:inline-flex; }
+.sazan-header__search-toggle{
+	background:transparent; border:0; cursor:pointer; color:#fff; padding:6px;
+	display:inline-flex; align-items:center; justify-content:center; font-size:20px;
+}
+.sazan-header__search-toggle svg{ width:1em; height:1em; fill:currentColor; }
+.sazan-header__search-panel{
+	position:absolute; top:calc(100% + 12px); left:0; width:340px; max-width:80vw;
+	background:#0c1c28; border-radius:14px; padding:12px; z-index:130;
+	box-shadow:0 18px 44px -16px rgba(0,0,0,.7);
+	opacity:0; visibility:hidden; transform:translateY(8px); transition:.2s;
+}
+.sazan-header__search.is-open .sazan-header__search-panel{ opacity:1; visibility:visible; transform:none; }
+.sazan-header__search-input{
+	width:100%; border:0; outline:0; border-radius:10px; padding:11px 14px;
+	background:rgba(255,255,255,.08); color:#fff; font:inherit;
+}
+.sazan-header__search-input::placeholder{ color:rgba(255,255,255,.5); }
+.sazan-header__search-results{ margin-top:10px; max-height:320px; overflow:auto; border-radius:10px; }
+.sazan-header__search-results:empty{ display:none; }
+.sazan-header__search-results a{
+	display:flex; gap:10px; align-items:center; padding:8px 10px; border-radius:8px;
+	text-decoration:none; color:#e8f0f4; transition:.15s;
+}
+.sazan-header__search-results a:hover{ background:rgba(255,255,255,.05); }
+.sazan-header__search-results img{ width:42px; height:42px; border-radius:8px; object-fit:cover; flex:0 0 auto; }
+.sazan-header__search-results .sr-t{ font-size:13px; line-height:1.5; }
+.sazan-header__search-results .sr-p{ font-size:12px; color:#1B90B2; }
+.sazan-header__search-results .sr-empty,
+.sazan-header__search-results .sr-loading{ padding:10px; font-size:13px; color:rgba(255,255,255,.6); }
+
+/* منوی حساب کاربری (بازشو) */
+.sazan-header__account-wrap{ position:relative; }
+.sazan-header__acc-dropdown{
+	position:absolute; top:calc(100% + 10px); left:0; min-width:200px;
+	background:#0f2735; border-radius:12px; padding:8px; z-index:130;
+	box-shadow:0 18px 44px -16px rgba(0,0,0,.7);
+	opacity:0; visibility:hidden; transform:translateY(8px); transition:.2s;
+}
+.sazan-header__account-wrap[data-trigger="hover"]:hover .sazan-header__acc-dropdown,
+.sazan-header__account-wrap.is-open .sazan-header__acc-dropdown{ opacity:1; visibility:visible; transform:none; }
+.sazan-header__acc-dropdown ul{ list-style:none; margin:0; padding:0; }
+.sazan-header__acc-dropdown a{ display:block; padding:9px 14px; border-radius:8px; text-decoration:none; color:#fff; transition:.15s; }
+.sazan-header__acc-dropdown a:hover{ color:#1B90B2; background:rgba(255,255,255,.04); }
+
+/* مینی‌کارت بازشو */
+.sazan-header__cart-wrap{ position:relative; }
+.sazan-header__cart-dropdown{
+	position:absolute; top:calc(100% + 12px); left:0; width:300px; max-width:85vw;
+	background:#0f2735; border-radius:14px; padding:14px; z-index:130; color:#e8f0f4;
+	box-shadow:0 18px 44px -16px rgba(0,0,0,.7);
+	opacity:0; visibility:hidden; transform:translateY(8px); transition:.2s;
+}
+.sazan-header__cart-wrap[data-trigger="hover"]:hover .sazan-header__cart-dropdown,
+.sazan-header__cart-wrap.is-open .sazan-header__cart-dropdown{ opacity:1; visibility:visible; transform:none; }
+
+/* مینی‌کارتِ سفارشی — استایل حرفه‌ای و رنگ‌پذیر با متغیرها */
+.sazan-header__cart-dropdown{ width:340px; padding:8px; }
+.sazan-mc{ list-style:none; margin:0; padding:0; max-height:48vh; overflow:auto; }
+.sazan-mc::-webkit-scrollbar{ width:6px; }
+.sazan-mc::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.2); border-radius:99px; }
+
+.sazan-mc__item{
+	position:relative; display:flex; align-items:center;
+	margin:0; padding:10px 8px 10px 38px; border-radius:12px;
+	border-bottom:1px solid rgba(255,255,255,.07); transition:background .18s;
+}
+.sazan-mc__item:last-child{ border-bottom:0; }
+.sazan-mc__item:hover{ background:rgba(255,255,255,.05); }
+
+.sazan-mc__link{ display:flex; align-items:center; gap:12px; flex:1 1 auto; min-width:0; text-decoration:none; }
+.sazan-mc__thumb{ flex:0 0 auto; }
+.sazan-mc__thumb img{
+	display:block; width:56px; height:56px; border-radius:12px; object-fit:cover; margin:0;
+	box-shadow:0 8px 18px -10px rgba(0,0,0,.8); background:rgba(255,255,255,.04);
+}
+.sazan-mc__body{ display:flex; flex-direction:column; gap:5px; min-width:0; }
+.sazan-mc__title{
+	font-size:13.5px; font-weight:600; line-height:1.5;
+	color:var(--cartdd-color,#e8f0f4) !important;
+	display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.sazan-mc__meta{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.sazan-mc__qty{ font-size:11.5px; font-weight:600; color:var(--cartdd-color,#e8f0f4); opacity:.65; background:rgba(255,255,255,.08); padding:2px 9px; border-radius:999px; }
+.sazan-mc__price, .sazan-mc__price .amount{ font-size:13.5px; font-weight:800; color:var(--cartdd-price,#1B90B2) !important; }
+.sazan-mc__price del{ opacity:.5; font-weight:500; margin-left:4px; }
+
+.sazan-mc__remove{
+	position:absolute; left:6px; top:50%; transform:translateY(-50%);
+	width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center;
+	border-radius:50%; background:rgba(255,90,90,.14); color:#ff6b6b !important;
+	font-size:17px; line-height:1; text-decoration:none; transition:.18s;
+}
+.sazan-mc__remove:hover{ background:rgba(255,90,90,.32); color:#fff !important; transform:translateY(-50%) scale(1.06); }
+
+.sazan-mc__foot{ padding:12px 6px 4px; }
+.sazan-mc__total{
+	display:flex; align-items:center; justify-content:space-between;
+	margin:0 0 12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.12);
+	font-size:14px; font-weight:600; color:var(--cartdd-color,#e8f0f4);
+}
+.sazan-mc__total-val, .sazan-mc__total-val .amount{ font-size:16px; font-weight:800; color:var(--cartdd-price,#1B90B2) !important; }
+.sazan-mc__btns{ display:flex; gap:8px; }
+.sazan-mc__btn{
+	flex:1 1 auto; padding:11px 14px; border-radius:10px; text-align:center;
+	font-weight:700; font-size:13px; text-decoration:none; transition:.2s;
+}
+.sazan-mc__btn--ghost{ background:rgba(255,255,255,.08); color:var(--cartdd-color,#e8f0f4) !important; }
+.sazan-mc__btn--ghost:hover{ background:rgba(255,255,255,.16); }
+.sazan-mc__btn--cta{
+	background:linear-gradient(135deg,var(--cartdd-price,#1B90B2),#0090d4); color:#fff !important;
+	box-shadow:0 10px 24px -12px rgba(27,144,178,.85);
+}
+.sazan-mc__btn--cta:hover{ filter:brightness(1.08); transform:translateY(-1px); }
+.sazan-header__cart-empty{ margin:0; padding:22px 4px; text-align:center; font-size:13px; color:var(--cartdd-muted,rgba(232,240,244,.6)) !important; }
+
+/* در حالت موبایل، پنل‌های بازشو داخل کشو ثابت و باز باشند */
+.sazan-header__drawer .sazan-header__search-panel,
+.sazan-header__drawer .sazan-header__acc-dropdown,
+.sazan-header__drawer .sazan-header__cart-dropdown{
+	position:static; opacity:1; visibility:visible; transform:none; width:auto; box-shadow:none; padding:8px 0;
+}
+.sazan-header__drawer .sazan-header__search{ display:block; width:100%; }
+
+/* ============================================================
+   هدر: طرح دوم «حرفه‌ای» (شناور / ناوبری قرصی)
+   رنگ‌ها همچنان از کنترل‌های استایل خوانده می‌شوند؛ اینجا فقط
+   فرم/فاصله/گردی (که کنترلی ندارند) تغییر می‌کند.
+   ============================================================ */
+.sazan-header.skin-pro{
+	margin:14px clamp(6px,1%,16px);
+	border:1px solid rgba(255,255,255,.08);
+	border-radius:20px;
+	box-shadow:0 24px 50px -28px rgba(0,0,0,.75);
+}
+/* گوشه‌های بالا گرد (گوشه‌های پایین از کنترل «گردی پایین» می‌آید) */
+.sazan-header.skin-pro .sazan-header__top{ border-radius:20px 20px 0 0; border-bottom:1px solid rgba(255,255,255,.07); }
+
+/* ناوبری قرصی */
+.sazan-header.skin-pro .sazan-header__nav > ul > li > a{
+	padding:9px 15px; border-radius:999px;
+	transition:background .2s, color .2s;
+}
+.sazan-header.skin-pro .sazan-header__nav > ul > li > a:hover{ background:rgba(255,255,255,.1); }
+.sazan-header.skin-pro .sazan-header__nav > ul > li.current-menu-item > a{ background:rgba(255,255,255,.08); }
+
+/* دکمه‌های اکشن کمی برجسته‌تر */
+.sazan-header.skin-pro .sazan-header__search-toggle{ width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,.06); }
+.sazan-header.skin-pro .sazan-header__search-toggle:hover{ background:rgba(255,255,255,.12); }
+.sazan-header.skin-pro .sazan-header__cart{ box-shadow:0 10px 22px -10px rgba(0,0,0,.6); }
+.sazan-header.skin-pro .sazan-header__account{ transition:transform .2s; }
+.sazan-header.skin-pro .sazan-header__account:hover{ transform:translateY(-1px); }
+
+/* دکمه دسته‌بندی با کمی درخشش */
+.sazan-header.skin-pro .sazan-header__cat-btn{ box-shadow:0 10px 22px -12px rgba(0,0,0,.6); }
+
+/* وقتی چسبان شد، حالت شناور جمع شود تا تمام‌عرض بچسبد */
+.sazan-header.skin-pro.sz-stuck{ margin:0; border-radius:0; border-width:0 0 1px; }
+.sazan-header.skin-pro.sz-stuck .sazan-header__top{ border-radius:0; }
+
+/* در موبایل بدون حاشیه‌ی زیاد */
+@media (max-width:1024px){
+	.sazan-header.skin-pro{ margin:10px; }
+}
+
+/* ============================================================
+   موبایل حرفه‌ای‌تر: سر کشو + قفل اسکرول + اندازه‌ها
+   ============================================================ */
+.sazan-header__drawer-logo{ margin:0 0 16px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.1); }
+.sazan-header__drawer-logo img{ max-width:150px; height:auto; display:block; }
+.sazan-header__drawer-logo .sazan-header__logo-text{ font-size:22px; }
+.sazan-header__drawer-actions{ padding-bottom:14px; margin-bottom:6px; border-bottom:1px solid rgba(255,255,255,.08); }
+.sazan-header__drawer .sazan-header__account,
+.sazan-header__drawer .sazan-header__cart-wrap{ flex:0 0 auto; }
+
+/* جلوگیری از اسکرول پس‌زمینه هنگام باز بودن کشو */
+body.sazan-drawer-open{ overflow:hidden; }
+
+@media (max-width:1024px){
+	/* لوگو در موبایل سرریز نکند */
+	.sazan-header__logo img{ max-width:150px; height:auto; }
+	/* همبرگر و آیکن‌ها لمس‌پذیرتر */
+	.sazan-header__burger{ width:40px; height:40px; }
+	/* نوار بالا کمی جمع‌وجورتر */
+	.sazan-header__top-inner{ gap:12px; }
+}
+@media (max-width:600px){
+	.sazan-header__logo img{ max-width:120px; }
+	.sazan-header__logo-text{ font-size:20px; }
+}
+
+/* ============================================================
+   هدر: طرح سوم «مینیمال» (تخت با خط زیر منو + نوار لهجه‌ی بالا)
+   ============================================================ */
+.sazan-header.skin-min{ position:relative; }
+.sazan-header.skin-min::before{
+	content:""; position:absolute; top:0; left:0; right:0; height:3px; z-index:6;
+	background:linear-gradient(90deg,#1B90B2,#2ba6c9);
+}
+.sazan-header.skin-min .sazan-header__bottom{ box-shadow:inset 0 -1px 0 rgba(255,255,255,.1); }
+/* منو: خط زیرین متحرک به‌جای پس‌زمینه */
+.sazan-header.skin-min .sazan-header__nav > ul > li > a{ position:relative; padding-bottom:6px; }
+.sazan-header.skin-min .sazan-header__nav > ul > li > a::before{
+	content:""; position:absolute; right:0; left:0; bottom:0; height:2px; border-radius:2px;
+	background:#1B90B2; transform:scaleX(0); transform-origin:center; transition:transform .25s ease;
+}
+.sazan-header.skin-min .sazan-header__nav > ul > li > a:hover::before,
+.sazan-header.skin-min .sazan-header__nav > ul > li.current-menu-item > a::before{ transform:scaleX(1); }
+/* دکمه‌ی جستجو مربعِ نرم */
+.sazan-header.skin-min .sazan-header__search-toggle{ width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,.05); }
+.sazan-header.skin-min .sazan-header__search-toggle:hover{ background:rgba(255,255,255,.1); }
+
+/* ============================================================
+   منوی موبایل «تمام‌صفحه»
+   ============================================================ */
+@media (max-width:1024px){
+	.sazan-mmenu-fullscreen .sazan-header__drawer{
+		width:100%; max-width:100%; left:0; right:0;
+		padding:74px 26px 28px; display:flex; flex-direction:column;
+	}
+	.sazan-mmenu-fullscreen .sazan-header__overlay{ display:none; }
+	.sazan-mmenu-fullscreen .sazan-header__drawer-logo{ text-align:center; }
+	.sazan-mmenu-fullscreen .sazan-header__drawer-logo img{ margin:0 auto; }
+	.sazan-mmenu-fullscreen .sazan-header__drawer-actions{ justify-content:center; }
+	.sazan-mmenu-fullscreen .sazan-header__drawer-nav .sazan-menu{ align-items:center; }
+	.sazan-mmenu-fullscreen .sazan-header__drawer-nav a{ font-size:18px; text-align:center; padding:14px 6px; border-bottom-color:rgba(255,255,255,.06); }
+	.sazan-mmenu-fullscreen .sazan-header__drawer-close{ top:18px; left:20px; width:40px; height:40px; }
+}
+
+/* ============================================================
+   هدر: طرح چهارم «نئونی» (گلو + خط گرادینتیِ متحرک)
+   ============================================================ */
+.sazan-header.skin-neon{ position:relative; box-shadow:0 10px 34px -14px rgba(27,144,178,.35); }
+/* خط نئونیِ متحرک زیر هدر */
+.sazan-header.skin-neon .sazan-header__bottom{ position:relative; }
+.sazan-header.skin-neon .sazan-header__bottom::after{
+	content:""; position:absolute; left:0; right:0; bottom:0; height:2px; z-index:5;
+	background:linear-gradient(90deg, transparent, #2ba6c9, #1B90B2, #2ba6c9, transparent);
+	background-size:200% 100%; animation:sazan-neon 5s linear infinite;
+	box-shadow:0 0 12px rgba(27,144,178,.7);
+}
+/* خط نازک بالای هدر هم نئونی */
+.sazan-header.skin-neon::before{
+	content:""; position:absolute; top:0; left:0; right:0; height:2px; z-index:6;
+	background:linear-gradient(90deg, transparent, #1B90B2, #2ba6c9, #1B90B2, transparent);
+	background-size:200% 100%; animation:sazan-neon 5s linear infinite reverse;
+}
+@keyframes sazan-neon{ to{ background-position:200% 0; } }
+
+/* منو: درخشش متن + خط زیرینِ نورانی */
+.sazan-header.skin-neon .sazan-header__nav > ul > li > a{ position:relative; transition:color .2s, text-shadow .2s; }
+.sazan-header.skin-neon .sazan-header__nav > ul > li > a::before{
+	content:""; position:absolute; right:0; left:0; bottom:-4px; height:2px; border-radius:2px;
+	background:#1B90B2; box-shadow:0 0 10px #1B90B2; transform:scaleX(0); transform-origin:center; transition:transform .25s;
+}
+.sazan-header.skin-neon .sazan-header__nav > ul > li > a:hover,
+.sazan-header.skin-neon .sazan-header__nav > ul > li.current-menu-item > a{ color:#1B90B2; text-shadow:0 0 10px rgba(27,144,178,.7); }
+.sazan-header.skin-neon .sazan-header__nav > ul > li > a:hover::before,
+.sazan-header.skin-neon .sazan-header__nav > ul > li.current-menu-item > a::before{ transform:scaleX(1); }
+
+/* دکمه‌ها: حلقه‌ی نورانی */
+.sazan-header.skin-neon .sazan-header__cat-btn{ box-shadow:0 0 18px -2px rgba(27,144,178,.55); }
+.sazan-header.skin-neon .sazan-header__cat-btn:hover{ box-shadow:0 0 26px -2px rgba(27,144,178,.8); }
+.sazan-header.skin-neon .sazan-header__cart{ box-shadow:0 0 18px -2px rgba(27,144,178,.55); }
+.sazan-header.skin-neon .sazan-header__cart:hover{ box-shadow:0 0 26px -2px rgba(27,144,178,.85); }
+.sazan-header.skin-neon .sazan-header__search-toggle{ width:42px; height:42px; border-radius:50%; background:rgba(27,144,178,.08); transition:box-shadow .2s, background .2s; }
+.sazan-header.skin-neon .sazan-header__search-toggle:hover{ background:rgba(27,144,178,.16); box-shadow:0 0 16px rgba(27,144,178,.6); }
+.sazan-header.skin-neon .sazan-header__account{ transition:box-shadow .2s; }
+.sazan-header.skin-neon .sazan-header__account:hover{ box-shadow:0 0 16px -2px rgba(27,144,178,.55); }
+/* آیکن لوگو با درخشش ملایم */
+.sazan-header.skin-neon .sazan-header__logo-icon{ filter:drop-shadow(0 0 8px rgba(27,144,178,.7)); }
+
+/* کاهش انیمیشن برای کاربرانی که ترجیح می‌دهند */
+@media (prefers-reduced-motion: reduce){
+	.sazan-header.skin-neon .sazan-header__bottom::after,
+	.sazan-header.skin-neon::before{ animation:none; }
+}
+
+/* ============================================================
+   هدر: طرح پنجم «شیشه‌ای» (Glassmorphism شناور بلوردار)
+   ============================================================ */
+.sazan-header.skin-glass{
+	width:auto; box-sizing:border-box;
+	margin:14px var(--gs,12px);
+	border-radius:22px;
+	border:1px solid rgba(255,255,255,.14);
+	box-shadow:0 24px 60px -28px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.14);
+}
+/* شیشه: پس‌زمینه‌ی نیمه‌شفاف + بلور (با !important تا روی پس‌زمینه‌ی کنترل غلبه کند) */
+.sazan-header.skin-glass .sazan-header__top,
+.sazan-header.skin-glass .sazan-header__bottom{
+	position:relative; z-index:1;          /* محتوای داخلی بالای لایه‌ی بلور */
+	background:transparent !important;     /* رنگ به ::before منتقل شد */
+}
+/* بلور روی ::before تا خودِ نوار «backdrop-root» نشود و بلورِ بازشوها فعال بماند */
+.sazan-header.skin-glass .sazan-header__top::before,
+.sazan-header.skin-glass .sazan-header__bottom::before{
+	content:""; position:absolute; inset:0; z-index:-1;
+	border-radius:inherit;
+	background:rgba(12,28,40,.45);
+	-webkit-backdrop-filter:blur(var(--sz-blur,20px)) saturate(150%);
+	backdrop-filter:blur(var(--sz-blur,20px)) saturate(150%);
+}
+.sazan-header.skin-glass .sazan-header__top{ border-radius:22px 22px 0 0; border-bottom:1px solid rgba(255,255,255,.08); }
+.sazan-header.skin-glass .sazan-header__bottom{ border-radius:0 0 22px 22px; }
+
+/* ناوبری قرصیِ شیشه‌ای */
+.sazan-header.skin-glass .sazan-header__nav > ul > li > a{ padding:9px 15px; border-radius:999px; transition:background .2s, color .2s; }
+.sazan-header.skin-glass .sazan-header__nav > ul > li > a:hover{ background:rgba(255,255,255,.12); }
+.sazan-header.skin-glass .sazan-header__nav > ul > li.current-menu-item > a{ background:rgba(255,255,255,.1); }
+
+/* دکمه‌های شیشه‌ای */
+.sazan-header.skin-glass .sazan-header__search-toggle{
+	width:44px; height:44px; border-radius:50%;
+	background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14);
+	-webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); transition:background .2s;
+}
+.sazan-header.skin-glass .sazan-header__search-toggle:hover{ background:rgba(255,255,255,.16); }
+.sazan-header.skin-glass .sazan-header__account{ border:1px solid rgba(255,255,255,.12); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); transition:transform .2s; }
+.sazan-header.skin-glass .sazan-header__account:hover{ transform:translateY(-1px); }
+.sazan-header.skin-glass .sazan-header__cart{ box-shadow:0 10px 24px -10px rgba(0,0,0,.6); }
+
+/* دراپ‌داون‌ها و پنل‌ها هم شیشه‌ای */
+.sazan-header.skin-glass .sazan-header__cat-dropdown,
+.sazan-header.skin-glass .sazan-header__search-panel,
+.sazan-header.skin-glass .sazan-header__acc-dropdown,
+.sazan-header.skin-glass .sazan-header__cart-dropdown,
+.sazan-header.skin-glass .sazan-header__nav .sub-menu{
+	background:rgba(14,30,42,.72) !important;
+	-webkit-backdrop-filter:blur(var(--sz-blur,20px)) saturate(150%); backdrop-filter:blur(var(--sz-blur,20px)) saturate(150%);
+	border:1px solid rgba(255,255,255,.1);
+}
+
+/* در حالت چسبان، تمام‌عرض و بدون حاشیه (بلور حفظ می‌شود) */
+.sazan-header.skin-glass.sz-stuck{ margin:0; border-radius:0; border-width:0 0 1px; }
+.sazan-header.skin-glass.sz-stuck .sazan-header__top{ border-radius:0; }
+.sazan-header.skin-glass.sz-stuck .sazan-header__bottom{ border-radius:0; }
+
+@media (max-width:1024px){
+	.sazan-header.skin-glass{ margin:10px; }
+	/* کشوی موبایل هم شیشه‌ای */
+	.sazan-header.skin-glass .sazan-header__drawer{ background:rgba(12,28,40,.85) !important; -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px); }
+}
+
+/* ============================================================
+   هدر چسبان: ترنزیشن، مخفی‌شدن هوشمند، و جمع‌شدن
+   ============================================================ */
+.sazan-header.sz-stuck,
+.sazan-header.sz-stuck-b .sazan-header__bottom{ transition:transform .35s ease, box-shadow .25s ease, padding .2s ease; }
+.sazan-header.sz-stuck.sz-hidden{ transform:translateY(-100%); }
+.sazan-header.sz-stuck-b.sz-hidden .sazan-header__bottom{ transform:translateY(-100%); }
+
+/* جمع‌شدن هنگام چسبیدن */
+.sazan-header.sz-shrunk .sazan-header__top-inner{ padding-top:8px !important; padding-bottom:8px !important; transition:padding .2s; }
+.sazan-header.sz-shrunk .sazan-header__bottom-inner{ padding-top:8px !important; padding-bottom:8px !important; min-height:0 !important; transition:padding .2s, min-height .2s; }
+.sazan-header.sz-shrunk .sazan-header__logo img{ max-height:44px; transition:max-height .2s; }
+@media (prefers-reduced-motion: reduce){
+	.sazan-header.sz-stuck, .sazan-header.sz-stuck-b .sazan-header__bottom{ transition:none; }
+}
+
+/* ============================================================
+   هدر چسبان نسخه‌ی مقاوم: المنت موقتاً به body منتقل می‌شود (.sz-fixed)
+   ============================================================ */
+/* پس‌زمینه‌ی پیش‌فرضِ ثابت برای ردیف‌ها (تا حتی خارج از wrapper هم رنگ داشته باشند) */
+.sazan-header__top{ background-color:#0c1c28; }
+.sazan-header__bottom{ background-color:#0f2735; }
+
+.sz-fixed{
+	transition:transform .35s ease, box-shadow .25s ease, padding .2s ease;
+	box-shadow:0 10px 34px -12px rgba(0,0,0,.5);
+	will-change:transform;
+}
+/* پس از انتقال به body، قاعده‌ی box-sizing هدر دیگر اعمال نمی‌شود؛
+   این‌جا دوباره border-box می‌کنیم تا عرض دقیقاً برابرِ ردیفِ عادی بماند. */
+.sz-fixed, .sz-fixed *{ box-sizing:border-box; }
+.sz-fixed.sz-hidden{ transform:translateY(-100%); }
+.sz-fixed.sz-shrunk .sazan-header__bottom-inner,
+.sazan-header__bottom.sz-fixed.sz-shrunk .sazan-header__bottom-inner{ padding-top:8px !important; padding-bottom:8px !important; min-height:0 !important; }
+.sz-fixed.sz-shrunk .sazan-header__top-inner{ padding-top:8px !important; padding-bottom:8px !important; }
+.sz-fixed.sz-shrunk .sazan-header__logo img{ max-height:44px; }
+.sazan-sticky-ph{ width:100%; }
+@media (prefers-reduced-motion: reduce){ .sz-fixed{ transition:none; } }
+
+/* ============================================================
+   ویجت مستقل «نوار چسبان سازان» (ردیف دوم، نمایش هنگام اسکرول)
+   ============================================================ */
+.sazan-header.sazan-sbar{
+	position:fixed; left:0; right:0; z-index:99990; width:100%;
+	box-shadow:0 12px 34px -12px rgba(0,0,0,.55);
+	transition:transform .35s ease;
+	will-change:transform;
+}
+/* تا قبل از مقداردهیِ JS (افزودن کلاسِ موقعیت) پنهان بماند تا هنگام ریلود یک‌لحظه دیده نشود */
+.sazan-sbar:not(.sazan-sbar--top):not(.sazan-sbar--bottom):not(.sazan-sbar--preview){
+	opacity:0; visibility:hidden; transform:translateY(-100%); pointer-events:none;
+}
+.sazan-sbar--top{ top:0; transform:translateY(-100%); }
+.sazan-sbar--bottom{ bottom:0; transform:translateY(100%); }
+.sazan-sbar.is-visible{ transform:translateY(0); }
+.sazan-sbar .sazan-header__bottom{ width:100%; }
+.sazan-sbar .sazan-header__bottom-inner{ max-width:1320px; margin:0 auto; padding-left:20px; padding-right:20px; }
+/* در ویرایشگر المنتور به‌صورت ثابت و قابل‌مشاهده نمایش بده */
+.sazan-sbar--preview{ position:relative !important; transform:none !important; box-shadow:none !important; }
+@media (prefers-reduced-motion: reduce){ .sazan-header.sazan-sbar{ transition:none; } }
+
+/* ============================================================
+   نوار چسبان: طرح «شیشه‌ای»
+   (افکت شیشه و جزئیات داخلی از قواعد skin-glass هدر به ارث می‌رسد؛
+    این‌جا فقط حالت شناورِ مخصوص نوار را می‌سازیم و قواعد شناورِ هدر را خنثی می‌کنیم.)
+   ============================================================ */
+.sazan-header.sazan-sbar.skin-glass{
+	margin:0 !important; border:0 !important; border-radius:0 !important;
+	box-shadow:none !important; background:transparent !important;
+}
+.sazan-header.sazan-sbar.skin-glass .sazan-header__bottom{
+	margin-left:auto !important;          /* وسط‌چین — حذف فاصله‌ی نامتقارن */
+	margin-right:auto !important;
+	transform:scale(var(--sbar-scale,1)); transform-origin:top center;
+	border:1px solid rgba(255,255,255,.16);
+	box-shadow:0 22px 55px -26px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+/* ============================================================
+   ویجت «نوار موبایل سازان» — نوار پایینِ ثابت و شیشه‌ای
+   ============================================================ */
+.sazan-header.sazan-mbar{
+	position:fixed; left:0; right:0; bottom:0; z-index:99980; width:100%;
+	background:var(--mbar-bg, rgba(12,28,40,.62));
+	border-top:1px solid rgba(255,255,255,.12);
+	box-shadow:0 -12px 30px -14px rgba(0,0,0,.55);
+	transition:transform .35s ease;
+	color:var(--mbar-icon,#cfe9f5);
+}
+.sazan-mbar.mbar-glass{ -webkit-backdrop-filter:blur(var(--mbar-blur,20px)) saturate(150%); backdrop-filter:blur(var(--mbar-blur,20px)) saturate(150%); }
+.sazan-mbar.mbar-solid{ background:var(--mbar-bg, #0f2735); }
+.sazan-mbar.mbar-top{ top:0; bottom:auto; border-top:0; border-bottom:1px solid rgba(255,255,255,.12); box-shadow:0 12px 30px -14px rgba(0,0,0,.55); }
+.sazan-mbar.mbar-float{ left:12px; right:12px; border-radius:var(--mbar-radius,20px); border:1px solid rgba(255,255,255,.14); }
+.sazan-mbar.mbar-float:not(.mbar-top){ bottom:calc(10px + env(safe-area-inset-bottom)); }
+.sazan-mbar.mbar-float.mbar-top{ top:10px; }
+.sazan-mbar.mbar-off{ display:none !important; }
+.sazan-mbar.mbar-hidden{ transform:translateY(130%); }
+.sazan-mbar.mbar-top.mbar-hidden{ transform:translateY(-130%); }
+
+.sazan-mbar .sazan-mbar-row{ display:flex; align-items:stretch; justify-content:space-around; gap:2px; padding:6px 8px; max-width:680px; margin:0 auto; }
+.sazan-mbar:not(.mbar-float):not(.mbar-top) .sazan-mbar-row{ padding-bottom:calc(6px + env(safe-area-inset-bottom)); }
+
+.sazan-mbar .sazan-mbar-item{
+	flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+	padding:6px 4px; color:var(--mbar-icon,#cfe9f5); text-decoration:none; background:none; border:0; cursor:pointer;
+	font:inherit; font-size:11px; line-height:1; position:relative; transition:color .2s; -webkit-tap-highlight-color:transparent;
+}
+.sazan-mbar .sazan-mbar-item .sazan-mbar-ic{ display:flex; align-items:center; justify-content:center; position:relative; }
+.sazan-mbar .sazan-mbar-item svg{ width:23px; height:23px; }
+.sazan-mbar .sazan-mbar-label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.sazan-mbar .sazan-mbar-item:hover,
+.sazan-mbar .sazan-mbar-item.is-active{ color:var(--mbar-active,#1B90B2); }
+
+/* نشان تعداد سبد */
+.sazan-mbar .sazan-mbar-badge{
+	position:absolute; top:-6px; right:-10px; min-width:16px; height:16px; padding:0 4px; border-radius:9px;
+	background:var(--mbar-active,#1B90B2); color:#04202c; font-size:10px; font-weight:800;
+	display:flex; align-items:center; justify-content:center; line-height:1;
+}
+
+/* دکمه‌ی برجسته‌ی وسط (FAB) */
+.sazan-mbar .sazan-mbar-item--highlight .sazan-mbar-ic{
+	width:54px; height:54px; margin-top:-28px; border-radius:50%;
+	background:linear-gradient(180deg, var(--mbar-active,#1B90B2), #0090c4); color:#fff;
+	box-shadow:0 12px 24px -8px rgba(27,144,178,.7);
+}
+.sazan-mbar .sazan-mbar-item--highlight svg{ width:26px; height:26px; }
+.sazan-mbar .sazan-mbar-item--highlight .sazan-mbar-badge{ top:-22px; }
+
+/* پنل جستجوی نوار موبایل: شیتِ بالای صفحه */
+.sazan-mbar .sazan-header__search-panel.sazan-mbar-search-panel{
+	position:fixed; top:0; left:0; right:0; width:100%; max-width:100%; border-radius:0;
+	transform:translateY(-100%); transition:transform .3s ease; z-index:100000;
+	background:rgba(12,28,40,.96);
+}
+.sazan-mbar.mbar-glass .sazan-header__search-panel.sazan-mbar-search-panel{ background:rgba(12,28,40,.8); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); }
+.sazan-mbar .sazan-header__search.is-open .sazan-mbar-search-panel{ transform:translateY(0); }
+
+/* در ویرایشگر: ثابت نباشد تا قابل ویرایش بماند */
+.sazan-mbar--preview{ position:relative !important; transform:none !important; left:auto; right:auto; bottom:auto; }
+@media (prefers-reduced-motion: reduce){ .sazan-header.sazan-mbar{ transition:none; } }
+
+/* آیتم «جستجو» در نوار موبایل: هم‌شکلِ بقیه‌ی آیتم‌ها (آیکن بالا، برچسب پایین، بدون پس‌زمینه) */
+.sazan-mbar .sazan-header__search{ flex:1 1 0; min-width:0; display:flex; padding:0; }
+.sazan-mbar .sazan-header__search-toggle{
+	flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+	background:none !important; border:0 !important; box-shadow:none !important;
+	width:auto !important; height:auto !important; min-width:0 !important; border-radius:0 !important;
+	padding:6px 4px !important; margin:0 !important;
+	color:var(--mbar-icon,#cfe9f5) !important; font:inherit; font-size:11px; line-height:1; cursor:pointer;
+}
+.sazan-mbar .sazan-header__search-toggle:hover{ color:var(--mbar-active,#1B90B2) !important; }
+.sazan-mbar .sazan-header__search-toggle svg{ width:23px !important; height:23px !important; }
+/* اگر جستجو به‌عنوان دکمه‌ی برجسته‌ی وسط انتخاب شد */
+.sazan-mbar .sazan-header__search.sazan-mbar-item--highlight .sazan-mbar-ic{
+	width:54px; height:54px; margin-top:-28px; border-radius:50%;
+	background:linear-gradient(180deg, var(--mbar-active,#1B90B2), #0090c4); color:#fff;
+	box-shadow:0 12px 24px -8px rgba(27,144,178,.7);
+}
+
+/* ============================================================
+   نوار موبایل: پنل‌های بازشو (پاپ‌آپ / کشویی) + بک‌گراند تیره
+   ============================================================ */
+.sazan-mbar-backdrop{
+	position:fixed; inset:0; z-index:99979; background:rgba(0,0,0, var(--mbar-dim,.55));
+	opacity:0; visibility:hidden; transition:opacity .25s ease, visibility .25s;
+}
+.sazan-mbar-backdrop.is-open{ opacity:1; visibility:visible; }
+body.sazan-mbar-lock{ overflow:hidden; }
+
+.sazan-mbar-panel{
+	position:fixed; z-index:99999; box-sizing:border-box;
+	background:rgba(14,30,42,.97); color:#eaf6fc; border:1px solid rgba(255,255,255,.12);
+	max-height:78vh; display:flex; flex-direction:column;
+	opacity:0; visibility:hidden; pointer-events:none;
+}
+.sazan-mbar.mbar-glass .sazan-mbar-panel{ background:rgba(14,30,42,.82); -webkit-backdrop-filter:blur(22px) saturate(150%); backdrop-filter:blur(22px) saturate(150%); }
+.sazan-mbar-panel.is-active{ opacity:1; visibility:visible; pointer-events:auto; }
+
+.sazan-mbar-panel-head{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.1); flex:0 0 auto; }
+.sazan-mbar-panel-title{ font-weight:700; font-size:15px; }
+.sazan-mbar-panel-close{ width:32px; height:32px; border:0; border-radius:50%; background:rgba(255,255,255,.08); color:#eaf6fc; font-size:22px; line-height:1; cursor:pointer; }
+.sazan-mbar-panel-close:hover{ background:rgba(255,255,255,.16); }
+.sazan-mbar-panel-body{ padding:14px 16px; overflow:auto; -webkit-overflow-scrolling:touch; }
+
+/* پاپ‌آپ وسط صفحه */
+.sazan-mbar.mbar-mode-popup .sazan-mbar-panel{
+	left:50%; top:50%; width:min(440px, 92vw); border-radius:20px;
+	transform:translate(-50%,-46%) scale(.96); box-shadow:0 30px 70px -24px rgba(0,0,0,.8);
+	transition:opacity .25s ease, transform .28s cubic-bezier(.2,.8,.2,1), visibility .25s;
+}
+.sazan-mbar.mbar-mode-popup .sazan-mbar-panel.is-active{ transform:translate(-50%,-50%) scale(1); }
+
+/* کشویی هم‌اندازه‌ی نوار (موقعیت را JS می‌گذارد) */
+.sazan-mbar.mbar-mode-sheet .sazan-mbar-panel{
+	border-radius:var(--mbar-radius,18px) var(--mbar-radius,18px) 0 0;
+	transform:translateY(14%); box-shadow:0 -18px 50px -22px rgba(0,0,0,.7);
+	transition:opacity .25s ease, transform .3s cubic-bezier(.2,.8,.2,1), visibility .25s;
+}
+.sazan-mbar.mbar-mode-sheet.mbar-top .sazan-mbar-panel{ border-radius:0 0 var(--mbar-radius,18px) var(--mbar-radius,18px); transform:translateY(-14%); box-shadow:0 18px 50px -22px rgba(0,0,0,.7); }
+.sazan-mbar.mbar-mode-sheet .sazan-mbar-panel.is-active{ transform:translateY(0); }
+
+/* محتوای جستجو */
+.sazan-mbar-search-input{ width:100%; box-sizing:border-box; padding:11px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.06); color:#eaf6fc; font:inherit; outline:none; }
+.sazan-mbar-search-input::placeholder{ color:rgba(234,246,252,.55); }
+.sazan-mbar-search-results{ margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+.sazan-mbar-search-results a{ display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px; color:#eaf6fc; text-decoration:none; }
+.sazan-mbar-search-results a:hover{ background:rgba(255,255,255,.07); }
+.sazan-mbar-search-results img{ width:42px; height:42px; object-fit:cover; border-radius:8px; flex:0 0 auto; }
+.sazan-mbar-search-results .sr-t{ font-size:13px; line-height:1.5; }
+.sazan-mbar-search-results .sr-p{ display:block; color:var(--mbar-active,#1B90B2); font-size:12px; }
+.sazan-mbar-search-results .sr-loading, .sazan-mbar-search-results .sr-empty{ color:rgba(234,246,252,.6); font-size:13px; padding:6px 2px; }
+
+/* منوها داخل پنل (حساب/منو) و مینی‌کارت */
+.sazan-mbar-menu .sazan-menu{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.sazan-mbar-menu .sazan-menu li{ border-bottom:1px solid rgba(255,255,255,.07); }
+.sazan-mbar-menu .sazan-menu a, .sazan-mbar-loginlink{ display:block; padding:13px 6px; color:#eaf6fc; text-decoration:none; font-size:15px; }
+.sazan-mbar-menu .sazan-menu a:hover, .sazan-mbar-loginlink:hover{ color:var(--mbar-active,#1B90B2); }
+.sazan-mbar-menu .sub-menu{ list-style:none; margin:0; padding:0 12px; }
+.sazan-mbar-empty{ color:rgba(234,246,252,.6); }
+.sazan-mbar-panel .widget_shopping_cart_content{ color:#eaf6fc; }
+.sazan-mbar-panel .widget_shopping_cart_content a{ color:#eaf6fc; }
+
+/* در ویرایشگر، پنل/بک‌گراند مزاحم نشوند */
+.sazan-mbar--preview .sazan-mbar-backdrop, .sazan-mbar--preview .sazan-mbar-panels{ display:none !important; }
+
+/* ============================================================
+   اصلاح پنل‌های نوار موبایل پس از انتقال به body (مستقل از نوار)
+   + بلورِ همیشگیِ پنل‌ها + بلورِ بازشوهای هدر و نوار چسبان
+   ============================================================ */
+/* پنل همیشه بلور و شیشه‌ای، با حداکثر ارتفاع قابل‌تنظیم */
+.sazan-mbar-panel{
+	max-height:var(--mbar-maxh,78vh) !important;
+	background:rgba(14,30,42,.8) !important;
+	-webkit-backdrop-filter:blur(var(--mbar-pblur,22px)) saturate(150%); backdrop-filter:blur(var(--mbar-pblur,22px)) saturate(150%);
+}
+.sazan-mbar-panels.mbar-solid .sazan-mbar-panel{ background:rgba(14,30,42,.92) !important; }
+
+.sazan-mbar-panels.mbar-mode-popup .sazan-mbar-panel{
+	left:50%; top:50%; width:min(440px,92vw); border-radius:20px;
+	transform:translate(-50%,-46%) scale(.96); box-shadow:0 30px 70px -24px rgba(0,0,0,.8);
+	transition:opacity .25s ease, transform .28s cubic-bezier(.2,.8,.2,1), visibility .25s;
+}
+.sazan-mbar-panels.mbar-mode-popup .sazan-mbar-panel.is-active{ transform:translate(-50%,-50%) scale(1); }
+
+.sazan-mbar-panels.mbar-mode-sheet .sazan-mbar-panel{
+	border-radius:var(--mbar-radius,18px) var(--mbar-radius,18px) 0 0;
+	transform:translateY(16%); box-shadow:0 -18px 50px -22px rgba(0,0,0,.7);
+	transition:opacity .25s ease, transform .3s cubic-bezier(.2,.8,.2,1), visibility .25s;
+}
+.sazan-mbar-panels.mbar-mode-sheet.mbar-pos-top .sazan-mbar-panel{ border-radius:0 0 var(--mbar-radius,18px) var(--mbar-radius,18px); transform:translateY(-16%); box-shadow:0 18px 50px -22px rgba(0,0,0,.7); }
+.sazan-mbar-panels.mbar-mode-sheet .sazan-mbar-panel.is-active{ transform:translateY(0); }
+
+.sazan-mbar-panels.mbar-off, .sazan-mbar-backdrop.mbar-off{ display:none !important; }
+
+/* بلورِ همه‌ی بازشوهای هدر و نوار چسبان (در هر طرحی) */
+.sazan-header__cat-dropdown,
+.sazan-header__search-panel,
+.sazan-header__acc-dropdown,
+.sazan-header__cart-dropdown,
+.sazan-header__nav .sub-menu{
+	-webkit-backdrop-filter:blur(var(--sz-blur,22px)) saturate(160%) !important;
+	backdrop-filter:blur(var(--sz-blur,22px)) saturate(160%) !important;
+	background:rgba(14,30,42,.45) !important;
+	border:1px solid rgba(255,255,255,.12) !important;
+}
+
+/* ============================================================
+   ویجت «هدر موبایل سازان» — نوار بالا + کشوی شیشه‌ای
+   ============================================================ */
+.sazan-header.sazan-mhead{ width:100%; color:var(--mh-icon,#eaf6fc); background:var(--mh-bg, rgba(12,28,40,.62)); border-bottom:1px solid rgba(255,255,255,.1); }
+.sazan-mhead.mhead-glass{ -webkit-backdrop-filter:blur(var(--mh-blur,18px)) saturate(150%); backdrop-filter:blur(var(--mh-blur,18px)) saturate(150%); }
+.sazan-mhead.mhead-solid{ background:var(--mh-bg, #0f2735); }
+/* چسبانی فقط با JS و پس از انتقال به body اعمال می‌شود (mhead-fixed) تا داخل
+   کانتینرهای ترنسفورم‌دارِ المنتور گیر نکند و روی هیرو نیفتد. */
+.sazan-mhead.mhead-sticky{ transition:box-shadow .25s ease, background .25s ease; }
+.sazan-mhead.mhead-fixed{ position:fixed !important; top:0 !important; left:0 !important; right:0 !important; width:100% !important; z-index:99970 !important; padding-top:env(safe-area-inset-top); transition:box-shadow .25s ease, background .25s ease; }
+.sazan-mhead.mhead-scrolled{ box-shadow:0 10px 34px -14px rgba(0,0,0,.65); }
+.sazan-mhead.mhead-off{ display:none !important; }
+
+.sazan-mhead-bar{ display:flex; align-items:center; height:var(--mh-h,64px); padding:0 10px; gap:4px; }
+.sazan-mhead-slot{ flex:1 1 0; display:flex; align-items:center; min-width:0; }
+.sazan-mhead-slot.slot-right{ justify-content:flex-start; }
+.sazan-mhead-slot.slot-center{ justify-content:center; }
+.sazan-mhead-slot.slot-left{ justify-content:flex-end; }
+
+/* دکمه‌ها: بدون هیچ پس‌زمینه/قاب (حتی در برابر استایل قالب) — اپ‌گونه */
+.sazan-mhead-btn{
+	display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px;
+	border:0 !important; background:none !important; background-color:transparent !important; box-shadow:none !important; outline:none !important;
+	color:var(--mh-icon,#eaf6fc); cursor:pointer; border-radius:0; padding:0; margin:0; text-decoration:none; position:relative;
+	-webkit-appearance:none; appearance:none; -webkit-tap-highlight-color:transparent;
+	transition:color .2s ease, transform .14s ease;
+}
+.sazan-mhead-btn:hover, .sazan-mhead-btn:focus, .sazan-mhead-btn:active{ background:none !important; background-color:transparent !important; box-shadow:none !important; }
+.sazan-mhead-btn:hover, .sazan-mhead-btn:focus{ color:var(--mh-accent,#1B90B2); }
+.sazan-mhead-btn:active{ transform:scale(.88); }
+.sazan-mhead-btn svg{ width:26px; height:26px; display:block; }
+.sazan-mhead-ic{ position:relative; display:inline-flex; }
+.sazan-mhead-badge{ position:absolute; top:-5px; right:-7px; min-width:16px; height:16px; padding:0 4px; border-radius:9px; background:var(--mh-accent,#1B90B2); color:#04202c; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; }
+.sazan-mhead-logo a, .sazan-mhead-drawer-logo a{ display:inline-flex; align-items:center; text-decoration:none; color:inherit; }
+.sazan-mhead-logo img{ height:var(--mh-logo-h,34px); width:auto; display:block; }
+.sazan-mhead-logo-text{ font-size:20px; font-weight:800; letter-spacing:1px; color:var(--mh-icon,#eaf6fc); }
+
+/* بک‌گراند تیره */
+.sazan-mhead-backdrop{ position:fixed; inset:0; z-index:99988; background:rgba(0,0,0, var(--mh-dim,.55)); opacity:0; visibility:hidden; transition:opacity .3s ease, visibility .3s; }
+.sazan-mhead-backdrop.is-open{ opacity:1; visibility:visible; }
+.sazan-mhead-backdrop.mhead-off{ display:none !important; }
+
+/* کشو */
+.sazan-mhead-drawer{
+	position:fixed; top:0; z-index:99989; box-sizing:border-box;
+	width:var(--mh-dw,320px); max-width:90vw; height:var(--mh-dh,100vh); max-height:100vh; overflow:auto; -webkit-overflow-scrolling:touch;
+	background:var(--mh-dbg, rgba(12,28,40,.8)); color:#eaf6fc;
+	-webkit-backdrop-filter:blur(var(--mh-dblur,22px)) saturate(150%); backdrop-filter:blur(var(--mh-dblur,22px)) saturate(150%);
+	padding:14px 16px calc(18px + env(safe-area-inset-bottom));
+	visibility:hidden; opacity:0;
+	transition:transform .34s cubic-bezier(.2,.8,.2,1), opacity .25s ease, visibility .34s;
+}
+.sazan-mhead-drawer.mhead-side-right{ right:0; border-left:1px solid rgba(255,255,255,.12); border-radius:var(--mh-drad,0) 0 0 var(--mh-drad,0); transform:translateX(100%); }
+.sazan-mhead-drawer.mhead-side-left{ left:0; border-right:1px solid rgba(255,255,255,.12); border-radius:0 var(--mh-drad,0) var(--mh-drad,0) 0; transform:translateX(-100%); }
+.sazan-mhead-drawer.is-open{ transform:translateX(0); visibility:visible; opacity:1; box-shadow:0 0 60px -10px rgba(0,0,0,.7); }
+.sazan-mhead-drawer.mhead-off{ display:none !important; }
+
+.sazan-mhead-drawer-head{ display:flex; align-items:center; justify-content:space-between; padding-bottom:12px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,.1); }
+.sazan-mhead-drawer-logo img{ height:32px; width:auto; }
+.sazan-mhead-drawer-logo .sazan-mhead-logo-text{ font-size:20px; }
+.sazan-mhead-close{ width:34px; height:34px; border:0; border-radius:50%; background:rgba(255,255,255,.08); color:#eaf6fc; font-size:22px; line-height:1; cursor:pointer; }
+.sazan-mhead-close:hover{ background:rgba(255,255,255,.16); }
+
+.sazan-mhead-search{ margin-bottom:12px; }
+.sazan-mhead-search-input{ width:100%; box-sizing:border-box; padding:11px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.06); color:#eaf6fc; font:inherit; outline:none; }
+.sazan-mhead-search-input::placeholder{ color:rgba(234,246,252,.55); }
+.sazan-mhead-search-results{ margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+.sazan-mhead-search-results a{ display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px; color:#eaf6fc; text-decoration:none; }
+.sazan-mhead-search-results a:hover{ background:rgba(255,255,255,.07); }
+.sazan-mhead-search-results img{ width:40px; height:40px; object-fit:cover; border-radius:8px; flex:0 0 auto; }
+.sazan-mhead-search-results .sr-p{ display:block; color:var(--mh-accent,#1B90B2); font-size:12px; }
+.sazan-mhead-search-results .sr-loading, .sazan-mhead-search-results .sr-empty{ color:rgba(234,246,252,.6); font-size:13px; padding:6px 2px; }
+
+.sazan-mhead-menu .sazan-menu{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.sazan-mhead-menu .sazan-menu li{ border-bottom:1px solid rgba(255,255,255,.06); }
+.sazan-mhead-menu .sazan-menu a{ position:relative; display:flex; align-items:center; gap:10px; padding:13px 8px; color:#eaf6fc; text-decoration:none; font-size:15px; font-weight:500; border-radius:10px; transition:background .2s, color .2s; }
+.sazan-mhead-menu .sazan-menu > li > a:hover{ background:rgba(255,255,255,.06); color:var(--mh-accent,#1B90B2); }
+.sazan-mhead-menu .sazan-menu .menu-item-icon, .sazan-mhead-menu .sazan-menu a i{ font-size:18px; opacity:.85; }
+.sazan-mhead-menu .sazan-menu .current-menu-item > a{ color:var(--mh-accent,#1B90B2); }
+
+/* دکمه‌ی فلش آکاردئون (سمت چپ در RTL) */
+.sazan-mhead-sub-toggle{ position:absolute; inset-inline-start:2px; top:50%; transform:translateY(-50%); width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; border:0 !important; background:none !important; background-color:transparent !important; box-shadow:none !important; outline:none !important; -webkit-appearance:none; appearance:none; color:inherit; opacity:.7; cursor:pointer; transition:transform .25s ease, opacity .2s; }
+.sazan-mhead-sub-toggle:hover, .sazan-mhead-sub-toggle:focus, .sazan-mhead-sub-toggle:active{ background:none !important; opacity:1; }
+.menu-item-has-children.is-expanded > a > .sazan-mhead-sub-toggle{ transform:translateY(-50%) rotate(180deg); opacity:1; color:var(--mh-accent,#1B90B2); }
+.sazan-mhead-menu .menu-item-has-children > a{ padding-inline-start:40px; font-weight:700; }
+
+/* آکاردئونِ دراپ‌داونِ دسته‌بندیِ هدر و نوار چسبان */
+.sazan-header__cat-dropdown.sazan-cat-accordion .menu-item-has-children > a{ position:relative; padding-inline-start:40px; font-weight:700; }
+.sazan-header__cat-dropdown.sazan-cat-accordion .sub-menu{ max-height:0 !important; overflow:hidden; transition:max-height .3s ease; }
+.sazan-header__cat-dropdown.sazan-cat-accordion .menu-item-has-children.is-expanded > .sub-menu{ max-height:1000px !important; }
+
+/* زیرمنوها: تو رفته با خط راهنما */
+.sazan-mhead-menu .sub-menu{ list-style:none; margin:0 6px 0 0; padding:0; border-inline-start:2px solid rgba(255,255,255,.1); }
+.sazan-mhead-menu .sub-menu li{ border-bottom:0; }
+.sazan-mhead-menu .sub-menu a{ padding:10px 14px; font-size:14px; font-weight:400; opacity:.9; }
+.sazan-mhead-menu .sub-menu a:hover{ opacity:1; color:var(--mh-accent,#1B90B2); }
+
+/* حالت آکاردئونی: زیرمنو پیش‌فرض بسته، با انیمیشن باز می‌شود */
+.sazan-mhead-menu.mhead-accordion .sub-menu{ max-height:0; overflow:hidden; transition:max-height .32s ease; }
+.sazan-mhead-menu.mhead-accordion .menu-item-has-children.is-expanded > .sub-menu{ max-height:1000px; }
+
+.sazan-mhead-callbtn{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; padding:12px; border-radius:12px; background:var(--mh-accent,#1B90B2); color:#04202c; font-weight:800; text-decoration:none; }
+.sazan-mhead-callbtn svg{ width:20px; height:20px; }
+
+/* در ویرایشگر، نوار ثابت نباشد و کشو/بک‌گراند مزاحم نشوند */
+.sazan-mhead--preview{ position:relative !important; }
+.sazan-mhead--preview .sazan-mhead-backdrop, .sazan-mhead--preview .sazan-mhead-drawer{ display:none !important; }
+
+/* ============================================================
+   رفع اسکرول افقی (ناشی از کشو/پنل‌های بیرونِ صفحه) + تمام‌عرض‌کردنِ نوارها
+   ============================================================ */
+html, body{ overflow-x:clip !important; }
+/* لایه‌ی برش‌خورده برای کشوی هدر موبایل: مانع بیرون‌زدنِ کشوی بسته و اسکرول افقی */
+.sazan-fixed-layer{ position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:99985; }
+.sazan-fixed-layer > *{ pointer-events:auto; }
+.sazan-fixed-layer .sazan-mhead-drawer, .sazan-fixed-layer .sazan-mhead-backdrop{ position:absolute !important; }
+.sazan-mhead.mhead-fixed{ left:0 !important; right:0 !important; width:100% !important; max-width:100% !important; margin:0 !important; box-sizing:border-box; }
+.sazan-header.sazan-mbar:not(.mbar-float){ left:0 !important; right:0 !important; width:100% !important; max-width:100% !important; margin:0 !important; box-sizing:border-box; }
+.sazan-header.sazan-mbar.mbar-float{ max-width:calc(100% - 24px) !important; box-sizing:border-box; }
+.sazan-header.sz-stuck, .sazan-header.sz-stuck-b .sazan-header__bottom{ left:0 !important; right:0 !important; max-width:100% !important; box-sizing:border-box; }
+
+/* انتقال بخش تماس به سمت راست */
+.sazan-contact-right .sazan-header__top-inner{ flex-direction:row-reverse; }
+
+/* تمام‌عرض: هدر را از قاب المنتور آزاد و تا کل پهنای صفحه باز می‌کند */
+.sazan-fullw-yes .elementor-widget-container{ width:100%; }
+.sazan-fullw-yes .sazan-header{ width:auto !important; margin-left:calc(50% - 50vw + var(--gs,0px)) !important; margin-right:calc(50% - 50vw + var(--gs,0px)) !important; }
+.sazan-fullw-yes .sazan-header:not(.skin-glass){ --gs:0px; border-radius:0; }
+
+/* ============================================================
+   یکی‌شدنِ «هدر سازان» و «نوار چسبان»:
+   هنگام اسکرول، ردیف دومِ همین هدر به یک نوار شناورِ شیشه‌ایِ
+   وسط‌چین تبدیل می‌شود (data-sticky-style="bar"). دیگر به ویجت
+   جداگانه‌ی «نوار چسبان سازان» نیازی نیست.
+   ============================================================ */
+.sazan-header__bottom.sz-fixed.sz-float{
+	border-radius:18px !important;
+	border:1px solid rgba(255,255,255,.14);
+	background:rgba(14,30,42,.55) !important;
+	-webkit-backdrop-filter:blur(var(--sz-blur,22px)) saturate(160%);
+	backdrop-filter:blur(var(--sz-blur,22px)) saturate(160%);
+	box-shadow:0 24px 60px -28px rgba(0,0,0,.85), 0 4px 18px -10px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);
+	overflow:visible;
+	animation:sazan-sfloat-in .42s cubic-bezier(.2,.8,.2,1) both;
+}
+/* هالهٔ ملایمِ رنگِ برند در پس‌زمینهٔ نوار شناور */
+.sazan-header__bottom.sz-fixed.sz-float::after{
+	content:""; position:absolute; inset:0; border-radius:inherit; z-index:-1; pointer-events:none;
+	background:linear-gradient(120deg, rgba(27,144,178,.10), transparent 40%, rgba(27,144,178,.08));
+}
+.sazan-header__bottom.sz-fixed.sz-float .sazan-header__bottom-inner{ min-height:60px; }
+@keyframes sazan-sfloat-in{ from{ transform:translateY(-16px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+@media (prefers-reduced-motion: reduce){ .sazan-header__bottom.sz-fixed.sz-float{ animation:none; } }
+/* عرض/جای نوار شناور با JS دقیقاً برابرِ ردیفِ عادی قفل می‌شود (هم‌عرض ماندن) */
+
+/* ============================================================
+   پرداختِ حرفه‌ای‌تر (میکرو-اینتراکشن‌ها و ظرافت‌های عمومی)
+   رنگ‌ها همچنان از کنترل‌های استایل قابل‌تغییرند؛ این‌ها فقط
+   حالت پیش‌فرض را جذاب‌تر و روان‌تر می‌کنند.
+   ============================================================ */
+.sazan-header__top-inner,
+.sazan-header__bottom-inner{ transition:padding .25s ease, min-height .25s ease; }
+
+/* دکمهٔ دسته‌بندی: گرادینت نرم + بالاآمدنِ ظریف هنگام هاور */
+.sazan-header__cat-btn{
+	background-image:linear-gradient(135deg,#2ba6c9,#1B90B2);
+	box-shadow:0 10px 24px -14px rgba(27,144,178,.9);
+	transition:transform .2s ease, box-shadow .25s ease, filter .2s ease;
+}
+.sazan-header__cat-btn:hover{ transform:translateY(-1px); box-shadow:0 16px 30px -14px rgba(27,144,178,.95); filter:brightness(1.03); }
+.sazan-header__cat-btn:active{ transform:translateY(0); }
+.sazan-header__cat-chev svg{ transition:transform .25s ease; }
+.sazan-header__categories.is-open .sazan-header__cat-chev svg{ transform:rotate(-90deg); }
+
+/* سبد خرید: عمق و واکنشِ لمسی */
+.sazan-header__cart{
+	background-image:linear-gradient(135deg,#2ba6c9,#1B90B2);
+	box-shadow:0 10px 22px -12px rgba(27,144,178,.85);
+	transition:transform .2s ease, box-shadow .25s ease, filter .2s ease;
+}
+.sazan-header__cart:hover{ transform:translateY(-2px); box-shadow:0 18px 30px -14px rgba(27,144,178,.95); filter:brightness(1.04); }
+.sazan-header__cart:active{ transform:translateY(0); }
+
+/* حساب کاربری: هاورِ نرم */
+.sazan-header__account{ transition:background .2s ease, transform .2s ease; }
+.sazan-header__account:hover{ transform:translateY(-1px); }
+
+/* دکمهٔ جستجو: هالهٔ ملایم هنگام هاور */
+.sazan-header__search-toggle{ border-radius:12px; transition:background .2s ease, color .2s ease, box-shadow .2s ease; }
+.sazan-header__search-toggle:hover{ color:#1B90B2; }
+
+/* منوی اصلی (کلاسیک): زیرخطِ متحرکِ ظریف */
+.sazan-header.skin-classic .sazan-header__nav > ul > li > a,
+.sazan-header:not([class*="skin-"]) .sazan-header__nav > ul > li > a{ position:relative; padding-bottom:4px; }
+.sazan-header.skin-classic .sazan-header__nav > ul > li > a::after,
+.sazan-header:not([class*="skin-"]) .sazan-header__nav > ul > li > a::after{
+	content:""; position:absolute; right:0; left:0; bottom:0; height:2px; border-radius:2px;
+	background:linear-gradient(90deg,#1B90B2,#2ba6c9); transform:scaleX(0); transform-origin:right center;
+	transition:transform .25s ease;
+}
+.sazan-header.skin-classic .sazan-header__nav > ul > li > a:hover::after,
+.sazan-header.skin-classic .sazan-header__nav > ul > li.current-menu-item > a::after,
+.sazan-header:not([class*="skin-"]) .sazan-header__nav > ul > li > a:hover::after,
+.sazan-header:not([class*="skin-"]) .sazan-header__nav > ul > li.current-menu-item > a::after{ transform:scaleX(1); }
+
+/* دراپ‌داون‌ها: ورودِ نرم‌تر */
+.sazan-header__cat-dropdown,
+.sazan-header__acc-dropdown,
+.sazan-header__cart-dropdown,
+.sazan-header__search-panel{ transition:opacity .22s ease, transform .28s cubic-bezier(.2,.8,.2,1), visibility .22s; }
+
+/* ============================================================
+   ریسپانسیوِ حرفه‌ای‌تر: تبلت و موبایلِ کوچک
+   ============================================================ */
+@media (max-width:1200px) and (min-width:1025px){
+	.sazan-header__nav > ul, .sazan-header__nav .sazan-menu{ gap:18px; }
+	.sazan-header__actions{ gap:10px; }
+}
+@media (max-width:1024px){
+	/* نوار بالا: لوگو راست، اکشن‌ها/همبرگر چپ — جمع‌وجور و متعادل */
+	.sazan-header__top-inner{ min-height:60px; }
+	.sazan-header__top-left{ gap:10px; }
+}
+@media (max-width:480px){
+	.sazan-header__logo img{ max-width:110px; }
+	.sazan-header__logo-text{ font-size:18px; }
+	.sazan-header__drawer{ width:86vw; max-width:86vw; }
+	.sazan-header__search-panel{ width:min(320px,90vw); }
+}
+
+/* ============================================================
+   برندِ سازان — پالتِ اصلی + نشانِ لوگو + آیکن‌های SVG توکار
+   رنگِ برند: #1B90B2
+   ============================================================ */
+.sazan-header{
+	--sz-accent:#1B90B2;
+	--sz-accent-l:#2ba6c9;
+	--sz-accent-d:#12708a;
+}
+
+/* آیکن‌های توکارِ SVG: هم‌اندازه و شفاف (نه ایموجی) */
+.sazan-header__logo-icon svg,
+.sazan-header__c-icon svg,
+.sazan-header__cat-icon svg,
+.sazan-header__acc-icon svg,
+.sazan-header__cart-icon svg,
+.sazan-header__search-toggle svg{ width:1em; height:1em; display:block; overflow:visible; }
+
+/* نشانِ لوگو: بَجِ گِردِ شیشه‌ایِ برند با درخششِ ملایم */
+.sazan-header__logo-icon{
+	width:1.55em; height:1.55em; border-radius:14px; flex:0 0 auto;
+	display:inline-flex; align-items:center; justify-content:center;
+	color:var(--sz-accent);
+	background:linear-gradient(135deg, rgba(27,144,178,.24), rgba(27,144,178,.05));
+	border:1px solid rgba(27,144,178,.38);
+	box-shadow:0 8px 20px -10px rgba(27,144,178,.75), inset 0 1px 0 rgba(255,255,255,.14);
+	transition:transform .25s ease, box-shadow .25s ease;
+}
+.sazan-header__logo:hover .sazan-header__logo-icon{ transform:translateY(-1px) rotate(-3deg); box-shadow:0 12px 26px -10px rgba(27,144,178,.9); }
+.sazan-header__logo-text{ letter-spacing:.5px; }
+
+/* دکمهٔ جستجو/حساب: هالهٔ ظریفِ برند هنگام هاور */
+.sazan-header__search-toggle:hover{ color:var(--sz-accent); }
+.sazan-header__account:hover{ box-shadow:0 8px 22px -12px rgba(27,144,178,.7); }
+
+/* نامِ کاربر همیشه یک‌خطی (بدونِ شکستن) */
+.sazan-header__account{ white-space:nowrap; flex:0 0 auto; }
+.sazan-header__acc-text{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:min(320px,32vw); }
+.sazan-header__acc-icon{ flex:0 0 auto; }
+
+/* شمارندهٔ سبد: کنتراستِ تمیزتر روی دکمهٔ برند */
+.sazan-header__cart-count{ box-shadow:0 2px 8px -2px rgba(0,0,0,.6); border:1.5px solid rgba(255,255,255,.9); }
+
+/* هالهٔ نوار شناور: تمام‌برند (بدون نارنجی) */
+.sazan-header__bottom.sz-fixed.sz-float::after{
+	background:linear-gradient(120deg, rgba(27,144,178,.14), transparent 45%, rgba(43,166,201,.10)) !important;
+}
+.sazan-header__bottom.sz-fixed.sz-float{
+	box-shadow:0 24px 60px -28px rgba(4,26,34,.9), 0 6px 20px -10px rgba(27,144,178,.35), inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+
+/* ============================================================
+   میکرو-اینتراکشن‌ها: نوار پیشرفت، مجیک‌لاین، پالسِ سبد، ورودِ هدر
+   ============================================================ */
+
+/* ۱) نوارِ پیشرفتِ اسکرول (سراسری، بالای صفحه) */
+.sazan-scroll-progress{
+	position:fixed; top:0; left:0; right:0; height:3px; z-index:100000;
+	transform:scaleX(0); transform-origin:right center; pointer-events:none;
+	background:linear-gradient(90deg,#1B90B2,#2ba6c9);
+	box-shadow:0 0 10px rgba(27,144,178,.6);
+	transition:transform .08s linear;
+}
+@media (prefers-reduced-motion: reduce){ .sazan-scroll-progress{ transition:none; } }
+
+/* ۲) مجیک‌لاین: خطِ متحرکِ زیر منوی اصلی */
+.sazan-header__nav{ position:relative; }
+.sazan-magic-line{
+	position:absolute; bottom:-3px; left:0; height:2px; width:0; border-radius:2px;
+	background:linear-gradient(90deg,#1B90B2,#2ba6c9);
+	box-shadow:0 0 10px rgba(27,144,178,.75);
+	opacity:0; pointer-events:none; will-change:transform,width;
+	transition:transform .32s cubic-bezier(.2,.8,.2,1), width .32s cubic-bezier(.2,.8,.2,1), opacity .2s ease;
+}
+/* وقتی مجیک‌لاین فعال است، زیرخطِ per-item کلاسیک را خاموش کن تا دوتایی نشود */
+.sazan-header__nav.has-magic > ul > li > a::after,
+.sazan-header__nav.has-magic .sazan-menu > li > a::after{ display:none !important; }
+@media (prefers-reduced-motion: reduce){ .sazan-magic-line{ transition:opacity .2s ease; } }
+
+/* ۳) پالسِ سبد + ضربانِ شمارنده هنگام افزودن به سبد */
+@keyframes sz-cart-pulse{ 0%{ transform:scale(1); } 30%{ transform:scale(1.16); } 55%{ transform:scale(.95); } 100%{ transform:scale(1); } }
+.sazan-header__cart.sz-cart-pulse{ animation:sz-cart-pulse .5s ease; }
+.sazan-header__cart.sz-cart-pulse::before{
+	content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+	border:2px solid var(--sz-accent,#1B90B2); animation:sz-cart-ring .6s ease-out forwards;
+}
+@keyframes sz-cart-ring{ 0%{ transform:scale(1); opacity:.7; } 100%{ transform:scale(1.75); opacity:0; } }
+@keyframes sz-count-bump{ 0%{ transform:scale(1); } 40%{ transform:scale(1.55); } 100%{ transform:scale(1); } }
+.sazan-header__cart-count.sz-count-bump{ animation:sz-count-bump .45s ease; }
+@media (prefers-reduced-motion: reduce){
+	.sazan-header__cart.sz-cart-pulse, .sazan-header__cart.sz-cart-pulse::before, .sazan-header__cart-count.sz-count-bump{ animation:none; }
+}
+
+/* ۴) افکتِ ورودِ نرمِ هدر هنگام لود */
+@keyframes sz-header-enter{ from{ opacity:0; transform:translateY(-14px); } to{ opacity:1; transform:translateY(0); } }
+.sazan-header.sz-enter .sazan-header__top{ animation:sz-header-enter .5s cubic-bezier(.2,.8,.2,1) both; }
+.sazan-header.sz-enter .sazan-header__bottom{ animation:sz-header-enter .5s cubic-bezier(.2,.8,.2,1) both; animation-delay:.08s; }
+@media (prefers-reduced-motion: reduce){
+	.sazan-header.sz-enter .sazan-header__top, .sazan-header.sz-enter .sazan-header__bottom{ animation:none; }
+}

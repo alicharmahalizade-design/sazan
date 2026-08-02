@@ -1,0 +1,387 @@
+/* =========================================================================
+   سازان — صفحه اختصاصی محصول | استایل متاباکس
+   ========================================================================= */
+
+#spp_sections .inside {
+	margin: 0;
+	padding: 0;
+}
+
+.spp-mb {
+	--spp-a-border: #dfe3e8;
+	--spp-a-bg: #f6f7f9;
+	--spp-a-accent: #2271b1;
+	font-size: 13px;
+}
+
+.spp-mb__intro {
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--spp-a-border);
+	background: #fbfcfd;
+	color: #50575e;
+	line-height: 2;
+}
+
+.spp-mb__intro code {
+	background: #eef1f4;
+	padding: 2px 6px;
+	border-radius: 4px;
+	direction: ltr;
+	display: inline-block;
+}
+
+.spp-mb__layout {
+	display: flex;
+	align-items: stretch;
+	min-height: 420px;
+}
+
+/* --- تب‌های عمودی -------------------------------------------------------- */
+.spp-mb__tabs {
+	flex: 0 0 240px;
+	margin: 0;
+	padding: 10px 0;
+	background: var(--spp-a-bg);
+	border-inline-start: 0;
+	border-inline-end: 1px solid var(--spp-a-border);
+	list-style: none;
+}
+
+.spp-mb__tabs li {
+	margin: 0;
+}
+
+.spp-mb__tab {
+	display: block;
+	width: 100%;
+	text-align: start;
+	padding: 12px 16px;
+	border: 0;
+	border-inline-start: 3px solid transparent;
+	background: transparent;
+	color: #50575e;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.spp-mb__tab:hover {
+	color: var(--spp-a-accent);
+	background: #eef1f4;
+}
+
+.spp-mb__tab.is-active {
+	background: #fff;
+	color: var(--spp-a-accent);
+	border-inline-start-color: var(--spp-a-accent);
+}
+
+/* --- پنل‌ها -------------------------------------------------------------- */
+.spp-mb__panels {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 6px 20px 22px;
+	background: #fff;
+}
+
+.spp-mb__panel {
+	display: none;
+}
+
+.spp-mb__panel.is-active {
+	display: block;
+}
+
+.spp-mb__group {
+	margin: 22px 0 12px;
+	padding-bottom: 8px;
+	font-size: 13px;
+	font-weight: 700;
+	color: #1d2327;
+	border-bottom: 1px solid var(--spp-a-border);
+}
+
+.spp-mb__group:first-child {
+	margin-top: 14px;
+}
+
+/* --- فیلد --------------------------------------------------------------- */
+.spp-f {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	padding: 7px 0;
+}
+
+.spp-f__label {
+	flex: 0 0 190px;
+	padding-top: 6px;
+	font-weight: 600;
+	color: #3c434a;
+	line-height: 1.7;
+}
+
+.spp-f__ctrl {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 620px;
+}
+
+.spp-f__ctrl input[type="text"],
+.spp-f__ctrl input[type="number"],
+.spp-f__ctrl textarea,
+.spp-f__ctrl select {
+	width: 100%;
+	max-width: 100%;
+}
+
+.spp-f--lg .spp-f__ctrl input[type="text"] {
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.spp-f__hint {
+	margin: 5px 0 0;
+	color: #787c82;
+	font-size: 12px;
+	line-height: 1.7;
+}
+
+/* --- تصویر -------------------------------------------------------------- */
+.spp-media {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.spp-media__prev {
+	display: none;
+	width: 54px;
+	height: 54px;
+	border-radius: 6px;
+	overflow: hidden;
+	border: 1px solid var(--spp-a-border);
+	background: var(--spp-a-bg);
+}
+
+.spp-media.has-img .spp-media__prev {
+	display: block;
+}
+
+.spp-media__prev img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.spp-media__del {
+	display: none;
+	color: #b32d2e;
+	cursor: pointer;
+}
+
+.spp-media.has-img .spp-media__del {
+	display: inline;
+}
+
+.spp-mb__note {
+	margin: 8px 0 0;
+	padding: 10px 12px;
+	border-inline-start: 3px solid var(--spp-a-accent);
+	background: #f0f6fc;
+	color: #50575e;
+	line-height: 1.9;
+}
+
+/* --- صفحه‌ی تنظیمات سراسری ----------------------------------------------- */
+.spp-mb--settings {
+	max-width: 900px;
+	margin-top: 14px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.spp-mb--settings .spp-mb__panels {
+	padding: 6px 18px 18px;
+}
+
+/* --- ریپیتر ------------------------------------------------------------- */
+.spp-rep {
+	margin: 6px 0 18px;
+	border: 1px solid var(--spp-a-border);
+	border-radius: 8px;
+	background: #fcfcfd;
+}
+
+.spp-rep__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--spp-a-border);
+}
+
+.spp-rep__title {
+	font-weight: 700;
+	color: #1d2327;
+}
+
+.spp-rep__rows {
+	padding: 8px;
+}
+
+.spp-rep__row {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	padding: 8px 8px 8px 4px;
+	margin-bottom: 8px;
+	border: 1px solid var(--spp-a-border);
+	border-radius: 6px;
+	background: #fff;
+}
+
+.spp-rep__row:last-child {
+	margin-bottom: 0;
+}
+
+.spp-rep__grip {
+	flex: 0 0 auto;
+	padding-top: 10px;
+	color: #a7aaad;
+	cursor: move;
+	letter-spacing: -2px;
+	user-select: none;
+}
+
+.spp-rep__cells {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 0 14px;
+}
+
+.spp-rep__cells .spp-f {
+	flex-direction: column;
+	gap: 4px;
+	padding: 5px 0;
+}
+
+.spp-rep__cells .spp-f__label {
+	flex: none;
+	padding-top: 0;
+	font-size: 12px;
+	font-weight: 600;
+	color: #646970;
+}
+
+.spp-rep__cells .spp-f__ctrl {
+	max-width: none;
+	width: 100%;
+}
+
+.spp-rep__del {
+	flex: 0 0 auto;
+	width: 26px;
+	height: 26px;
+	margin-top: 6px;
+	border: 1px solid var(--spp-a-border);
+	border-radius: 50%;
+	background: #fff;
+	color: #b32d2e;
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.spp-rep__del:hover {
+	background: #fcf0f1;
+	border-color: #b32d2e;
+}
+
+.spp-rep__hint {
+	margin: 0;
+	padding: 9px 12px;
+	border-bottom: 1px solid var(--spp-a-border);
+	background: #f8f9fa;
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.9;
+}
+
+/* ریپیترِ فشرده (مثل آواتارها): ردیف‌ها کنار هم */
+.spp-rep--inline .spp-rep__rows {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.spp-rep--inline .spp-rep__row {
+	margin-bottom: 0;
+	padding: 6px;
+	align-items: center;
+}
+
+.spp-rep--inline .spp-rep__cells {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.spp-rep--inline .spp-rep__cells .spp-f__label {
+	display: none;
+}
+
+.spp-rep--inline .spp-rep__grip {
+	padding-top: 0;
+}
+
+.spp-rep--inline .spp-rep__del {
+	margin-top: 0;
+}
+
+.spp-rep__ph {
+	height: 54px;
+	margin-bottom: 8px;
+	border: 1px dashed var(--spp-a-accent);
+	border-radius: 6px;
+	background: #f0f6fc;
+}
+
+/* --- واکنش‌گرا ----------------------------------------------------------- */
+@media (max-width: 782px) {
+	.spp-mb__layout {
+		flex-direction: column;
+	}
+
+	.spp-mb__tabs {
+		flex: none;
+		display: flex;
+		flex-wrap: wrap;
+		border-inline-end: 0;
+		border-bottom: 1px solid var(--spp-a-border);
+	}
+
+	.spp-mb__tab {
+		border-inline-start: 0;
+		border-bottom: 3px solid transparent;
+	}
+
+	.spp-mb__tab.is-active {
+		border-inline-start: 0;
+		border-bottom-color: var(--spp-a-accent);
+	}
+
+	.spp-f {
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.spp-f__label {
+		flex: none;
+		padding-top: 0;
+	}
+}
