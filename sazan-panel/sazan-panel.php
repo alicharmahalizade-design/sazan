@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان پنل (Sazan Panel)
  * Description: نمایش دوره‌ها و جلسات اختصاصی هر کاربر یا گروه در پنل کاربری از طریق شورت‌کد [sazan_panel].
- * Version: 1.19.0
+ * Version: 1.19.1
  * Author: Sazan
  * Text Domain: sazan-panel
  * Domain Path: /languages
@@ -11,7 +11,16 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.19.0' );
+// اگر نسخه PHP میزبان قدیمی باشد، به‌جای خطای مرگبار یک پیام روشن نشان بده.
+if ( version_compare( PHP_VERSION, '7.4', '<' ) ) {
+	add_action( 'admin_notices', function () {
+		echo '<div class="notice notice-error"><p>افزونه «سازان پنل» به PHP نسخه ۷.۴ یا بالاتر نیاز دارد. نسخه فعلی میزبان: '
+			. esc_html( PHP_VERSION ) . '</p></div>';
+	} );
+	return;
+}
+
+define( 'SZP_VERSION', '1.19.1' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -50,7 +59,9 @@ if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-canvas-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-eval-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-eval-settings.php';
-	require_once SZP_DIR . 'includes/admin/class-szp-landing-builder.php';
+	if ( file_exists( SZP_DIR . 'includes/admin/class-szp-landing-builder.php' ) ) {
+		require_once SZP_DIR . 'includes/admin/class-szp-landing-builder.php';
+	}
 }
 
 register_activation_hook( __FILE__, array( 'SZP_Install', 'activate' ) );
@@ -93,7 +104,9 @@ function szp_init() {
 		SZP_Canvas_Admin::init();
 		SZP_Eval_Admin::init();
 		SZP_Eval_Settings::init();
-		SZP_Landing_Builder::init();
+		if ( class_exists( 'SZP_Landing_Builder' ) ) {
+			SZP_Landing_Builder::init();
+		}
 	}
 }
 
@@ -107,18 +120,35 @@ function szp_elementor_category( $manager ) {
 
 /** Elementor: register all Sazan widgets (supports Elementor 3.5+ and older). */
 function szp_elementor_widgets( $widgets_manager ) {
-	require_once SZP_DIR . 'includes/elementor/widgets.php';
-	require_once SZP_DIR . 'includes/elementor/widgets-landing.php';
-	$classes = array_merge( szp_elementor_widget_list(), szl_elementor_widget_list() );
+	$files = array(
+		'includes/elementor/widgets.php'         => 'szp_elementor_widget_list',
+		'includes/elementor/widgets-landing.php' => 'szl_elementor_widget_list',
+	);
+
+	$classes = array();
+	foreach ( $files as $file => $list_fn ) {
+		if ( file_exists( SZP_DIR . $file ) ) {
+			require_once SZP_DIR . $file;
+		}
+		if ( function_exists( $list_fn ) ) {
+			$classes = array_merge( $classes, call_user_func( $list_fn ) );
+		}
+	}
+
 	foreach ( $classes as $cls ) {
 		if ( ! class_exists( $cls ) ) {
 			continue;
 		}
-		$widget = new $cls();
-		if ( method_exists( $widgets_manager, 'register' ) ) {
-			$widgets_manager->register( $widget );
-		} elseif ( method_exists( $widgets_manager, 'register_widget_type' ) ) {
-			$widgets_manager->register_widget_type( $widget );
+		try {
+			$widget = new $cls();
+			if ( method_exists( $widgets_manager, 'register' ) ) {
+				$widgets_manager->register( $widget );
+			} elseif ( method_exists( $widgets_manager, 'register_widget_type' ) ) {
+				$widgets_manager->register_widget_type( $widget );
+			}
+		} catch ( \Throwable $e ) {
+			// یک ویجت معیوب نباید ثبت بقیه یا بارگذاری سایت را متوقف کند.
+			error_log( 'Sazan Panel: registering widget ' . $cls . ' failed – ' . $e->getMessage() ); // phpcs:ignore
 		}
 	}
 }

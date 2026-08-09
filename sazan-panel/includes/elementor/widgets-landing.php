@@ -362,15 +362,15 @@ abstract class SZL_Widget_Base extends \Elementor\Widget_Base {
 			'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
 		) );
 		$map = array(
-			'c_bg'    => array( 'پس‌زمینه بخش', '--szl-bg' ),
-			'c_card'  => array( 'پس‌زمینه کارت', '--szl-card' ),
-			'c_card2' => array( 'پس‌زمینه ثانویه', '--szl-card-2' ),
-			'c_line'  => array( 'رنگ خطوط', '--szl-line' ),
-			'c_text'  => array( 'رنگ متن اصلی', '--szl-text' ),
-			'c_muted' => array( 'رنگ متن کم‌رنگ', '--szl-muted' ),
-			'c_cyan'  => array( 'رنگ تاکیدی (فیروزه‌ای)', '--szl-cyan' ),
-			'c_gold'  => array( 'رنگ تاکیدی (طلایی)', '--szl-gold' ),
-			'c_gold2' => array( 'رنگ طلایی روشن', '--szl-gold-2' ),
+			'pal_bg'    => array( 'پس‌زمینه بخش', '--szl-bg' ),
+			'pal_card'  => array( 'پس‌زمینه کارت', '--szl-card' ),
+			'pal_card2' => array( 'پس‌زمینه ثانویه', '--szl-card-2' ),
+			'pal_line'  => array( 'رنگ خطوط', '--szl-line' ),
+			'pal_text'  => array( 'رنگ متن اصلی', '--szl-text' ),
+			'pal_muted' => array( 'رنگ متن کم‌رنگ', '--szl-muted' ),
+			'pal_cyan'  => array( 'رنگ تاکیدی (فیروزه‌ای)', '--szl-cyan' ),
+			'pal_gold'  => array( 'رنگ تاکیدی (طلایی)', '--szl-gold' ),
+			'pal_gold2' => array( 'رنگ طلایی روشن', '--szl-gold-2' ),
 		);
 		foreach ( $map as $key => $def ) {
 			$this->add_control( $key, array(
@@ -379,7 +379,7 @@ abstract class SZL_Widget_Base extends \Elementor\Widget_Base {
 				'selectors' => array( '{{WRAPPER}} .szl' => $def[1] . ': {{VALUE}};' ),
 			) );
 		}
-		$this->add_control( 'c_radius', array(
+		$this->add_control( 'pal_radius', array(
 			'label'      => 'گردی کلی گوشه‌ها',
 			'type'       => \Elementor\Controls_Manager::SLIDER,
 			'size_units' => array( 'px' ),
