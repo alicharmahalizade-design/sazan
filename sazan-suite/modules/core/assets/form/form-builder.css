@@ -1,0 +1,15 @@
+/* سازنده‌ی فرم در پیشخوان */
+.szf-builder .szf-rows{margin-bottom:12px;}
+.szf-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;
+  border:1px solid #dcdcde;border-radius:8px;padding:10px;margin-bottom:8px;}
+.szf-row .szf-drag{cursor:grab;color:#8c8f94;}
+.szf-row .szf-f-label{flex:2 1 180px;}
+.szf-row .szf-f-name{flex:1 1 130px;}
+.szf-row .szf-f-ph{flex:1 1 130px;}
+.szf-row .szf-f-opts{flex:1 1 100%;}
+.szf-row input[type="text"],.szf-row select{margin:0;height:32px;}
+.szf-row .szf-f-req{white-space:nowrap;font-size:13px;}
+.szf-row .szf-del{cursor:pointer;color:#b32d2e;border:none;background:none;font-size:18px;}
+.szf-row .szf-del:hover{color:#fff;background:#b32d2e;border-radius:6px;}
+.szf-row.ui-sortable-helper{box-shadow:0 6px 18px rgba(0,0,0,.15);}
+.szf-placeholder{height:54px;border:2px dashed #c3c4c7;border-radius:8px;margin-bottom:8px;}

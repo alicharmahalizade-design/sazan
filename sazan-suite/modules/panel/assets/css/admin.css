@@ -1,0 +1,89 @@
+.szp-f{margin:0 0 14px}
+.szp-f > label{display:block;font-weight:600;margin-bottom:5px}
+.szp-rep > label,.szp-access label:first-child{display:block;font-weight:600;margin-bottom:5px}
+.szp-rep-rows{margin-bottom:8px}
+.szp-rep-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.szp-rep-pair input{flex:1}
+.szp-rep-del{flex:0 0 auto;color:#b32d2e}
+.szp-media{display:block}
+.szp-media-name{display:inline-block;margin:0 8px;color:#555}
+.szp-gallery-items{margin:8px 0;display:flex;flex-wrap:wrap;gap:6px}
+.szp-gallery-item{background:#eef6f8;border:1px solid #cfe6ec;border-radius:6px;padding:3px 8px;font-size:12px}
+.szp-gallery-del,.szp-chip-del{text-decoration:none;color:#b32d2e;font-weight:700;margin-right:4px}
+.szp-user-search{position:relative}
+.szp-user-results{border:1px solid #ddd;border-radius:6px;margin-top:4px;max-height:190px;overflow:auto;background:#fff}
+.szp-user-results:empty{display:none}
+.szp-ur{padding:6px 10px;cursor:pointer;font-size:13px}
+.szp-ur:hover{background:#eef6f8}
+.szp-ur-none{color:#999;cursor:default}
+.szp-members-table{margin-top:8px}
+.szp-members-table td,.szp-members-table th{vertical-align:middle}
+.szp-member-del{display:inline-block;text-align:center;width:22px;height:22px;line-height:20px;border-radius:50%;background:#fbeaea;color:#b32d2e;text-decoration:none;font-weight:700}
+.szp-member-del:hover{background:#b32d2e;color:#fff}
+.szp-members-empty{color:#888;margin-top:8px}
+.szp-members-count{color:#0f9fb3;font-weight:600;font-size:13px}
+.szp-addnew{margin-top:10px}
+.szp-addnew-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.szp-addnew-form input[type=text]{flex:0 1 200px}
+.szp-bulk-new{margin-top:14px}
+.szp-bulk-new summary{cursor:pointer;font-weight:600;color:#0f9fb3}
+.szp-bulk-new textarea{margin-top:8px;direction:ltr;text-align:right}
+.szp-user-chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.szp-chip{background:#eef6f8;border:1px solid #cfe6ec;border-radius:16px;padding:3px 10px;font-size:12px;display:inline-flex;align-items:center}
+.szp-group-list{max-height:160px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:6px 10px}
+.szp-gl{display:block;margin:3px 0}
+.szp-admin-dash code{font-size:15px;background:#eef6f8;padding:4px 10px;border-radius:6px}
+.szp-jdate{display:inline-block;margin-top:4px;color:#0f9fb3;font-size:12px;font-weight:600}
+.szp-syll-row{flex-wrap:wrap}
+.szp-syll-row input[type=text]{flex:1 1 100%}
+.szp-syll-row textarea{flex:1 1 100%}
+/* Jalali picker */
+.szp-jdt{position:relative;max-width:420px}
+.szp-jdt-display{cursor:pointer;background:#fff}
+.szp-jdt-pop{position:absolute;z-index:9999;top:100%;right:0;margin-top:4px;width:300px;background:#fff;border:1px solid #c3c4c7;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:10px;direction:rtl}
+.szp-jdt-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-weight:700}
+.szp-jdt-nav button{border:0;background:#eef6f8;color:#0f9fb3;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px}
+.szp-jdt-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.szp-jdt-dow{text-align:center;font-size:11px;color:#888;padding:3px 0}
+.szp-jdt-day{border:0;background:#f3f4f6;border-radius:6px;padding:6px 0;cursor:pointer;font-size:13px}
+.szp-jdt-day:hover{background:#cfeef3}
+.szp-jdt-day.on{background:#17b9cd;color:#fff}
+.szp-jdt-time{display:flex;align-items:center;gap:6px;margin:10px 0;justify-content:center}
+.szp-jdt-foot{display:flex;gap:8px;justify-content:flex-end}
+
+/* داشبورد راه‌اندازی ساده */
+.szp-admin-dash{max-width:1160px;direction:rtl}
+.szp-admin-welcome{
+	display:flex;align-items:center;justify-content:space-between;gap:24px;margin:18px 0 24px;padding:28px 30px;
+	background:#fff;border:1px solid #dfe5ee;border-right:5px solid #2563eb;border-radius:16px;box-shadow:0 8px 28px rgba(15,23,42,.06)
+}
+.szp-admin-welcome>div>span{display:block;margin-bottom:6px;color:#1d4ed8;font-size:12px;font-weight:800}
+.szp-admin-welcome h1{margin:0 0 8px;padding:0;color:#172033;font-size:28px}
+.szp-admin-welcome p{max-width:700px;margin:0;color:#64748b;line-height:2}
+.szp-admin-welcome .button-hero{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:9px;white-space:nowrap}
+.szp-admin-title{margin:0 0 12px;color:#172033}
+.szp-admin-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.szp-admin-actions a{
+	display:grid;grid-template-columns:36px 1fr;grid-template-rows:auto auto;column-gap:10px;min-height:104px;padding:17px;
+	background:#fff;border:1px solid #dfe5ee;border-radius:13px;color:#172033;text-decoration:none
+}
+.szp-admin-actions a:hover{border-color:#93c5fd;box-shadow:0 6px 20px rgba(37,99,235,.08)}
+.szp-admin-actions .dashicons{grid-row:1/3;color:#2563eb;font-size:25px}
+.szp-admin-actions b{font-size:15px}
+.szp-admin-actions small{color:#64748b;line-height:1.7}
+.szp-admin-guide{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.szp-admin-guide>div{padding:22px 24px;background:#fff;border:1px solid #dfe5ee;border-radius:14px}
+.szp-admin-guide h2{margin:0 0 14px;color:#172033;font-size:17px}
+.szp-admin-guide ol{margin:0;padding-right:21px;color:#475569;line-height:2.2}
+.szp-admin-shortcodes p{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px;margin:8px 0;padding:10px;background:#f8fafc;border-radius:9px}
+.szp-admin-shortcodes p code{direction:ltr;color:#1d4ed8;white-space:nowrap}
+.szp-admin-shortcodes p span{color:#64748b;font-size:12px}
+@media(max-width:900px){
+	.szp-admin-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+	.szp-admin-guide{grid-template-columns:1fr}
+}
+@media(max-width:782px){
+	.szp-admin-welcome{align-items:stretch;flex-direction:column;padding:22px 18px}
+	.szp-admin-actions{grid-template-columns:1fr}
+	.szp-admin-welcome .button-hero{width:100%}
+}
