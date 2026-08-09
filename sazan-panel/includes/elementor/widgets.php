@@ -484,8 +484,9 @@ function szp_elementor_widget_list() {
 	return array(
 		'SZP_W_Panel',
 		'SZP_W_Coaching',
-		'SZP_W_My_Eval',
-		'SZP_W_Eval_Board',
+		// SZP_W_My_Eval و SZP_W_Eval_Board عمداً ثبت نمی‌شوند تا با ویجت‌های صفحه فرود
+		// اشتباه گرفته نشوند. کلاس‌ها و شورت‌کدهای [sazan_my_eval] و [sazan_eval_board]
+		// همچنان فعال‌اند؛ برای برگرداندن، کافی است نام کلاس‌ها به این فهرست اضافه شود.
 		'SZP_W_Service_Canvas',
 		'SZP_W_Canvas_Carousel',
 		'SZP_W_Canvas_Grid',
