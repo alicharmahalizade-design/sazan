@@ -50,6 +50,12 @@ class SZP_Frontend {
 		$evjs  = SZP_DIR . 'assets/js/sazan-eval.js';
 		wp_register_style( 'szp-eval', SZP_URL . 'assets/css/sazan-eval.css', array( 'szp-front' ), file_exists( $evcss ) ? filemtime( $evcss ) : SZP_VERSION );
 		wp_register_script( 'szp-eval', SZP_URL . 'assets/js/sazan-eval.js', array( 'szp-front' ), file_exists( $evjs ) ? filemtime( $evjs ) : SZP_VERSION, true );
+
+		// ویجت‌های صفحه فرود «ارزیابی کسب‌وکار» (مستقل از استایل پنل).
+		$lcss = SZP_DIR . 'assets/css/sazan-landing.css';
+		$ljs  = SZP_DIR . 'assets/js/sazan-landing.js';
+		wp_register_style( 'szl-landing', SZP_URL . 'assets/css/sazan-landing.css', array(), file_exists( $lcss ) ? filemtime( $lcss ) : SZP_VERSION );
+		wp_register_script( 'szl-landing', SZP_URL . 'assets/js/sazan-landing.js', array(), file_exists( $ljs ) ? filemtime( $ljs ) : SZP_VERSION, true );
 	}
 
 	/* ---------------- «ارزیابی من» shortcode ---------------- */

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: سازان پنل (Sazan Panel)
  * Description: نمایش دوره‌ها و جلسات اختصاصی هر کاربر یا گروه در پنل کاربری از طریق شورت‌کد [sazan_panel].
- * Version: 1.16.0
+ * Version: 1.17.0
  * Author: Sazan
  * Text Domain: sazan-panel
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.16.0' );
+define( 'SZP_VERSION', '1.17.0' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -106,7 +106,9 @@ function szp_elementor_category( $manager ) {
 /** Elementor: register all Sazan widgets (supports Elementor 3.5+ and older). */
 function szp_elementor_widgets( $widgets_manager ) {
 	require_once SZP_DIR . 'includes/elementor/widgets.php';
-	foreach ( szp_elementor_widget_list() as $cls ) {
+	require_once SZP_DIR . 'includes/elementor/widgets-landing.php';
+	$classes = array_merge( szp_elementor_widget_list(), szl_elementor_widget_list() );
+	foreach ( $classes as $cls ) {
 		if ( ! class_exists( $cls ) ) {
 			continue;
 		}
