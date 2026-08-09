@@ -10,7 +10,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.32.0' );
+define( 'SZP_VERSION', '1.32.1' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -57,9 +57,6 @@ if ( is_admin() ) {
 	require_once SZP_DIR . 'includes/admin/class-szp-canvas-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-eval-admin.php';
 	require_once SZP_DIR . 'includes/admin/class-szp-eval-settings.php';
-	if ( file_exists( SZP_DIR . 'includes/admin/class-szp-landing-builder.php' ) ) {
-		require_once SZP_DIR . 'includes/admin/class-szp-landing-builder.php';
-	}
 }
 
 // فعال‌سازی/غیرفعال‌سازی از طریق Sazan_Suite_Modules مدیریت می‌شود.
@@ -113,9 +110,6 @@ function szp_init() {
 		SZP_Canvas_Admin::init();
 		SZP_Eval_Admin::init();
 		SZP_Eval_Settings::init();
-		if ( class_exists( 'SZP_Landing_Builder' ) ) {
-			SZP_Landing_Builder::init();
-		}
 	}
 }
 

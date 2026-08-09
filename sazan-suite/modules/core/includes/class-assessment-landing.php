@@ -51,7 +51,7 @@ final class Assessment_Landing_Page {
 		?>
 		<div class="wrap" dir="rtl">
 			<h1>لندینگ ارزیابی هوشمند کسب‌وکار</h1>
-			<p>این ابزار صفحه‌ی مطابق طرح ارزیابی را به‌صورت یک ویجت کامل Elementor می‌سازد. همه‌ی متن‌ها، کارت‌ها، آزمون مقصد، رنگ‌ها، فاصله‌ها، سئو و حالت موبایل از داخل Elementor قابل ویرایش هستند.</p>
+			<p>این ابزار صفحه‌ی مطابق طرح ارزیابی را می‌سازد؛ هر سکشن یک ویجت مستقل Elementor است: هدر، هیرو، نوار آمار، آزمون‌ها + فیلتر دسته، ارزیابی جامع (نمودار رادار)، مراحل، نمونه گزارش تحلیلی، سوالات متداول و فوتر. همه‌ی متن‌ها، کارت‌ها، لینک‌ها، رنگ‌ها، تایپوگرافی، فاصله‌ها و ستون‌بندی موبایل از تنظیمات همان ویجت قابل ویرایش است.</p>
 			<?php if ( isset( $_GET['created'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
 				<div class="notice notice-success is-dismissible"><p>صفحه ساخته شد. حالا آن را در Elementor ویرایش و سپس منتشر کنید.</p></div>
 			<?php endif; ?>
@@ -96,7 +96,11 @@ final class Assessment_Landing_Page {
 		update_post_meta( $id, '_elementor_edit_mode', 'builder' );
 		update_post_meta( $id, '_elementor_template_type', 'wp-page' );
 		update_post_meta( $id, '_wp_page_template', 'elementor_canvas' );
-		update_post_meta( $id, '_elementor_page_settings', array( 'hide_title' => 'yes' ) );
+		update_post_meta( $id, '_elementor_page_settings', array(
+			'hide_title'            => 'yes',
+			'background_background' => 'classic',
+			'background_color'      => '#070e1a',
+		) );
 		update_post_meta( $id, '_elementor_data', wp_slash( wp_json_encode( self::elementor_data(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) );
 		if ( defined( 'ELEMENTOR_VERSION' ) ) {
 			update_post_meta( $id, '_elementor_version', ELEMENTOR_VERSION );
@@ -118,11 +122,84 @@ final class Assessment_Landing_Page {
 		return $out;
 	}
 
-	public static function elementor_data() {
-		$quizzes = get_posts( array( 'post_type' => Quiz_CPT::POST_TYPE, 'numberposts' => 1, 'post_status' => array( 'publish', 'draft', 'private' ), 'orderby' => 'date', 'order' => 'DESC', 'fields' => 'ids' ) );
+	/**
+	 * ترتیب سکشن‌های صفحه فرود؛ هر سکشن یک ویجت مستقل با تنظیمات کامل خودش.
+	 *
+	 * @return array<int, array{0:string,1:string}>
+	 */
+	public static function landing_sections() {
+		return array(
+			array( 'szl_header', 'هدر سایت' ),
+			array( 'szl_hero', 'هیرو ارزیابی' ),
+			array( 'szl_stats', 'نوار آمار' ),
+			array( 'szl_tests', 'آزمون‌ها + فیلتر دسته' ),
+			array( 'szl_featured', 'ارزیابی جامع' ),
+			array( 'szl_steps', 'چگونه کار می‌کند' ),
+			array( 'szl_report', 'نمونه گزارش تحلیلی' ),
+			array( 'szl_faq', 'سوالات متداول' ),
+			array( 'szl_footer', 'فوتر سایت' ),
+		);
+	}
+
+	/** آیا ویجت‌های سکشنی صفحه فرود (ماژول پنل) در دسترس هستند؟ */
+	public static function has_section_widgets() {
+		return defined( 'SAZAN_SUITE_DIR' )
+			&& file_exists( SAZAN_SUITE_DIR . 'modules/panel/includes/elementor/widgets-landing.php' );
+	}
+
+	/** چیدمان قدیمی: یک ویجت یکپارچه (فقط وقتی ویجت‌های سکشنی در دسترس نیستند). */
+	private static function legacy_data() {
+		$quizzes  = get_posts( array( 'post_type' => Quiz_CPT::POST_TYPE, 'numberposts' => 1, 'post_status' => array( 'publish', 'draft', 'private' ), 'orderby' => 'date', 'order' => 'DESC', 'fields' => 'ids' ) );
 		$settings = $quizzes ? array( 'quiz_id' => absint( $quizzes[0] ) ) : array();
-		$widget = self::element( 'widget', 'sazan-assessment-landing', $settings, array(), 'assessment-landing' );
-		$column = self::element( 'column', '', array( '_column_size' => 100, 'css_classes' => 'sazan-assessment-page-column' ), array( $widget ), 'assessment-column' );
+		$widget   = self::element( 'widget', 'sazan-assessment-landing', $settings, array(), 'assessment-landing' );
+		$column   = self::element( 'column', '', array( '_column_size' => 100, 'css_classes' => 'sazan-assessment-page-column' ), array( $widget ), 'assessment-column' );
 		return array( self::element( 'section', '', array( 'layout' => 'boxed', 'content_width' => array( 'unit' => 'px', 'size' => 1200, 'sizes' => array() ), 'gap' => 'no', 'css_classes' => 'sazan-assessment-page-section' ), array( $column ), 'assessment-section' ) );
+	}
+
+	public static function elementor_data() {
+		if ( ! self::has_section_widgets() ) {
+			return self::legacy_data();
+		}
+
+		$data = array();
+
+		foreach ( self::landing_sections() as $i => $sec ) {
+			list( $widget_type, $label ) = $sec;
+
+			// تنظیمات خالی یعنی مقادیر پیش‌فرض خود ویجت اعمال می‌شود.
+			$widget = self::element( 'widget', $widget_type, new \stdClass(), array(), 'szl-' . $widget_type );
+
+			$column = self::element(
+				'column',
+				'',
+				array( '_column_size' => 100, 'css_classes' => 'sazan-assessment-page-column' ),
+				array( $widget ),
+				'szl-col-' . $widget_type
+			);
+
+			$data[] = self::element(
+				'section',
+				'',
+				array(
+					'layout'        => 'boxed',
+					'content_width' => array( 'unit' => 'px', 'size' => 1200, 'sizes' => array() ),
+					'gap'           => 'no',
+					'css_classes'   => 'sazan-assessment-page-section',
+					'_title'        => 'سازان – ' . $label,
+					'padding'       => array(
+						'unit'     => 'px',
+						'top'      => ( 0 === $i ) ? '24' : '0',
+						'right'    => '0',
+						'bottom'   => '18',
+						'left'     => '0',
+						'isLinked' => false,
+					),
+				),
+				array( $column ),
+				'szl-sec-' . $widget_type
+			);
+		}
+
+		return $data;
 	}
 }
