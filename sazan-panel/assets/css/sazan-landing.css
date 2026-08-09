@@ -684,6 +684,70 @@
 .szl-fcontact__ico { font-size: 13px; }
 .szl-filter__ico { font-size: 10px; }
 
+
+/* ---------- quiz modal ---------- */
+
+.szl-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 99999;
+	display: none;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 24px 16px;
+	background: rgba(3, 8, 15, .84);
+	overflow: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.szl-modal.is-open { display: flex; }
+
+.szl-modal__box {
+	position: relative;
+	width: min(940px, 100%);
+	margin: auto;
+	background: var(--szl-card);
+	border: 1px solid var(--szl-line);
+	border-radius: var(--szl-radius);
+	padding: 26px;
+	box-shadow: 0 30px 80px rgba(0, 0, 0, .55);
+}
+
+.szl-modal__x {
+	position: absolute;
+	inset-inline-end: 14px;
+	top: 14px;
+	width: 34px;
+	height: 34px;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	border: 1px solid var(--szl-line);
+	background: var(--szl-card-2);
+	color: var(--szl-text);
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+	transition: all .18s ease;
+}
+
+.szl-modal__x:hover { color: var(--szl-cyan); border-color: rgba(47, 198, 234, .45); }
+
+.szl-modal__t {
+	margin: 0 0 18px;
+	padding-inline-end: 46px;
+	font-size: 19px;
+	font-weight: 800;
+}
+
+.szl-modal__body { max-width: 100%; }
+body.szl-modal-open { overflow: hidden; }
+
+@media (max-width: 767px) {
+	.szl-modal { padding: 12px; }
+	.szl-modal__box { padding: 18px; }
+}
+
 /* ---------- charts ---------- */
 
 .szl-chart { width: 100%; height: auto; display: block; }

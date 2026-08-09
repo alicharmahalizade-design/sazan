@@ -10,7 +10,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.32.3' );
+define( 'SZP_VERSION', '1.32.4' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -112,6 +112,31 @@ function szp_init() {
 		SZP_Eval_Settings::init();
 	}
 }
+
+/**
+ * حالت «برگه‌ی مشخص» در ویجت‌های صفحه فرود.
+ *
+ * وقتی دکمه‌ی آزمون به یک برگه با پارامتر ?quiz=123 لینک می‌شود، این فیلتر باعث
+ * می‌شود شورت‌کد [sazan_quiz] بدون id، شناسه را از همان آدرس بردارد.
+ *
+ * @param array $out   مقادیر نهایی.
+ * @param array $pairs مقادیر مجاز.
+ * @param array $atts  ورودی کاربر.
+ * @return array
+ */
+function szl_quiz_atts_from_query( $out, $pairs, $atts ) {
+	if ( ! empty( $out['id'] ) ) {
+		return $out;
+	}
+	foreach ( array( 'quiz', 'quiz_id' ) as $key ) {
+		if ( ! empty( $_GET[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$out['id'] = absint( wp_unslash( $_GET[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			break;
+		}
+	}
+	return $out;
+}
+add_filter( 'shortcode_atts_sazan_quiz', 'szl_quiz_atts_from_query', 10, 3 );
 
 /** Elementor: register the widget category. */
 function szp_elementor_category( $manager ) {

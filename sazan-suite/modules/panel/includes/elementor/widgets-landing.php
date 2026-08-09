@@ -204,6 +204,127 @@ abstract class SZL_Widget_Base extends \Elementor\Widget_Base {
 		return $out . '</svg>';
 	}
 
+	/* ---------------- helpers: quiz ---------------- */
+
+	/** آیا موتور آزمون سازان در دسترس است؟ */
+	protected function quiz_engine_ready() {
+		return class_exists( '\\Sazan\\Quiz_CPT' ) && class_exists( '\\Sazan\\Quiz_Engine' );
+	}
+
+	/** فهرست آزمون‌های ثبت‌شده برای کنترل انتخاب. */
+	protected function quiz_options() {
+		$opts = array( '' => '— بدون آزمون —' );
+		if ( ! class_exists( '\\Sazan\\Quiz_CPT' ) ) {
+			return $opts;
+		}
+		$posts = get_posts( array(
+			'post_type'   => \Sazan\Quiz_CPT::POST_TYPE,
+			'numberposts' => -1,
+			'post_status' => array( 'publish', 'draft', 'private' ),
+			'orderby'     => 'title',
+			'order'       => 'ASC',
+		) );
+		foreach ( $posts as $q ) {
+			$opts[ (string) $q->ID ] = $q->post_title ? $q->post_title : ( '#' . $q->ID );
+		}
+		return $opts;
+	}
+
+	/** فهرست برگه‌ها برای حالت «برگه‌ی مشخص». */
+	protected function page_options() {
+		$opts  = array( '' => '— انتخاب برگه —' );
+		$pages = get_posts( array( 'post_type' => 'page', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
+		foreach ( $pages as $pg ) {
+			$opts[ (string) $pg->ID ] = $pg->post_title ? $pg->post_title : ( '#' . $pg->ID );
+		}
+		return $opts;
+	}
+
+	/** کنترل مشترک «مقصد دکمه آزمون». */
+	protected function quiz_dest_controls( $prefix, $condition = array() ) {
+		$this->add_control( $prefix . 'quiz_mode', array(
+			'label'       => 'وقتی روی دکمه کلیک شد',
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'modal',
+			'options'     => array(
+				'modal'     => 'آزمون در همین صفحه باز شود (پنجره‌ی شناور)',
+				'permalink' => 'به صفحه‌ی خود آزمون برود',
+				'page'      => 'به یک برگه‌ی مشخص برود (شناسه آزمون در آدرس)',
+				'custom'    => 'از لینک دستی کارت استفاده شود',
+			),
+			'description' => 'حالت «پنجره‌ی شناور» به هیچ برگه‌ای نیاز ندارد و همیشه کار می‌کند.',
+			'condition'   => $condition,
+		) );
+
+		$this->add_control( $prefix . 'quiz_page', array(
+			'label'     => 'برگه‌ی مقصد',
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'options'   => $this->page_options(),
+			'default'   => '',
+			'condition' => array_merge( $condition, array( $prefix . 'quiz_mode' => 'page' ) ),
+		) );
+
+		$this->add_control( $prefix . 'quiz_arg', array(
+			'label'       => 'نام پارامتر آدرس',
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => 'quiz',
+			'description' => 'مثال: /assessment/?quiz=۱۲۳',
+			'condition'   => array_merge( $condition, array( $prefix . 'quiz_mode' => 'page' ) ),
+		) );
+	}
+
+	/** آدرس مقصد یک آزمون بر اساس حالت انتخاب‌شده. */
+	protected function quiz_url( $quiz_id, $mode, $page_id, $arg ) {
+		$quiz_id = absint( $quiz_id );
+		if ( ! $quiz_id ) { return ''; }
+
+		if ( 'page' === $mode && $page_id ) {
+			$arg = $arg ? $arg : 'quiz';
+			return add_query_arg( $arg, $quiz_id, get_permalink( absint( $page_id ) ) );
+		}
+		return (string) get_permalink( $quiz_id );
+	}
+
+	/** پنجره‌ی شناور شامل آزمون رندرشده. */
+	protected function quiz_modal_html( $modal_id, $quiz_id, $title = '' ) {
+		if ( ! $this->quiz_engine_ready() ) { return ''; }
+		$quiz_id = absint( $quiz_id );
+		if ( ! $quiz_id || \Sazan\Quiz_CPT::POST_TYPE !== get_post_type( $quiz_id ) ) { return ''; }
+
+		$title = $title ? $title : get_the_title( $quiz_id );
+
+		return '<div class="szl-modal" id="' . esc_attr( $modal_id ) . '" role="dialog" aria-modal="true" aria-label="' . esc_attr( $title ) . '">'
+			. '<div class="szl-modal__box">'
+			. '<button type="button" class="szl-modal__x" aria-label="بستن">&times;</button>'
+			. '<h3 class="szl-modal__t">' . esc_html( $title ) . '</h3>'
+			. '<div class="szl-modal__body">' . \Sazan\Quiz_Engine::instance()->render( $quiz_id ) . '</div>'
+			. '</div></div>';
+	}
+
+	/**
+	 * دکمه‌ی آزمون: بسته به حالت، لینک می‌شود یا پنجره‌ی شناور را باز می‌کند.
+	 *
+	 * @param string $modal_id شناسه‌ی یکتای پنجره (فقط در حالت modal).
+	 */
+	protected function quiz_button( $text, $quiz_id, $mode, $page_id, $arg, $fallback_link, $variant = 'cyan', $icon = null, $modal_id = '' ) {
+		if ( '' === trim( (string) $text ) ) { return ''; }
+		$quiz_id = absint( $quiz_id );
+
+		if ( $quiz_id && 'modal' === $mode && $this->quiz_engine_ready() ) {
+			return '<button type="button" class="szl-btn szl-btn--' . esc_attr( $variant ) . ' szl-quiz-open" data-target="' . esc_attr( $modal_id ) . '">'
+				. esc_html( $text ) . ( $icon ? $this->icon( $icon ) : '' ) . '</button>';
+		}
+
+		if ( $quiz_id && 'custom' !== $mode ) {
+			$url = $this->quiz_url( $quiz_id, $mode, $page_id, $arg );
+			if ( $url ) {
+				return $this->button( $text, array( 'url' => $url ), $variant, $icon );
+			}
+		}
+
+		return $this->button( $text, $fallback_link, $variant, $icon );
+	}
+
 	/* ---------------- helpers: controls ---------------- */
 
 	/** بخش استایل مشترک جعبه (پس‌زمینه، حاشیه، گردی، فاصله). */
@@ -528,6 +649,15 @@ class SZL_W_Hero extends SZL_Widget_Base {
 			'label'   => 'دکمه اول – آیکن',
 			'type'    => \Elementor\Controls_Manager::ICONS,
 		) );
+		$this->add_control( 'b1_quiz', array(
+			'label'       => 'دکمه اول – آزمون',
+			'type'        => \Elementor\Controls_Manager::SELECT2,
+			'options'     => $this->quiz_options(),
+			'default'     => '',
+			'label_block' => true,
+			'description' => 'اگر آزمونی انتخاب کنید، دکمه به‌جای لینک بالا همان آزمون را باز می‌کند.',
+		) );
+		$this->quiz_dest_controls( '' );
 		$this->add_control( 'b2_text', array(
 			'label'     => 'دکمه دوم – متن',
 			'type'      => \Elementor\Controls_Manager::TEXT,
@@ -611,15 +741,31 @@ class SZL_W_Hero extends SZL_Widget_Base {
 		if ( ! empty( $s['desc'] ) ) {
 			$o .= '<p class="szl-sub">' . nl2br( esc_html( $s['desc'] ) ) . '</p>';
 		}
+		$quiz_id  = absint( $s['b1_quiz'] ?? 0 );
+		$mode     = $s['quiz_mode'] ?? 'modal';
+		$modal_id = 'szl-quiz-' . $this->get_id() . '-hero';
+
 		$o .= '<div class="szl-hero__actions">'
-			. $this->button( $s['b1_text'] ?? '', $s['b1_link'] ?? array(), 'gold', $s['b1_icon'] ?? null )
+			. $this->quiz_button(
+				$s['b1_text'] ?? '',
+				$quiz_id,
+				$mode,
+				$s['quiz_page'] ?? '',
+				$s['quiz_arg'] ?? 'quiz',
+				$s['b1_link'] ?? array(),
+				'gold',
+				$s['b1_icon'] ?? null,
+				$modal_id
+			)
 			. $this->button( $s['b2_text'] ?? '', $s['b2_link'] ?? array(), 'ghost', $s['b2_icon'] ?? null )
 			. '</div></div>';
 
 		$glow = ( ( $s['glow'] ?? 'yes' ) === 'yes' ) ? '' : ' szl-hero__media--flat';
 		$o   .= '<div class="szl-hero__media' . $glow . '">' . $this->img( $s['image'] ?? array(), $s['title'] ?? '' ) . '</div>';
 
-		return $o . '</div></div></div>';
+		$modal = ( $quiz_id && 'modal' === $mode ) ? $this->quiz_modal_html( $modal_id, $quiz_id, $s['b1_text'] ?? '' ) : '';
+
+		return $o . '</div></div>' . $modal . '</div>';
 	}
 }
 
@@ -878,8 +1024,26 @@ class SZL_W_Tests extends SZL_Widget_Base {
 		$rep->add_control( 'icon', array( 'label' => 'آیکن (اگر تصویر ندارید)', 'type' => \Elementor\Controls_Manager::ICONS ) );
 		$rep->add_control( 'time', array( 'label' => 'مدت زمان', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '۱۸ دقیقه' ) );
 		$rep->add_control( 'level', array( 'label' => 'سطح دشواری', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'متوسط' ) );
+		$rep->add_control( 'quiz_id', array(
+			'label'       => 'آزمون این کارت',
+			'type'        => \Elementor\Controls_Manager::SELECT2,
+			'options'     => $this->quiz_options(),
+			'default'     => '',
+			'label_block' => true,
+			'description' => 'یکی از آزمون‌های ثبت‌شده در «آزمون‌های سازان» را انتخاب کنید.',
+		) );
+		$rep->add_control( 'auto_fill', array(
+			'label'        => 'عنوان و توضیح از خود آزمون گرفته شود',
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'return_value' => 'yes',
+			'description'  => 'اگر روشن باشد، عنوان و توضیح کارت از آزمون انتخاب‌شده خوانده می‌شود.',
+		) );
 		$rep->add_control( 'btn_text', array( 'label' => 'متن دکمه', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'شروع آزمون' ) );
-		$rep->add_control( 'btn_link', array( 'label' => 'لینک آزمون', 'type' => \Elementor\Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
+		$rep->add_control( 'btn_link', array(
+			'label'       => 'لینک دستی (وقتی آزمونی انتخاب نشده)',
+			'type'        => \Elementor\Controls_Manager::URL,
+			'default'     => array( 'url' => '#' ),
+		) );
 		$rep->add_control( 'btn_icon', array(
 			'label'   => 'آیکن دکمه',
 			'type'    => \Elementor\Controls_Manager::ICONS,
@@ -932,6 +1096,11 @@ class SZL_W_Tests extends SZL_Widget_Base {
 			'selectors_dictionary' => array( 'end' => '2', 'start' => '0' ),
 		) );
 
+		$this->end_controls_section();
+
+		/* --- اتصال به آزمون‌های سازان --- */
+		$this->start_controls_section( 'c_quiz', array( 'label' => 'اتصال به آزمون‌های سازان' ) );
+		$this->quiz_dest_controls( '' );
 		$this->end_controls_section();
 
 		/* ---- style ---- */
@@ -1026,8 +1195,27 @@ class SZL_W_Tests extends SZL_Widget_Base {
 			$o .= '</div>';
 		}
 
+		$mode    = $s['quiz_mode'] ?? 'modal';
+		$page_id = $s['quiz_page'] ?? '';
+		$arg     = $s['quiz_arg'] ?? 'quiz';
+		$modals  = '';
+
 		$o .= '<div class="szl-grid szl-tests">';
-		foreach ( $cards as $c ) {
+		foreach ( $cards as $idx => $c ) {
+			$quiz_id = absint( $c['quiz_id'] ?? 0 );
+
+			// عنوان و توضیح از خود آزمون.
+			if ( $quiz_id && ( $c['auto_fill'] ?? '' ) === 'yes' ) {
+				$intro = array();
+				if ( class_exists( '\\Sazan\\Quiz_CPT' ) ) {
+					$qdata = \Sazan\Quiz_CPT::get_data( $quiz_id );
+					$intro = isset( $qdata['intro'] ) ? (array) $qdata['intro'] : array();
+				}
+				$c['title'] = ! empty( $intro['title'] ) ? $intro['title'] : get_the_title( $quiz_id );
+				if ( ! empty( $intro['desc'] ) ) { $c['desc'] = $intro['desc']; }
+				if ( ! empty( $intro['start_label'] ) ) { $c['btn_text'] = $intro['start_label']; }
+			}
+
 			$art = ! empty( $c['image']['url'] ) ? $this->img( $c['image'], $c['title'] ?? '' ) : $this->icon( $c['icon'] ?? array() );
 
 			$bpos = ( ( $s['badge_pos'] ?? 'end' ) === 'start' ) ? ' szl-card__badge--start' : '';
@@ -1051,11 +1239,26 @@ class SZL_W_Tests extends SZL_Widget_Base {
 			if ( ( $s['show_level'] ?? 'yes' ) === 'yes' && ! empty( $c['level'] ) ) {
 				$o .= '<span class="szl-chip szl-chip--gold">' . $this->icon( $s['level_icon'] ?? array() ) . esc_html( $c['level'] ) . '</span>';
 			}
-			$o .= $this->button( $c['btn_text'] ?? '', $c['btn_link'] ?? array(), 'cyan', $c['btn_icon'] ?? null );
+			$modal_id = 'szl-quiz-' . $this->get_id() . '-' . $idx;
+			$o       .= $this->quiz_button(
+				$c['btn_text'] ?? '',
+				$quiz_id,
+				$mode,
+				$page_id,
+				$arg,
+				$c['btn_link'] ?? array(),
+				'cyan',
+				$c['btn_icon'] ?? null,
+				$modal_id
+			);
 			$o .= '</div></article>';
+
+			if ( $quiz_id && 'modal' === $mode ) {
+				$modals .= $this->quiz_modal_html( $modal_id, $quiz_id, $c['title'] ?? '' );
+			}
 		}
 
-		return $o . '</div></div>';
+		return $o . '</div>' . $modals . '</div>';
 	}
 }
 
@@ -1125,6 +1328,15 @@ class SZL_W_Featured extends SZL_Widget_Base {
 			'type'    => \Elementor\Controls_Manager::ICONS,
 			'default' => array( 'value' => 'fas fa-arrow-left', 'library' => 'fa-solid' ),
 		) );
+		$this->add_control( 'quiz_id', array(
+			'label'       => 'آزمون این بخش',
+			'type'        => \Elementor\Controls_Manager::SELECT2,
+			'options'     => $this->quiz_options(),
+			'default'     => '',
+			'label_block' => true,
+			'description' => 'اگر آزمونی انتخاب کنید، دکمه به‌جای لینک بالا همان آزمون را باز می‌کند.',
+		) );
+		$this->quiz_dest_controls( '' );
 
 		$this->end_controls_section();
 
@@ -1284,11 +1496,29 @@ class SZL_W_Featured extends SZL_Widget_Base {
 		}
 		$o .= '</div>';
 
-		$o .= '</div><div class="szl-featured__cta">'
-			. $this->button( $s['btn_text'] ?? '', $s['btn_link'] ?? array(), 'gold', $s['btn_icon'] ?? null )
-			. '</div></div></div>';
+		$quiz_id  = absint( $s['quiz_id'] ?? 0 );
+		$mode     = $s['quiz_mode'] ?? 'modal';
+		$modal_id = 'szl-quiz-' . $this->get_id() . '-featured';
 
-		return $o;
+		$o .= '</div><div class="szl-featured__cta">'
+			. $this->quiz_button(
+				$s['btn_text'] ?? '',
+				$quiz_id,
+				$mode,
+				$s['quiz_page'] ?? '',
+				$s['quiz_arg'] ?? 'quiz',
+				$s['btn_link'] ?? array(),
+				'gold',
+				$s['btn_icon'] ?? null,
+				$modal_id
+			)
+			. '</div></div>';
+
+		if ( $quiz_id && 'modal' === $mode ) {
+			$o .= $this->quiz_modal_html( $modal_id, $quiz_id, $s['title'] ?? '' );
+		}
+
+		return $o . '</div>';
 	}
 }
 

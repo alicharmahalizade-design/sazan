@@ -78,6 +78,42 @@
 		Array.prototype.forEach.call( nums, function ( n ) { io.observe( n ); } );
 	}
 
+	function closeModal( modal ) {
+		modal.classList.remove( 'is-open' );
+		if ( ! document.querySelector( '.szl-modal.is-open' ) ) {
+			document.body.classList.remove( 'szl-modal-open' );
+		}
+	}
+
+	function initQuizModals( root ) {
+		var openers = root.querySelectorAll( '.szl-quiz-open' );
+
+		Array.prototype.forEach.call( openers, function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				var modal = document.getElementById( btn.getAttribute( 'data-target' ) );
+				if ( ! modal ) { return; }
+				modal.classList.add( 'is-open' );
+				document.body.classList.add( 'szl-modal-open' );
+				var focusable = modal.querySelector( 'input, button, select, textarea' );
+				if ( focusable ) { focusable.focus(); }
+			} );
+		} );
+
+		Array.prototype.forEach.call( root.querySelectorAll( '.szl-modal' ), function ( modal ) {
+			modal.addEventListener( 'click', function ( e ) {
+				// کلیک روی پس‌زمینه یا دکمه بستن.
+				if ( e.target === modal || ( e.target.closest && e.target.closest( '.szl-modal__x' ) ) ) {
+					closeModal( modal );
+				}
+			} );
+		} );
+	}
+
+	document.addEventListener( 'keydown', function ( e ) {
+		if ( 'Escape' !== e.key ) { return; }
+		Array.prototype.forEach.call( document.querySelectorAll( '.szl-modal.is-open' ), closeModal );
+	} );
+
 	function init( scope ) {
 		var roots = ( scope || document ).querySelectorAll( '.szl' );
 		Array.prototype.forEach.call( roots, function ( root ) {
@@ -86,6 +122,7 @@
 			initFilters( root );
 			initFaq( root );
 			initCounters( root );
+			initQuizModals( root );
 		} );
 	}
 
