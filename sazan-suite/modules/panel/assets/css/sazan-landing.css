@@ -78,6 +78,7 @@
 	font-weight: 700;
 	border: 1px solid transparent;
 	cursor: pointer;
+	white-space: nowrap;
 	transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
 }
 
@@ -159,7 +160,6 @@
 	font-size: 22px;
 }
 
-.szl-stat__icon svg { width: 24px; height: 24px; fill: currentColor; }
 .szl-stat__num { font-size: 26px; font-weight: 800; letter-spacing: .5px; }
 .szl-stat__label { font-size: 13px; color: var(--szl-muted); }
 
@@ -266,13 +266,13 @@
 	padding: 6px 12px;
 	border-radius: 999px;
 	font-size: 12px;
+	white-space: nowrap;
 	background: var(--szl-card-2);
 	border: 1px solid var(--szl-line);
 	color: var(--szl-muted);
 }
 
 .szl-chip--gold { color: var(--szl-gold-2); border-color: rgba(240, 173, 46, .3); }
-.szl-chip svg, .szl-chip i { font-size: 11px; width: 11px; height: 11px; opacity: .85; }
 .szl-card__foot .szl-btn { padding: 9px 18px; font-size: 13px; margin-inline-start: auto; }
 
 /* ---------- 4) FEATURED ---------- */
@@ -408,22 +408,22 @@
 }
 
 .szl-panel__title { font-size: 14px; margin-bottom: 14px; color: var(--szl-text); text-align: center; }
-.szl-scores { display: flex; align-items: center; gap: 16px; }
+.szl-scores { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .szl-scores .szl-tiles { flex: 1 1 auto; }
 .szl-scores .szl-score { flex: 0 0 auto; }
-.szl-scores .szl-ring { width: 116px; height: 116px; }
-.szl-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.szl-scores .szl-ring { width: 104px; height: 104px; }
+.szl-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; min-width: 0; }
 
 .szl-tile {
 	text-align: center;
-	padding: 10px 6px;
+	padding: 10px 4px;
 	border-radius: 12px;
 	background: rgba(255, 255, 255, .02);
 	border: 1px solid var(--szl-line);
 }
 
-.szl-tile__v { font-size: 20px; font-weight: 800; color: var(--szl-cyan); }
-.szl-tile__k { font-size: 12px; color: var(--szl-muted); }
+.szl-tile__v { font-size: 20px; font-weight: 800; color: var(--szl-cyan); white-space: nowrap; }
+.szl-tile__k { font-size: 12px; color: var(--szl-muted); white-space: nowrap; }
 .szl-tile--gold .szl-tile__v { color: var(--szl-gold-2); }
 
 .szl-insights { display: grid; gap: 10px; }
@@ -623,6 +623,57 @@
 	font-size: 12.5px;
 	color: var(--szl-muted);
 }
+
+
+/* ---------- icons ----------
+ * المنتور آیکن‌ها را گاهی به‌صورت SVG درون‌خطی و بدون width/height چاپ می‌کند؛
+ * بدون این قاعده، SVG تا اندازه‌ی ظرفش بزرگ می‌شود. نمودارها (.szl-chart/.szl-ring)
+ * عمداً بیرون از این فهرست هستند.
+ */
+
+.szl-btn svg,
+.szl-chip svg,
+.szl-stat__icon svg,
+.szl-filter__ico svg,
+.szl-feature__ico svg,
+.szl-insight__ico svg,
+.szl-qa__ico svg,
+.szl-social a svg,
+.szl-fcontact__ico svg,
+.szl-search__btn svg,
+.szl-step__n svg {
+	width: 1em;
+	height: 1em;
+	min-width: 1em;
+	fill: currentColor;
+	display: inline-block;
+	vertical-align: middle;
+	flex: 0 0 auto;
+}
+
+.szl-btn i,
+.szl-chip i,
+.szl-stat__icon i,
+.szl-filter__ico i,
+.szl-feature__ico i,
+.szl-insight__ico i,
+.szl-qa__ico i,
+.szl-social a i,
+.szl-fcontact__ico i,
+.szl-search__btn i {
+	font-size: 1em;
+	line-height: 1;
+	flex: 0 0 auto;
+}
+
+.szl-chip svg,
+.szl-chip i { font-size: 11px; opacity: .85; }
+
+.szl-feature__ico { font-size: 14px; }
+.szl-insight__ico { font-size: 15px; }
+.szl-qa__ico { font-size: 13px; }
+.szl-fcontact__ico { font-size: 13px; }
+.szl-filter__ico { font-size: 10px; }
 
 /* ---------- charts ---------- */
 
