@@ -880,6 +880,11 @@ class SZL_W_Tests extends SZL_Widget_Base {
 		$rep->add_control( 'level', array( 'label' => 'سطح دشواری', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'متوسط' ) );
 		$rep->add_control( 'btn_text', array( 'label' => 'متن دکمه', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'شروع آزمون' ) );
 		$rep->add_control( 'btn_link', array( 'label' => 'لینک آزمون', 'type' => \Elementor\Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
+		$rep->add_control( 'btn_icon', array(
+			'label'   => 'آیکن دکمه',
+			'type'    => \Elementor\Controls_Manager::ICONS,
+			'default' => array( 'value' => 'fas fa-plus', 'library' => 'fa-solid' ),
+		) );
 
 		$this->add_control( 'cards', array(
 			'label'       => 'کارت‌ها',
@@ -897,8 +902,35 @@ class SZL_W_Tests extends SZL_Widget_Base {
 		) );
 
 		$this->add_control( 'show_time', array( 'label' => 'نمایش مدت زمان', 'type' => \Elementor\Controls_Manager::SWITCHER, 'default' => 'yes', 'return_value' => 'yes' ) );
+		$this->add_control( 'time_icon', array(
+			'label'     => 'آیکن مدت زمان',
+			'type'      => \Elementor\Controls_Manager::ICONS,
+			'default'   => array( 'value' => 'far fa-clock', 'library' => 'fa-regular' ),
+			'condition' => array( 'show_time' => 'yes' ),
+		) );
 		$this->add_control( 'show_level', array( 'label' => 'نمایش سطح دشواری', 'type' => \Elementor\Controls_Manager::SWITCHER, 'default' => 'yes', 'return_value' => 'yes' ) );
+		$this->add_control( 'level_icon', array(
+			'label'     => 'آیکن سطح دشواری',
+			'type'      => \Elementor\Controls_Manager::ICONS,
+			'default'   => array( 'value' => 'fas fa-tachometer-alt', 'library' => 'fa-solid' ),
+			'condition' => array( 'show_level' => 'yes' ),
+		) );
 		$this->add_control( 'show_badge', array( 'label' => 'نمایش برچسب دسته', 'type' => \Elementor\Controls_Manager::SWITCHER, 'default' => 'yes', 'return_value' => 'yes' ) );
+		$this->add_control( 'badge_pos', array(
+			'label'     => 'جای برچسب دسته',
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'end',
+			'options'   => array( 'end' => 'بالا سمت چپ', 'start' => 'بالا سمت راست' ),
+			'condition' => array( 'show_badge' => 'yes' ),
+		) );
+		$this->add_control( 'art_pos', array(
+			'label'     => 'جای تصویر آزمون',
+			'type'      => \Elementor\Controls_Manager::SELECT,
+			'default'   => 'end',
+			'options'   => array( 'end' => 'سمت چپ (کنار متن)', 'start' => 'سمت راست (کنار متن)' ),
+			'selectors' => array( '{{WRAPPER}} .szl-card__art' => 'order: {{VALUE}};' ),
+			'selectors_dictionary' => array( 'end' => '2', 'start' => '0' ),
+		) );
 
 		$this->end_controls_section();
 
@@ -987,8 +1019,8 @@ class SZL_W_Tests extends SZL_Widget_Base {
 				$key    = trim( (string) ( $f['key'] ?? '' ) );
 				$active = ( 0 === $i ) ? ' is-active' : '';
 				$o     .= '<button type="button" class="szl-filter' . $active . '" data-cat="' . esc_attr( $key ) . '">'
-					. $this->icon( $f['icon'] ?? array() )
-					. esc_html( $f['label'] ?? '' )
+					. '<span>' . esc_html( $f['label'] ?? '' ) . '</span>'
+					. $this->icon( $f['icon'] ?? array(), 'szl-filter__ico' )
 					. '</button>';
 			}
 			$o .= '</div>';
@@ -998,25 +1030,28 @@ class SZL_W_Tests extends SZL_Widget_Base {
 		foreach ( $cards as $c ) {
 			$art = ! empty( $c['image']['url'] ) ? $this->img( $c['image'], $c['title'] ?? '' ) : $this->icon( $c['icon'] ?? array() );
 
+			$bpos = ( ( $s['badge_pos'] ?? 'end' ) === 'start' ) ? ' szl-card__badge--start' : '';
+
 			$o .= '<article class="szl-card" data-cat="' . esc_attr( $c['cat_key'] ?? '' ) . '">';
 			if ( ( $s['show_badge'] ?? 'yes' ) === 'yes' && ! empty( $c['cat_label'] ) ) {
-				$o .= '<span class="szl-card__badge">' . esc_html( $c['cat_label'] ) . '</span>';
+				$o .= '<span class="szl-card__badge' . $bpos . '">' . esc_html( $c['cat_label'] ) . '</span>';
 			}
-			$o .= '<div class="szl-card__top">';
-			if ( $art ) { $o .= '<div class="szl-card__art">' . $art . '</div>'; }
-			$o .= '<div class="szl-card__head">'
+			$o .= '<div class="szl-card__top">'
+				. '<div class="szl-card__head">'
 				. '<h3 class="szl-card__title">' . esc_html( $c['title'] ?? '' ) . '</h3>'
 				. '<p class="szl-card__desc">' . esc_html( $c['desc'] ?? '' ) . '</p>'
-				. '</div></div>';
+				. '</div>';
+			if ( $art ) { $o .= '<div class="szl-card__art">' . $art . '</div>'; }
+			$o .= '</div>';
 
 			$o .= '<div class="szl-card__foot">';
 			if ( ( $s['show_time'] ?? 'yes' ) === 'yes' && ! empty( $c['time'] ) ) {
-				$o .= '<span class="szl-chip">' . esc_html( $c['time'] ) . '</span>';
+				$o .= '<span class="szl-chip">' . $this->icon( $s['time_icon'] ?? array() ) . esc_html( $c['time'] ) . '</span>';
 			}
 			if ( ( $s['show_level'] ?? 'yes' ) === 'yes' && ! empty( $c['level'] ) ) {
-				$o .= '<span class="szl-chip szl-chip--gold">' . esc_html( $c['level'] ) . '</span>';
+				$o .= '<span class="szl-chip szl-chip--gold">' . $this->icon( $s['level_icon'] ?? array() ) . esc_html( $c['level'] ) . '</span>';
 			}
-			$o .= $this->button( $c['btn_text'] ?? '', $c['btn_link'] ?? array(), 'cyan' );
+			$o .= $this->button( $c['btn_text'] ?? '', $c['btn_link'] ?? array(), 'cyan', $c['btn_icon'] ?? null );
 			$o .= '</div></article>';
 		}
 
@@ -1052,6 +1087,7 @@ class SZL_W_Featured extends SZL_Widget_Base {
 
 		$meta = new \Elementor\Repeater();
 		$meta->add_control( 'text', array( 'label' => 'متن', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '۴۵ دقیقه' ) );
+		$meta->add_control( 'icon', array( 'label' => 'آیکن', 'type' => \Elementor\Controls_Manager::ICONS ) );
 		$meta->add_control( 'gold', array( 'label' => 'رنگ طلایی', 'type' => \Elementor\Controls_Manager::SWITCHER, 'return_value' => 'yes' ) );
 		$this->add_control( 'metas', array(
 			'label'       => 'چیپ‌های اطلاعات',
@@ -1084,6 +1120,11 @@ class SZL_W_Featured extends SZL_Widget_Base {
 
 		$this->add_control( 'btn_text', array( 'label' => 'متن دکمه', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'شروع ارزیابی جامع', 'separator' => 'before' ) );
 		$this->add_control( 'btn_link', array( 'label' => 'لینک دکمه', 'type' => \Elementor\Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
+		$this->add_control( 'btn_icon', array(
+			'label'   => 'آیکن دکمه',
+			'type'    => \Elementor\Controls_Manager::ICONS,
+			'default' => array( 'value' => 'fas fa-arrow-left', 'library' => 'fa-solid' ),
+		) );
 
 		$this->end_controls_section();
 
@@ -1142,11 +1183,12 @@ class SZL_W_Featured extends SZL_Widget_Base {
 			'selectors' => array( '{{WRAPPER}} .szl-feature__ico' => 'background: {{VALUE}};' ),
 		) );
 		$this->add_responsive_control( 'feat_cols', array(
-			'label'     => 'ستون‌های ویژگی‌ها',
-			'type'      => \Elementor\Controls_Manager::SELECT,
-			'default'   => '3',
+			'label'          => 'ستون‌های ویژگی‌ها',
+			'type'           => \Elementor\Controls_Manager::SELECT,
+			'default'        => '5',
+			'tablet_default' => '3',
 			'mobile_default' => '1',
-			'options'   => array( '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵' ),
+			'options'        => array( '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶' ),
 			'selectors' => array( '{{WRAPPER}} .szl-features' => 'grid-template-columns: repeat({{VALUE}}, minmax(0, 1fr));' ),
 		) );
 		$this->end_controls_section();
@@ -1161,7 +1203,15 @@ class SZL_W_Featured extends SZL_Widget_Base {
 			'type'       => \Elementor\Controls_Manager::SLIDER,
 			'size_units' => array( 'px' ),
 			'range'      => array( 'px' => array( 'min' => 180, 'max' => 520 ) ),
-			'selectors'  => array( '{{WRAPPER}} .szl-featured__grid' => 'grid-template-columns: {{SIZE}}{{UNIT}} 1fr;' ),
+			'default'    => array( 'unit' => 'px', 'size' => 320 ),
+			'selectors'  => array( '{{WRAPPER}} .szl-featured__grid' => 'grid-template-columns: var(--szl-aside-w, 190px) 1fr {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->add_responsive_control( 'aside_w', array(
+			'label'      => 'عرض ستون امتیاز',
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 120, 'max' => 360 ) ),
+			'selectors'  => array( '{{WRAPPER}} .szl-featured' => '--szl-aside-w: {{SIZE}}{{UNIT}};' ),
 		) );
 		$this->end_controls_section();
 
@@ -1170,15 +1220,42 @@ class SZL_W_Featured extends SZL_Widget_Base {
 	}
 
 	protected function html( array $s ) {
-		$o = '<div class="szl"><div class="szl-box szl-featured">';
+		$o = '<div class="szl"><div class="szl-box szl-featured"><div class="szl-featured__grid">';
 
+		/* ستون راست: برچسب ویژه + حلقه امتیاز */
+		$o .= '<div class="szl-featured__aside">';
 		if ( ! empty( $s['badge'] ) ) {
 			$o .= '<div class="szl-eyebrow">' . esc_html( $s['badge'] ) . '</div>';
 		}
+		if ( ( $s['show_score'] ?? 'yes' ) === 'yes' ) {
+			$o .= '<div class="szl-score">'
+				. $this->ring_svg( (int) ( $s['score'] ?? 0 ), (int) ( $s['score_max'] ?? 100 ), '', ( $s['ring_color'] ?? '' ) ?: '#2fc6ea' )
+				. '<span class="szl-score__label">' . esc_html( $s['score_label'] ?? '' ) . '</span>'
+				. '</div>';
+		}
+		$o .= '</div>';
 
-		$o .= '<div class="szl-featured__grid">';
+		/* ستون میانی: متن و ویژگی‌ها */
+		$o .= '<div class="szl-featured__body">';
+		if ( ! empty( $s['title'] ) ) {
+			$o .= '<h2 class="szl-h">' . esc_html( $s['title'] ) . '</h2>';
+		}
+		if ( ! empty( $s['desc'] ) ) {
+			$o .= '<p class="szl-sub">' . esc_html( $s['desc'] ) . '</p>';
+		}
+		if ( ! empty( $s['features'] ) ) {
+			$o .= '<div class="szl-features">';
+			foreach ( (array) $s['features'] as $f ) {
+				$o .= '<div class="szl-feature">'
+					. '<span class="szl-feature__ico">' . $this->icon( $f['icon'] ?? array() ) . '</span>'
+					. '<span class="szl-feature__t">' . esc_html( $f['text'] ?? '' ) . '</span>'
+					. '</div>';
+			}
+			$o .= '</div>';
+		}
+		$o .= '</div>';
 
-		/* ستون نمودار */
+		/* ستون چپ: نمودار رادار + چیپ‌های اطلاعات */
 		$o .= '<div class="szl-featured__chart">';
 		if ( ( $s['show_radar'] ?? 'yes' ) === 'yes' && ! empty( $s['axes'] ) ) {
 			$pts = array();
@@ -1195,47 +1272,21 @@ class SZL_W_Featured extends SZL_Widget_Base {
 				( $s['radar_grid'] ?? '' ) ?: '#1d3149'
 			);
 		}
-		$o .= '</div>';
-
-		/* ستون متن */
-		$o .= '<div class="szl-featured__body">';
-		if ( ! empty( $s['title'] ) ) {
-			$o .= '<h2 class="szl-h">' . esc_html( $s['title'] ) . '</h2>';
-		}
-		if ( ! empty( $s['desc'] ) ) {
-			$o .= '<p class="szl-sub">' . esc_html( $s['desc'] ) . '</p>';
-		}
-
 		if ( ! empty( $s['metas'] ) ) {
 			$o .= '<div class="szl-featured__meta">';
 			foreach ( (array) $s['metas'] as $m ) {
 				$cls = ( ( $m['gold'] ?? '' ) === 'yes' ) ? ' szl-chip--gold' : '';
-				$o  .= '<span class="szl-chip' . $cls . '">' . esc_html( $m['text'] ?? '' ) . '</span>';
+				$o  .= '<span class="szl-chip' . $cls . '">'
+					. $this->icon( $m['icon'] ?? array() )
+					. esc_html( $m['text'] ?? '' ) . '</span>';
 			}
 			$o .= '</div>';
-		}
-
-		$o .= '<div class="szl-featured__row" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">';
-		if ( ! empty( $s['features'] ) ) {
-			$o .= '<div class="szl-features" style="flex:1 1 320px">';
-			foreach ( (array) $s['features'] as $f ) {
-				$o .= '<div class="szl-feature">'
-					. '<span class="szl-feature__ico">' . $this->icon( $f['icon'] ?? array() ) . '</span>'
-					. esc_html( $f['text'] ?? '' )
-					. '</div>';
-			}
-			$o .= '</div>';
-		}
-		if ( ( $s['show_score'] ?? 'yes' ) === 'yes' ) {
-			$o .= '<div class="szl-score">'
-				. $this->ring_svg( (int) ( $s['score'] ?? 0 ), (int) ( $s['score_max'] ?? 100 ), '', ( $s['ring_color'] ?? '' ) ?: '#2fc6ea' )
-				. '<span class="szl-score__label">' . esc_html( $s['score_label'] ?? '' ) . '</span>'
-				. '</div>';
 		}
 		$o .= '</div>';
 
-		$o .= '<div class="szl-featured__cta">' . $this->button( $s['btn_text'] ?? '', $s['btn_link'] ?? array(), 'gold' ) . '</div>';
-		$o .= '</div></div></div></div>';
+		$o .= '</div><div class="szl-featured__cta">'
+			. $this->button( $s['btn_text'] ?? '', $s['btn_link'] ?? array(), 'gold', $s['btn_icon'] ?? null )
+			. '</div></div></div>';
 
 		return $o;
 	}
@@ -1283,6 +1334,12 @@ class SZL_W_Steps extends SZL_Widget_Base {
 			'type'         => \Elementor\Controls_Manager::SWITCHER,
 			'return_value' => 'yes',
 		) );
+		$this->add_control( 'arrows', array(
+			'label'        => 'فلش اتصال بین گام‌ها',
+			'type'         => \Elementor\Controls_Manager::SWITCHER,
+			'default'      => 'yes',
+			'return_value' => 'yes',
+		) );
 		$this->end_controls_section();
 
 		/* ---- style ---- */
@@ -1313,18 +1370,20 @@ class SZL_W_Steps extends SZL_Widget_Base {
 		if ( ! $items ) { return ''; }
 		if ( ( $s['reverse'] ?? '' ) === 'yes' ) { $items = array_reverse( $items ); }
 
-		$o = '<div class="szl">' . $this->heading_html( $s ) . '<div class="szl-grid szl-steps">';
+		$arrows = ( $s['arrows'] ?? 'yes' ) === 'yes' ? ' szl-steps--arrows' : '';
+
+		$o = '<div class="szl">' . $this->heading_html( $s ) . '<div class="szl-grid szl-steps' . $arrows . '">';
 		foreach ( $items as $it ) {
 			$art = ! empty( $it['image']['url'] ) ? $this->img( $it['image'], $it['title'] ?? '' ) : $this->icon( $it['icon'] ?? array() );
-			$o  .= '<div class="szl-step">';
-			if ( $art ) { $o .= '<div class="szl-step__art">' . $art . '</div>'; }
-			$o .= '<div class="szl-step__body">'
+			$o  .= '<div class="szl-step"><div class="szl-step__body">'
 				. '<div class="szl-step__title">'
 				. ( '' !== ( $it['num'] ?? '' ) ? '<span class="szl-step__n">' . esc_html( $it['num'] ) . '</span>' : '' )
-				. esc_html( $it['title'] ?? '' )
+				. '<span>' . esc_html( $it['title'] ?? '' ) . '</span>'
 				. '</div>'
 				. '<p class="szl-step__desc">' . esc_html( $it['desc'] ?? '' ) . '</p>'
-				. '</div></div>';
+				. '</div>';
+			if ( $art ) { $o .= '<div class="szl-step__art">' . $art . '</div>'; }
+			$o .= '</div>';
 		}
 		return $o . '</div></div>';
 	}
@@ -1496,7 +1555,7 @@ class SZL_W_Report extends SZL_Widget_Base {
 		if ( ! empty( $s['scores_title'] ) ) {
 			$o .= '<div class="szl-panel__title">' . esc_html( $s['scores_title'] ) . '</div>';
 		}
-		$o .= '<div class="szl-tiles">';
+		$o .= '<div class="szl-scores"><div class="szl-tiles">';
 		foreach ( (array) ( $s['tiles'] ?? array() ) as $t ) {
 			$cls = ( ( $t['gold'] ?? '' ) === 'yes' ) ? ' szl-tile--gold' : '';
 			$o  .= '<div class="szl-tile' . $cls . '">'
@@ -1504,11 +1563,10 @@ class SZL_W_Report extends SZL_Widget_Base {
 				. '<div class="szl-tile__k">' . esc_html( $t['label'] ?? '' ) . '</div>'
 				. '</div>';
 		}
-		$o .= '</div>';
-		$o .= '<div class="szl-score" style="margin-top:14px">'
+		$o .= '</div><div class="szl-score">'
 			. $this->ring_svg( (int) ( $s['total'] ?? 0 ), (int) ( $s['total_max'] ?? 100 ), '', ( $s['ring_color'] ?? '' ) ?: '#2fc6ea' )
 			. '<span class="szl-score__label">' . esc_html( $s['total_label'] ?? '' ) . '</span>'
-			. '</div></div>';
+			. '</div></div></div>';
 
 		/* --- ستون نمودار --- */
 		$a = $this->to_numbers( $s['series_a'] ?? '' );
@@ -1553,8 +1611,8 @@ class SZL_W_Faq extends SZL_Widget_Base {
 		$this->add_control( 'image_pos', array(
 			'label'     => 'جای تصویر',
 			'type'      => \Elementor\Controls_Manager::SELECT,
-			'default'   => '0',
-			'options'   => array( '0' => 'سمت چپ', '2' => 'سمت راست' ),
+			'default'   => '2',
+			'options'   => array( '2' => 'سمت چپ', '0' => 'سمت راست' ),
 			'selectors' => array( '{{WRAPPER}} .szl-faq__media' => 'order: {{VALUE}};' ),
 		) );
 
@@ -1605,7 +1663,7 @@ class SZL_W_Faq extends SZL_Widget_Base {
 			'type'       => \Elementor\Controls_Manager::SLIDER,
 			'size_units' => array( 'px' ),
 			'range'      => array( 'px' => array( 'min' => 120, 'max' => 500 ) ),
-			'selectors'  => array( '{{WRAPPER}} .szl-faq__grid' => 'grid-template-columns: {{SIZE}}{{UNIT}} 1fr;' ),
+			'selectors'  => array( '{{WRAPPER}} .szl-faq__grid' => 'grid-template-columns: 1fr {{SIZE}}{{UNIT}};' ),
 		) );
 		$this->end_controls_section();
 
@@ -1619,9 +1677,8 @@ class SZL_W_Faq extends SZL_Widget_Base {
 		$single = ( $s['single'] ?? 'yes' ) === 'yes' ? 'yes' : 'no';
 		$img    = $this->img( $s['image'] ?? array(), $s['sec_title'] ?? '' );
 
-		$o  = '<div class="szl" data-single="' . esc_attr( $single ) . '">' . $this->heading_html( $s );
-		$o .= '<div class="szl-faq"><div class="szl-faq__grid">';
-		$o .= '<div class="szl-faq__media">' . $img . '</div>';
+		$o  = '<div class="szl" data-single="' . esc_attr( $single ) . '">';
+		$o .= '<div class="szl-box szl-faq">' . $this->heading_html( $s ) . '<div class="szl-faq__grid">';
 		$o .= '<div class="szl-faq__list">';
 
 		foreach ( $items as $idx => $it ) {
@@ -1635,13 +1692,361 @@ class SZL_W_Faq extends SZL_Widget_Base {
 				. '</div>';
 		}
 
-		return $o . '</div></div></div></div>';
+		$o .= '</div><div class="szl-faq__media">' . $img . '</div>';
+
+		return $o . '</div></div></div>';
+	}
+}
+
+/* ==================== ۸) هدر (لوگو + منو + جستجو) ==================== */
+
+class SZL_W_Header extends SZL_Widget_Base {
+
+	public function get_name() { return 'szl_header'; }
+	public function get_title() { return 'سازان: هدر سایت'; }
+	public function get_icon() { return 'eicon-header'; }
+
+	protected function register_controls() {
+
+		$this->start_controls_section( 'c_logo', array( 'label' => 'لوگو' ) );
+		$this->add_control( 'logo', array( 'label' => 'تصویر لوگو', 'type' => \Elementor\Controls_Manager::MEDIA ) );
+		$this->add_control( 'logo_text', array( 'label' => 'متن لوگو', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'SAZAN' ) );
+		$this->add_control( 'logo_sub', array( 'label' => 'زیرنویس لوگو', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'آکادمی کسب‌وکار سازان' ) );
+		$this->add_control( 'logo_link', array( 'label' => 'لینک لوگو', 'type' => \Elementor\Controls_Manager::URL, 'default' => array( 'url' => '/' ) ) );
+		$this->end_controls_section();
+
+		$this->start_controls_section( 'c_menu', array( 'label' => 'منو' ) );
+		$rep = new \Elementor\Repeater();
+		$rep->add_control( 'label', array( 'label' => 'عنوان', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'صفحه اصلی', 'label_block' => true ) );
+		$rep->add_control( 'link', array( 'label' => 'لینک', 'type' => \Elementor\Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
+		$rep->add_control( 'active', array( 'label' => 'آیتم فعال', 'type' => \Elementor\Controls_Manager::SWITCHER, 'return_value' => 'yes' ) );
+		$this->add_control( 'menu', array(
+			'label'       => 'آیتم‌های منو',
+			'type'        => \Elementor\Controls_Manager::REPEATER,
+			'fields'      => $rep->get_controls(),
+			'title_field' => '{{{ label }}}',
+			'default'     => array(
+				array( 'label' => 'صفحه اصلی' ),
+				array( 'label' => 'دوره‌ها' ),
+				array( 'label' => 'مقالات' ),
+				array( 'label' => 'ارزیابی', 'active' => 'yes' ),
+				array( 'label' => 'درباره ما' ),
+			),
+		) );
+		$this->end_controls_section();
+
+		$this->start_controls_section( 'c_search', array( 'label' => 'جستجو' ) );
+		$this->add_control( 'show_search', array( 'label' => 'نمایش کادر جستجو', 'type' => \Elementor\Controls_Manager::SWITCHER, 'default' => 'yes', 'return_value' => 'yes' ) );
+		$this->add_control( 'search_ph', array(
+			'label'     => 'متن راهنما',
+			'type'      => \Elementor\Controls_Manager::TEXT,
+			'default'   => 'جستجو در آزمون‌ها و مقالات...',
+			'condition' => array( 'show_search' => 'yes' ),
+		) );
+		$this->add_control( 'search_icon', array(
+			'label'     => 'آیکن جستجو',
+			'type'      => \Elementor\Controls_Manager::ICONS,
+			'default'   => array( 'value' => 'fas fa-search', 'library' => 'fa-solid' ),
+			'condition' => array( 'show_search' => 'yes' ),
+		) );
+		$this->add_control( 'search_action', array(
+			'label'       => 'آدرس صفحه نتایج',
+			'type'        => \Elementor\Controls_Manager::TEXT,
+			'default'     => '/',
+			'description' => 'خالی بگذارید تا از جستجوی پیش‌فرض وردپرس استفاده شود.',
+			'condition'   => array( 'show_search' => 'yes' ),
+		) );
+		$this->add_control( 'sticky', array( 'label' => 'چسبان در بالای صفحه', 'type' => \Elementor\Controls_Manager::SWITCHER, 'return_value' => 'yes' ) );
+		$this->end_controls_section();
+
+		/* ---- style ---- */
+		$this->box_style_section( 'st_box', 'نوار هدر', '.szl-header' );
+
+		$this->start_controls_section( 'st_menu', array( 'label' => 'استایل منو', 'tab' => \Elementor\Controls_Manager::TAB_STYLE ) );
+		$this->text_style( 'm_item', 'آیتم منو', '.szl-nav a' );
+		$this->add_control( 'm_active', array( 'label' => 'رنگ آیتم فعال', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-nav a.is-active' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'm_hover', array( 'label' => 'رنگ شناور', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-nav a:hover' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'm_underline', array( 'label' => 'رنگ خط زیر آیتم فعال', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-nav a.is-active::after' => 'background: {{VALUE}};' ) ) );
+		$this->gap_control( 'm_gap', '.szl-nav', 26 );
+		$this->end_controls_section();
+
+		$this->start_controls_section( 'st_logo', array( 'label' => 'استایل لوگو', 'tab' => \Elementor\Controls_Manager::TAB_STYLE ) );
+		$this->text_style( 'l_text', 'متن لوگو', '.szl-logo__t' );
+		$this->text_style( 'l_sub', 'زیرنویس لوگو', '.szl-logo__s' );
+		$this->add_responsive_control( 'l_w', array(
+			'label'      => 'عرض تصویر لوگو',
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 20, 'max' => 200 ) ),
+			'selectors'  => array( '{{WRAPPER}} .szl-logo img' => 'width: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
+		$this->start_controls_section( 'st_search', array(
+			'label'     => 'استایل جستجو',
+			'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			'condition' => array( 'show_search' => 'yes' ),
+		) );
+		$this->add_control( 's_bg', array( 'label' => 'پس‌زمینه', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-search' => 'background: {{VALUE}};' ) ) );
+		$this->add_control( 's_bc', array( 'label' => 'رنگ حاشیه', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-search' => 'border-color: {{VALUE}};' ) ) );
+		$this->text_style( 's_input', 'متن ورودی', '.szl-search input' );
+		$this->add_control( 's_btn_bg', array( 'label' => 'پس‌زمینه دکمه', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-search__btn' => 'background: {{VALUE}};' ) ) );
+		$this->add_control( 's_btn_c', array( 'label' => 'رنگ آیکن دکمه', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-search__btn' => 'color: {{VALUE}};' ) ) );
+		$this->add_responsive_control( 's_w', array(
+			'label'      => 'عرض کادر جستجو',
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px', '%' ),
+			'range'      => array( 'px' => array( 'min' => 120, 'max' => 600 ), '%' => array( 'min' => 10, 'max' => 100 ) ),
+			'selectors'  => array( '{{WRAPPER}} .szl-search' => 'width: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
+		$this->palette_section();
+	}
+
+	protected function html( array $s ) {
+		$sticky = ( ( $s['sticky'] ?? '' ) === 'yes' ) ? ' szl-header--sticky' : '';
+
+		$o = '<div class="szl"><div class="szl-box szl-header' . $sticky . '">';
+
+		/* لوگو */
+		$o .= '<a ' . $this->link_attrs( (array) ( $s['logo_link'] ?? array() ) ) . ' class="szl-logo">';
+		if ( ! empty( $s['logo']['url'] ) ) {
+			$o .= $this->img( $s['logo'], $s['logo_text'] ?? '' );
+		}
+		if ( ! empty( $s['logo_text'] ) || ! empty( $s['logo_sub'] ) ) {
+			$o .= '<span class="szl-logo__b">'
+				. '<span class="szl-logo__t">' . esc_html( $s['logo_text'] ?? '' ) . '</span>'
+				. '<span class="szl-logo__s">' . esc_html( $s['logo_sub'] ?? '' ) . '</span>'
+				. '</span>';
+		}
+		$o .= '</a>';
+
+		/* منو */
+		if ( ! empty( $s['menu'] ) ) {
+			$o .= '<nav class="szl-nav">';
+			foreach ( (array) $s['menu'] as $m ) {
+				$cls = ( ( $m['active'] ?? '' ) === 'yes' ) ? ' class="is-active"' : '';
+				$o  .= '<a ' . $this->link_attrs( (array) ( $m['link'] ?? array() ) ) . $cls . '>' . esc_html( $m['label'] ?? '' ) . '</a>';
+			}
+			$o .= '</nav>';
+		}
+
+		/* جستجو */
+		if ( ( $s['show_search'] ?? 'yes' ) === 'yes' ) {
+			$action = trim( (string) ( $s['search_action'] ?? '' ) );
+			$action = $action ? $action : home_url( '/' );
+			$o     .= '<form class="szl-search" role="search" method="get" action="' . esc_url( $action ) . '">'
+				. '<button type="submit" class="szl-search__btn" aria-label="جستجو">' . $this->icon( $s['search_icon'] ?? array() ) . '</button>'
+				. '<input type="search" name="s" value="" placeholder="' . esc_attr( $s['search_ph'] ?? '' ) . '" />'
+				. '</form>';
+		}
+
+		return $o . '</div></div>';
+	}
+}
+
+/* ==================== ۹) فوتر ==================== */
+
+class SZL_W_Footer extends SZL_Widget_Base {
+
+	public function get_name() { return 'szl_footer'; }
+	public function get_title() { return 'سازان: فوتر سایت'; }
+	public function get_icon() { return 'eicon-footer'; }
+
+	/** ریپیتر لینک‌های ساده. */
+	protected function links_repeater() {
+		$r = new \Elementor\Repeater();
+		$r->add_control( 'label', array( 'label' => 'عنوان', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'دوره‌ها', 'label_block' => true ) );
+		$r->add_control( 'link', array( 'label' => 'لینک', 'type' => \Elementor\Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
+		return $r;
+	}
+
+	protected function register_controls() {
+
+		/* ستون تماس */
+		$this->start_controls_section( 'c_contact', array( 'label' => 'ستون اطلاعات تماس' ) );
+		$this->add_control( 'contact_title', array( 'label' => 'عنوان ستون', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'اطلاعات تماس' ) );
+		$cr = new \Elementor\Repeater();
+		$cr->add_control( 'icon', array( 'label' => 'آیکن', 'type' => \Elementor\Controls_Manager::ICONS, 'default' => array( 'value' => 'fas fa-phone', 'library' => 'fa-solid' ) ) );
+		$cr->add_control( 'text', array( 'label' => 'متن', 'type' => \Elementor\Controls_Manager::TEXTAREA, 'rows' => 2, 'default' => '۰۲۱-۹۱۰۰۹۰۰۰', 'label_block' => true ) );
+		$cr->add_control( 'link', array( 'label' => 'لینک (اختیاری)', 'type' => \Elementor\Controls_Manager::URL ) );
+		$this->add_control( 'contacts', array(
+			'label'       => 'آیتم‌ها',
+			'type'        => \Elementor\Controls_Manager::REPEATER,
+			'fields'      => $cr->get_controls(),
+			'title_field' => '{{{ text }}}',
+			'default'     => array(
+				array( 'text' => '۰۲۱-۹۱۰۰۹۰۰۰', 'icon' => array( 'value' => 'fas fa-phone', 'library' => 'fa-solid' ) ),
+				array( 'text' => 'info@sazan.academy', 'icon' => array( 'value' => 'fas fa-envelope', 'library' => 'fa-solid' ) ),
+				array( 'text' => "تهران، خیابان سهروردی، پلاک ۱۳۳\nواحد ۵، ساختمان سازان", 'icon' => array( 'value' => 'fas fa-map-marker-alt', 'library' => 'fa-solid' ) ),
+			),
+		) );
+		$this->end_controls_section();
+
+		/* ستون دسته‌بندی‌ها */
+		$this->start_controls_section( 'c_cats', array( 'label' => 'ستون دسته‌بندی‌ها' ) );
+		$this->add_control( 'cats_title', array( 'label' => 'عنوان ستون', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'دسته‌بندی‌ها' ) );
+		$this->add_control( 'cats', array(
+			'label'       => 'لینک‌ها',
+			'type'        => \Elementor\Controls_Manager::REPEATER,
+			'fields'      => $this->links_repeater()->get_controls(),
+			'title_field' => '{{{ label }}}',
+			'default'     => array(
+				array( 'label' => 'فروش' ),
+				array( 'label' => 'مارکتینگ' ),
+				array( 'label' => 'برندینگ' ),
+				array( 'label' => 'سیستم‌سازی' ),
+				array( 'label' => 'منابع انسانی' ),
+				array( 'label' => 'مالی' ),
+				array( 'label' => 'رهبری' ),
+			),
+		) );
+		$this->end_controls_section();
+
+		/* ستون دسترسی سریع */
+		$this->start_controls_section( 'c_quick', array( 'label' => 'ستون دسترسی سریع' ) );
+		$this->add_control( 'quick_title', array( 'label' => 'عنوان ستون', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'دسترسی سریع' ) );
+		$this->add_control( 'quick', array(
+			'label'       => 'لینک‌ها',
+			'type'        => \Elementor\Controls_Manager::REPEATER,
+			'fields'      => $this->links_repeater()->get_controls(),
+			'title_field' => '{{{ label }}}',
+			'default'     => array(
+				array( 'label' => 'دوره‌ها' ),
+				array( 'label' => 'ارزیابی' ),
+				array( 'label' => 'مقالات' ),
+				array( 'label' => 'تقویم آموزشی' ),
+				array( 'label' => 'تماس با ما' ),
+			),
+		) );
+		$this->end_controls_section();
+
+		/* ستون درباره */
+		$this->start_controls_section( 'c_about', array( 'label' => 'ستون درباره' ) );
+		$this->add_control( 'about_title', array( 'label' => 'عنوان ستون', 'type' => \Elementor\Controls_Manager::TEXT, 'default' => 'درباره سازان' ) );
+		$this->add_control( 'about_text', array(
+			'label'   => 'متن',
+			'type'    => \Elementor\Controls_Manager::TEXTAREA,
+			'rows'    => 5,
+			'default' => 'سازان مرجع آموزش و مشاوره کسب‌وکار برای کارآفرینان و مدیران ایرانی است. با آموزش، مشاوره و ابزارهای کاربردی، مسیر رشد کسب‌وکار شما را هموار می‌کنیم.',
+		) );
+		$sr = new \Elementor\Repeater();
+		$sr->add_control( 'icon', array( 'label' => 'آیکن', 'type' => \Elementor\Controls_Manager::ICONS, 'default' => array( 'value' => 'fab fa-instagram', 'library' => 'fa-brands' ) ) );
+		$sr->add_control( 'link', array( 'label' => 'لینک', 'type' => \Elementor\Controls_Manager::URL, 'default' => array( 'url' => '#' ) ) );
+		$this->add_control( 'socials', array(
+			'label'       => 'شبکه‌های اجتماعی',
+			'type'        => \Elementor\Controls_Manager::REPEATER,
+			'fields'      => $sr->get_controls(),
+			'title_field' => '{{{ icon.value }}}',
+			'default'     => array(
+				array( 'icon' => array( 'value' => 'fab fa-linkedin-in', 'library' => 'fa-brands' ) ),
+				array( 'icon' => array( 'value' => 'fab fa-instagram', 'library' => 'fa-brands' ) ),
+				array( 'icon' => array( 'value' => 'fab fa-telegram-plane', 'library' => 'fa-brands' ) ),
+				array( 'icon' => array( 'value' => 'fab fa-youtube', 'library' => 'fa-brands' ) ),
+			),
+		) );
+		$this->end_controls_section();
+
+		$this->start_controls_section( 'c_bottom', array( 'label' => 'کپی‌رایت' ) );
+		$this->add_control( 'copy', array(
+			'label'   => 'متن کپی‌رایت',
+			'type'    => \Elementor\Controls_Manager::TEXT,
+			'default' => '© ۱۴۰۴ تمامی حقوق این وب‌سایت متعلق به سازان است.',
+			'label_block' => true,
+		) );
+		$this->end_controls_section();
+
+		/* ---- style ---- */
+		$this->box_style_section( 'st_box', 'جعبه فوتر', '.szl-footer' );
+
+		$this->start_controls_section( 'st_txt', array( 'label' => 'متن‌ها', 'tab' => \Elementor\Controls_Manager::TAB_STYLE ) );
+		$this->columns_control( 'cols', '.szl-footer__cols', 4 );
+		$this->gap_control( 'cols_gap', '.szl-footer__cols', 26 );
+		$this->text_style( 'f_h', 'عنوان ستون‌ها', '.szl-fcol__h' );
+		$this->text_style( 'f_l', 'لینک‌ها و متن‌ها', '.szl-fcol a, .szl-fcol p, .szl-fcol li' );
+		$this->add_control( 'f_l_hover', array( 'label' => 'رنگ لینک شناور', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-fcol a:hover' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'f_ico', array( 'label' => 'رنگ آیکن تماس', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-fcontact__ico' => 'color: {{VALUE}};' ) ) );
+		$this->text_style( 'f_copy', 'کپی‌رایت', '.szl-footer__copy' );
+		$this->end_controls_section();
+
+		$this->start_controls_section( 'st_social', array( 'label' => 'شبکه‌های اجتماعی', 'tab' => \Elementor\Controls_Manager::TAB_STYLE ) );
+		$this->add_control( 'so_color', array( 'label' => 'رنگ آیکن', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-social a' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'so_bg', array( 'label' => 'پس‌زمینه', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-social a' => 'background: {{VALUE}};' ) ) );
+		$this->add_control( 'so_h_color', array( 'label' => 'رنگ آیکن (شناور)', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-social a:hover' => 'color: {{VALUE}};' ) ) );
+		$this->add_control( 'so_h_bg', array( 'label' => 'پس‌زمینه (شناور)', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => array( '{{WRAPPER}} .szl-social a:hover' => 'background: {{VALUE}};' ) ) );
+		$this->add_responsive_control( 'so_size', array(
+			'label'      => 'اندازه',
+			'type'       => \Elementor\Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 24, 'max' => 70 ) ),
+			'selectors'  => array( '{{WRAPPER}} .szl-social a' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};' ),
+		) );
+		$this->end_controls_section();
+
+		$this->palette_section();
+	}
+
+	/** ستون لینک‌ها. */
+	protected function links_col( $title, $items ) {
+		if ( empty( $items ) ) { return ''; }
+		$o = '<div class="szl-fcol"><div class="szl-fcol__h">' . esc_html( $title ) . '</div><ul class="szl-flinks">';
+		foreach ( (array) $items as $l ) {
+			$o .= '<li><a ' . $this->link_attrs( (array) ( $l['link'] ?? array() ) ) . '>' . esc_html( $l['label'] ?? '' ) . '</a></li>';
+		}
+		return $o . '</ul></div>';
+	}
+
+	protected function html( array $s ) {
+		$o = '<div class="szl"><div class="szl-box szl-footer"><div class="szl-footer__cols">';
+
+		/* ستون تماس (راست) */
+		if ( ! empty( $s['contacts'] ) ) {
+			$o .= '<div class="szl-fcol"><div class="szl-fcol__h">' . esc_html( $s['contact_title'] ?? '' ) . '</div>';
+			foreach ( (array) $s['contacts'] as $c ) {
+				$txt = nl2br( esc_html( $c['text'] ?? '' ) );
+				if ( ! empty( $c['link']['url'] ) ) {
+					$txt = '<a ' . $this->link_attrs( (array) $c['link'] ) . '>' . $txt . '</a>';
+				}
+				$o .= '<div class="szl-fcontact">'
+					. '<span class="szl-fcontact__ico">' . $this->icon( $c['icon'] ?? array() ) . '</span>'
+					. '<span>' . $txt . '</span></div>';
+			}
+			$o .= '</div>';
+		}
+
+		$o .= $this->links_col( $s['cats_title'] ?? '', $s['cats'] ?? array() );
+		$o .= $this->links_col( $s['quick_title'] ?? '', $s['quick'] ?? array() );
+
+		/* ستون درباره (چپ) */
+		$o .= '<div class="szl-fcol">';
+		if ( ! empty( $s['about_title'] ) ) {
+			$o .= '<div class="szl-fcol__h">' . esc_html( $s['about_title'] ) . '</div>';
+		}
+		if ( ! empty( $s['about_text'] ) ) {
+			$o .= '<p>' . nl2br( esc_html( $s['about_text'] ) ) . '</p>';
+		}
+		if ( ! empty( $s['socials'] ) ) {
+			$o .= '<div class="szl-social">';
+			foreach ( (array) $s['socials'] as $so ) {
+				$o .= '<a ' . $this->link_attrs( (array) ( $so['link'] ?? array() ) ) . '>' . $this->icon( $so['icon'] ?? array() ) . '</a>';
+			}
+			$o .= '</div>';
+		}
+		$o .= '</div></div>';
+
+		if ( ! empty( $s['copy'] ) ) {
+			$o .= '<div class="szl-footer__copy">' . esc_html( $s['copy'] ) . '</div>';
+		}
+
+		return $o . '</div></div>';
 	}
 }
 
 /** فهرست کلاس ویجت‌های صفحه فرود برای ثبت در المنتور. */
 function szl_elementor_widget_list() {
 	return array(
+		'SZL_W_Header',
 		'SZL_W_Hero',
 		'SZL_W_Stats',
 		'SZL_W_Tests',
@@ -1649,5 +2054,6 @@ function szl_elementor_widget_list() {
 		'SZL_W_Steps',
 		'SZL_W_Report',
 		'SZL_W_Faq',
+		'SZL_W_Footer',
 	);
 }
