@@ -21,7 +21,44 @@ abstract class SZL_Widget_Base extends \Elementor\Widget_Base {
 	/** خروجی نهایی ویجت. */
 	abstract protected function html( array $s );
 
+	/**
+	 * ثبت استایل و اسکریپت در صورت ثبت‌نشدن.
+	 *
+	 * در ویرایشگر المنتور ویجت‌ها به‌صورت پویا رندر می‌شوند و فراخوانی wp_enqueue_style
+	 * داخل render() دیگر به سند پیش‌نمایش اضافه نمی‌شود؛ بنابراین دارایی‌ها از مسیر
+	 * get_style_depends()/get_script_depends() اعلام می‌شوند و اینجا تضمین می‌کنیم که
+	 * هندل‌ها ثبت شده باشند.
+	 */
+	protected static function register_assets() {
+		if ( ! defined( 'SZP_DIR' ) || ! defined( 'SZP_URL' ) ) {
+			return;
+		}
+		$ver = defined( 'SZP_VERSION' ) ? SZP_VERSION : '1.0.0';
+
+		if ( ! wp_style_is( 'szl-landing', 'registered' ) ) {
+			$css = SZP_DIR . 'assets/css/sazan-landing.css';
+			wp_register_style( 'szl-landing', SZP_URL . 'assets/css/sazan-landing.css', array(), file_exists( $css ) ? filemtime( $css ) : $ver );
+		}
+		if ( ! wp_script_is( 'szl-landing', 'registered' ) ) {
+			$js = SZP_DIR . 'assets/js/sazan-landing.js';
+			wp_register_script( 'szl-landing', SZP_URL . 'assets/js/sazan-landing.js', array(), file_exists( $js ) ? filemtime( $js ) : $ver, true );
+		}
+	}
+
+	/** المنتور این وابستگی‌ها را هم در سایت و هم در ویرایشگر بارگذاری می‌کند. */
+	public function get_style_depends() {
+		self::register_assets();
+		return array( 'szl-landing' );
+	}
+
+	/** {@inheritDoc} */
+	public function get_script_depends() {
+		self::register_assets();
+		return array( 'szl-landing' );
+	}
+
 	public function render() {
+		self::register_assets();
 		wp_enqueue_style( 'szl-landing' );
 		wp_enqueue_script( 'szl-landing' );
 		echo $this->html( (array) $this->get_settings_for_display() ); // phpcs:ignore WordPress.Security.EscapeOutput

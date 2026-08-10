@@ -10,7 +10,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZP_VERSION', '1.32.4' );
+define( 'SZP_VERSION', '1.32.5' );
 define( 'SZP_FILE', __FILE__ );
 define( 'SZP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZP_URL', plugin_dir_url( __FILE__ ) );
@@ -97,6 +97,9 @@ function szp_init() {
 	add_action( 'elementor/elements/categories_registered', 'szp_elementor_category' );
 	add_action( 'elementor/widgets/register', 'szp_elementor_widgets' );
 
+	// دارایی‌های صفحه فرود داخل پیش‌نمایش ویرایشگر المنتور.
+	add_action( 'elementor/preview/enqueue_styles', 'szl_preview_assets', 20 );
+
 	if ( is_admin() ) {
 		add_action( 'admin_init', array( 'SZP_Install', 'maybe_upgrade' ) );
 		SZP_Admin::init();
@@ -111,6 +114,27 @@ function szp_init() {
 		SZP_Eval_Admin::init();
 		SZP_Eval_Settings::init();
 	}
+}
+
+/**
+ * بارگذاری استایل و اسکریپت صفحه فرود در پیش‌نمایش ویرایشگر المنتور.
+ *
+ * داخل ویرایشگر، ویجت‌ها به‌صورت پویا رندر می‌شوند و enqueue داخل render() به سند
+ * پیش‌نمایش نمی‌رسد؛ این هوک تضمین می‌کند استایل همیشه در ویرایشگر هم حاضر باشد.
+ */
+function szl_preview_assets() {
+	$css = SZP_DIR . 'assets/css/sazan-landing.css';
+	$js  = SZP_DIR . 'assets/js/sazan-landing.js';
+
+	if ( ! wp_style_is( 'szl-landing', 'registered' ) && file_exists( $css ) ) {
+		wp_register_style( 'szl-landing', SZP_URL . 'assets/css/sazan-landing.css', array(), filemtime( $css ) );
+	}
+	if ( ! wp_script_is( 'szl-landing', 'registered' ) && file_exists( $js ) ) {
+		wp_register_script( 'szl-landing', SZP_URL . 'assets/js/sazan-landing.js', array(), filemtime( $js ), true );
+	}
+
+	wp_enqueue_style( 'szl-landing' );
+	wp_enqueue_script( 'szl-landing' );
 }
 
 /**
