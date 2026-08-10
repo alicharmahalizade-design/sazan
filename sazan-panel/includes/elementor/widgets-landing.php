@@ -308,6 +308,17 @@ abstract class SZL_Widget_Base extends \Elementor\Widget_Base {
 			'description' => 'مثال: /assessment/?quiz=۱۲۳',
 			'condition'   => array_merge( $condition, array( $prefix . 'quiz_mode' => 'page' ) ),
 		) );
+
+		$this->add_control( $prefix . 'quiz_skin', array(
+			'label'       => 'پوسته‌ی آزمون در پنجره‌ی شناور',
+			'type'        => \Elementor\Controls_Manager::SELECT,
+			'default'     => 'dark',
+			'options'     => array(
+				'dark'  => 'تیره (هماهنگ با طرح صفحه)',
+				'light' => 'روشن (استایل پیش‌فرض خود آزمون)',
+			),
+			'condition'   => array_merge( $condition, array( $prefix . 'quiz_mode' => 'modal' ) ),
+		) );
 	}
 
 	/** آدرس مقصد یک آزمون بر اساس حالت انتخاب‌شده. */
@@ -323,18 +334,19 @@ abstract class SZL_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/** پنجره‌ی شناور شامل آزمون رندرشده. */
-	protected function quiz_modal_html( $modal_id, $quiz_id, $title = '' ) {
+	protected function quiz_modal_html( $modal_id, $quiz_id, $title = '', $skin = 'dark' ) {
 		if ( ! $this->quiz_engine_ready() ) { return ''; }
 		$quiz_id = absint( $quiz_id );
 		if ( ! $quiz_id || \Sazan\Quiz_CPT::POST_TYPE !== get_post_type( $quiz_id ) ) { return ''; }
 
 		$title = $title ? $title : get_the_title( $quiz_id );
+		$cls   = ( 'light' === $skin ) ? 'szl-modal__body' : 'szl-modal__body szl-quiz-dark';
 
 		return '<div class="szl-modal" id="' . esc_attr( $modal_id ) . '" role="dialog" aria-modal="true" aria-label="' . esc_attr( $title ) . '">'
 			. '<div class="szl-modal__box">'
 			. '<button type="button" class="szl-modal__x" aria-label="بستن">&times;</button>'
 			. '<h3 class="szl-modal__t">' . esc_html( $title ) . '</h3>'
-			. '<div class="szl-modal__body">' . \Sazan\Quiz_Engine::instance()->render( $quiz_id ) . '</div>'
+			. '<div class="' . esc_attr( $cls ) . '">' . \Sazan\Quiz_Engine::instance()->render( $quiz_id ) . '</div>'
 			. '</div></div>';
 	}
 
@@ -800,7 +812,7 @@ class SZL_W_Hero extends SZL_Widget_Base {
 		$glow = ( ( $s['glow'] ?? 'yes' ) === 'yes' ) ? '' : ' szl-hero__media--flat';
 		$o   .= '<div class="szl-hero__media' . $glow . '">' . $this->img( $s['image'] ?? array(), $s['title'] ?? '' ) . '</div>';
 
-		$modal = ( $quiz_id && 'modal' === $mode ) ? $this->quiz_modal_html( $modal_id, $quiz_id, $s['b1_text'] ?? '' ) : '';
+		$modal = ( $quiz_id && 'modal' === $mode ) ? $this->quiz_modal_html( $modal_id, $quiz_id, $s['b1_text'] ?? '', $s['quiz_skin'] ?? 'dark' ) : '';
 
 		return $o . '</div></div>' . $modal . '</div>';
 	}
@@ -1291,7 +1303,7 @@ class SZL_W_Tests extends SZL_Widget_Base {
 			$o .= '</div></article>';
 
 			if ( $quiz_id && 'modal' === $mode ) {
-				$modals .= $this->quiz_modal_html( $modal_id, $quiz_id, $c['title'] ?? '' );
+				$modals .= $this->quiz_modal_html( $modal_id, $quiz_id, $c['title'] ?? '', $s['quiz_skin'] ?? 'dark' );
 			}
 		}
 
@@ -1552,7 +1564,7 @@ class SZL_W_Featured extends SZL_Widget_Base {
 			. '</div></div>';
 
 		if ( $quiz_id && 'modal' === $mode ) {
-			$o .= $this->quiz_modal_html( $modal_id, $quiz_id, $s['title'] ?? '' );
+			$o .= $this->quiz_modal_html( $modal_id, $quiz_id, $s['title'] ?? '', $s['quiz_skin'] ?? 'dark' );
 		}
 
 		return $o . '</div>';
