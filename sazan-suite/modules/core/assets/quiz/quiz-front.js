@@ -119,7 +119,9 @@
       var html = '<div class="szf-card szf-lead">' + progress() +
         '<h3>برای مشاهده نتیجه، اطلاعات تماس را وارد کنید</h3>';
       if (leadFields.name) html += inp('name', leadFields.name_label || 'نام و نام خانوادگی', 'text');
-      if (leadFields.mobile) html += '<label class="szf-field">' + escape(leadFields.mobile_label || 'شماره موبایل') + '<input data-lead="mobile" type="tel" value="' + escape(verifiedMobile) + '" readonly></label>';
+      // فقط وقتی شماره‌ای تأیید شده، فیلد قفل می‌ماند؛ در غیر این صورت (مثلاً حالت تست) قابل تایپ است.
+      if (leadFields.mobile) html += '<label class="szf-field">' + escape(leadFields.mobile_label || 'شماره موبایل') +
+        '<input data-lead="mobile" class="szf-lead-mobile" type="tel" inputmode="numeric" autocomplete="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" value="' + escape(verifiedMobile) + '"' + (verifiedMobile ? ' readonly' : '') + '></label>';
       if (leadFields.email) html += inp('email', leadFields.email_label || 'ایمیل', 'email');
       if (leadFields.company) html += inp('company', leadFields.company_label || 'نام کسب‌وکار', 'text');
       html += '<div class="szf-err" hidden></div>' +
