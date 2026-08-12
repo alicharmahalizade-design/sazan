@@ -73,6 +73,67 @@ class About extends Widget_Base {
 		) );
 		$this->end_controls_section();
 
+		/* استایل کپسول‌های آمار */
+		$this->start_controls_section( 'sec_stats_style', array(
+			'label' => esc_html__( 'استایل کپسول‌های آمار', 'sazan-core' ),
+			'tab'   => Controls_Manager::TAB_STYLE,
+		) );
+
+		$this->add_control( 'stat_align', array(
+			'label'     => esc_html__( 'چینش عمودی محتوا', 'sazan-core' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'center',
+			'options'   => array(
+				'center'        => esc_html__( 'وسط', 'sazan-core' ),
+				'flex-start'    => esc_html__( 'بالا', 'sazan-core' ),
+				'flex-end'      => esc_html__( 'پایین', 'sazan-core' ),
+				'space-between' => esc_html__( 'کشیده (بالا و پایین)', 'sazan-core' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .sa-stat' => 'justify-content: {{VALUE}};' ),
+		) );
+
+		$this->add_responsive_control( 'stat_h', array(
+			'label'      => esc_html__( 'ارتفاع کپسول', 'sazan-core' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 100, 'max' => 400 ) ),
+			'default'    => array( 'unit' => 'px', 'size' => 210 ),
+			'selectors'  => array( '{{WRAPPER}} .sa-stat' => 'min-height: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'stat_w', array(
+			'label'      => esc_html__( 'عرض کپسول', 'sazan-core' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 60, 'max' => 220 ) ),
+			'selectors'  => array( '{{WRAPPER}} .sa-stat' => 'width: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'stat_pad', array(
+			'label'      => esc_html__( 'فاصله داخلی کپسول', 'sazan-core' ),
+			'type'       => Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .sa-stat' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'stat_gap', array(
+			'label'      => esc_html__( 'فاصله بین کپسول‌ها', 'sazan-core' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'selectors'  => array( '{{WRAPPER}} .sa-stats' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'stat_inner_gap', array(
+			'label'      => esc_html__( 'فاصله عدد تا برچسب', 'sazan-core' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'selectors'  => array( '{{WRAPPER}} .sa-stat' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->end_controls_section();
+
 		$this->add_palette_controls();
 	}
 
