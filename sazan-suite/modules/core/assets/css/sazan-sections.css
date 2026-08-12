@@ -710,8 +710,10 @@
 /* کپسول‌های آمار */
 .sa-stats{ display:flex; gap:14px; }
 .sa-stat{
-	width:84px; min-height:210px; border-radius:999px; padding:18px 8px;
-	display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center;
+	width:84px; min-height:210px; border-radius:999px; padding:0 10px;
+	display:flex; flex-direction:column; align-items:center; text-align:center;
+	/* فاصله‌ی بالا، فاصله‌ی بین دایره و متن، و فاصله‌ی پایین دقیقاً برابرند. */
+	justify-content:space-evenly; gap:0;
 	background:linear-gradient(180deg, #2a2417, #14110a); border:1px solid #3a3320;
 }
 .sa-stat-num{
@@ -719,7 +721,12 @@
 	font-size:18px; font-weight:800; color:#fff; flex:0 0 auto;
 	background:linear-gradient(180deg, var(--sz-accent), var(--sz-accent2)); box-shadow:0 8px 18px -8px rgba(246,146,30,.7);
 }
-.sa-stat-label{ color:var(--sz-text2); font-size:13px; font-weight:700; line-height:1.7; }
+.sa-stat-label{
+	color:var(--sz-text2); font-size:13px; font-weight:700; line-height:1.7;
+	/* ارتفاع ثابت دو خط تا دایره‌ها در همه‌ی کپسول‌ها هم‌تراز بمانند. */
+	min-height:calc(2 * 1.7em);
+	display:flex; align-items:center; justify-content:center;
+}
 
 /* ---------- طرح درخشان / میلیاردی ---------- */
 .sazan-about.skin-pro .sa-photo-ring{

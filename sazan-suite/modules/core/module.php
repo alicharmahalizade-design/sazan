@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /* ثابت‌های افزونه ------------------------------------------------------- */
-define( 'SAZAN_CORE_VERSION', '3.57.2' );
+define( 'SAZAN_CORE_VERSION', '3.57.3' );
 define( 'SAZAN_CORE_FILE', __FILE__ );
 define( 'SAZAN_CORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SAZAN_CORE_URL', plugin_dir_url( __FILE__ ) );

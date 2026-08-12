@@ -82,9 +82,10 @@ class About extends Widget_Base {
 		$this->add_control( 'stat_align', array(
 			'label'     => esc_html__( 'چینش عمودی محتوا', 'sazan-core' ),
 			'type'      => Controls_Manager::SELECT,
-			'default'   => 'center',
+			'default'   => 'space-evenly',
 			'options'   => array(
-				'center'        => esc_html__( 'وسط', 'sazan-core' ),
+				'space-evenly'  => esc_html__( 'فاصله‌های برابر (پیشنهادی)', 'sazan-core' ),
+				'center'        => esc_html__( 'وسط (بدون فاصله اضافه)', 'sazan-core' ),
 				'flex-start'    => esc_html__( 'بالا', 'sazan-core' ),
 				'flex-end'      => esc_html__( 'پایین', 'sazan-core' ),
 				'space-between' => esc_html__( 'کشیده (بالا و پایین)', 'sazan-core' ),
