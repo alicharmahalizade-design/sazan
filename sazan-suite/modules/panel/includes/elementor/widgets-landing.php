@@ -1465,7 +1465,7 @@ class SZL_W_Featured extends SZL_Widget_Base {
 			'size_units' => array( 'px' ),
 			'range'      => array( 'px' => array( 'min' => 180, 'max' => 520 ) ),
 			'default'    => array( 'unit' => 'px', 'size' => 320 ),
-			'selectors'  => array( '{{WRAPPER}} .szl-featured__grid' => 'grid-template-columns: var(--szl-aside-w, 190px) 1fr {{SIZE}}{{UNIT}};' ),
+			'selectors'  => array( '{{WRAPPER}} .szl-featured' => '--szl-chart-w: {{SIZE}}{{UNIT}};' ),
 		) );
 		$this->add_responsive_control( 'aside_w', array(
 			'label'      => 'عرض ستون امتیاز',
@@ -1481,20 +1481,55 @@ class SZL_W_Featured extends SZL_Widget_Base {
 	}
 
 	protected function html( array $s ) {
-		$o = '<div class="szl"><div class="szl-box szl-featured"><div class="szl-featured__grid">';
-
-		/* ستون راست: برچسب ویژه + حلقه امتیاز */
-		$o .= '<div class="szl-featured__aside">';
+		/* ستون راست: برچسب ویژه + حلقه امتیاز (اگر هر دو خاموش باشند، ستون ساخته نمی‌شود) */
+		$aside = '';
 		if ( ! empty( $s['badge'] ) ) {
-			$o .= '<div class="szl-eyebrow">' . esc_html( $s['badge'] ) . '</div>';
+			$aside .= '<div class="szl-eyebrow">' . esc_html( $s['badge'] ) . '</div>';
 		}
 		if ( ( $s['show_score'] ?? 'yes' ) === 'yes' ) {
-			$o .= '<div class="szl-score">'
+			$aside .= '<div class="szl-score">'
 				. $this->ring_svg( (int) ( $s['score'] ?? 0 ), (int) ( $s['score_max'] ?? 100 ), '', ( $s['ring_color'] ?? '' ) ?: '#2fc6ea' )
 				. '<span class="szl-score__label">' . esc_html( $s['score_label'] ?? '' ) . '</span>'
 				. '</div>';
 		}
-		$o .= '</div>';
+
+		/* ستون چپ: نمودار رادار + چیپ‌های اطلاعات */
+		$chart = '';
+		if ( ( $s['show_radar'] ?? 'yes' ) === 'yes' && ! empty( $s['axes'] ) ) {
+			$pts = array();
+			foreach ( (array) $s['axes'] as $a ) {
+				$pts[] = array(
+					'label' => $a['label'] ?? '',
+					'value' => isset( $a['value']['size'] ) ? (float) $a['value']['size'] : 0,
+				);
+			}
+			$chart .= $this->radar_svg(
+				$pts,
+				( $s['radar_stroke'] ?? '' ) ?: '#f0ad2e',
+				( $s['radar_fill'] ?? '' ) ?: 'rgba(240,173,46,.18)',
+				( $s['radar_grid'] ?? '' ) ?: '#1d3149'
+			);
+		}
+		if ( ! empty( $s['metas'] ) ) {
+			$chart .= '<div class="szl-featured__meta">';
+			foreach ( (array) $s['metas'] as $m ) {
+				$cls    = ( ( $m['gold'] ?? '' ) === 'yes' ) ? ' szl-chip--gold' : '';
+				$chart .= '<span class="szl-chip' . $cls . '">'
+					. $this->icon( $m['icon'] ?? array() )
+					. esc_html( $m['text'] ?? '' ) . '</span>';
+			}
+			$chart .= '</div>';
+		}
+
+		$grid_cls = 'szl-featured__grid';
+		if ( '' === $aside ) { $grid_cls .= ' szl-featured__grid--noaside'; }
+		if ( '' === $chart ) { $grid_cls .= ' szl-featured__grid--nochart'; }
+
+		$o = '<div class="szl"><div class="szl-box szl-featured"><div class="' . $grid_cls . '">';
+
+		if ( '' !== $aside ) {
+			$o .= '<div class="szl-featured__aside">' . $aside . '</div>';
+		}
 
 		/* ستون میانی: متن و ویژگی‌ها */
 		$o .= '<div class="szl-featured__body">';
@@ -1516,34 +1551,9 @@ class SZL_W_Featured extends SZL_Widget_Base {
 		}
 		$o .= '</div>';
 
-		/* ستون چپ: نمودار رادار + چیپ‌های اطلاعات */
-		$o .= '<div class="szl-featured__chart">';
-		if ( ( $s['show_radar'] ?? 'yes' ) === 'yes' && ! empty( $s['axes'] ) ) {
-			$pts = array();
-			foreach ( (array) $s['axes'] as $a ) {
-				$pts[] = array(
-					'label' => $a['label'] ?? '',
-					'value' => isset( $a['value']['size'] ) ? (float) $a['value']['size'] : 0,
-				);
-			}
-			$o .= $this->radar_svg(
-				$pts,
-				( $s['radar_stroke'] ?? '' ) ?: '#f0ad2e',
-				( $s['radar_fill'] ?? '' ) ?: 'rgba(240,173,46,.18)',
-				( $s['radar_grid'] ?? '' ) ?: '#1d3149'
-			);
+		if ( '' !== $chart ) {
+			$o .= '<div class="szl-featured__chart">' . $chart . '</div>';
 		}
-		if ( ! empty( $s['metas'] ) ) {
-			$o .= '<div class="szl-featured__meta">';
-			foreach ( (array) $s['metas'] as $m ) {
-				$cls = ( ( $m['gold'] ?? '' ) === 'yes' ) ? ' szl-chip--gold' : '';
-				$o  .= '<span class="szl-chip' . $cls . '">'
-					. $this->icon( $m['icon'] ?? array() )
-					. esc_html( $m['text'] ?? '' ) . '</span>';
-			}
-			$o .= '</div>';
-		}
-		$o .= '</div>';
 
 		$quiz_id  = absint( $s['quiz_id'] ?? 0 );
 		$mode     = $s['quiz_mode'] ?? 'modal';

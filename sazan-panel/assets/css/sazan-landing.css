@@ -281,10 +281,15 @@
 
 .szl-featured__grid {
 	display: grid;
-	grid-template-columns: var(--szl-aside-w, 190px) 1fr 320px;
+	grid-template-columns: var(--szl-aside-w, 190px) 1fr var(--szl-chart-w, 320px);
 	gap: 24px;
 	align-items: center;
 }
+
+/* وقتی ستون امتیاز یا ستون نمودار خالی است، جای خالی نمی‌ماند و متن پهن‌تر می‌شود. */
+.szl-featured__grid--noaside { grid-template-columns: 1fr var(--szl-chart-w, 320px); }
+.szl-featured__grid--nochart { grid-template-columns: var(--szl-aside-w, 190px) 1fr; }
+.szl-featured__grid--noaside.szl-featured__grid--nochart { grid-template-columns: 1fr; }
 
 .szl-featured__body { text-align: right; }
 
