@@ -876,6 +876,14 @@ body.szl-modal-open { overflow: hidden; }
 }
 
 .szl-quiz-dark .sz-quiz-err { color: #ff9d94; }
+
+.szl-quiz-dark .szf-link { color: var(--szl-cyan); }
+
+.szl-quiz-dark .sz-quiz-testbar {
+	background: rgba(240, 173, 46, .10);
+	border-color: rgba(240, 173, 46, .35);
+	color: var(--szl-gold-2);
+}
 .szl-quiz-dark .szf-gauge .bg { stroke: #1d3149; }
 
 .szl-quiz-dark .szf-prod {

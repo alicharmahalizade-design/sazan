@@ -40,6 +40,8 @@
     h += '<label>عنوان معرفی</label><input data-k="intro.title" value="' + esc(D.intro.title) + '">';
     h += '<label>توضیح معرفی</label><textarea data-k="intro.desc">' + esc(D.intro.desc) + '</textarea>';
     h += '<label>متن دکمه شروع</label><input data-k="intro.start_label" value="' + esc(D.intro.start_label || 'شروع آزمون') + '">';
+    h += '<div class="szq-row szq-testmode">' + chk('test_mode', 'حالت تست (بدون تأیید پیامکی)', D.test_mode) + '</div>';
+    h += '<p class="szq-help">در حالت تست، مرحله‌ی تأیید شماره موبایل رد می‌شود تا بتوانید آزمون را سریع بررسی کنید. پیش از انتشار، حتماً این تیک را بردارید.</p>';
     h += '<div class="szq-row">' +
          chk('lead.required', 'گرفتن اطلاعات قبل از نتیجه', D.lead.required) +
          chk('lead.name', 'نام', D.lead.name) +

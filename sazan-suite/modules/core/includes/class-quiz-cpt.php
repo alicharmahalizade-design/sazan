@@ -63,6 +63,7 @@ final class Quiz_CPT {
 		return array(
 			'scoring' => 'sum',          // sum | axis
 			'tier_basis' => 'percent',    // percent | raw
+			'test_mode' => 0,             // ۱ = بدون تأیید پیامکی (فقط برای تست)
 			'lead'    => array( 'required' => 1, 'name' => 1, 'mobile' => 1, 'email' => 0, 'company' => 0, 'name_label' => 'نام و نام خانوادگی', 'mobile_label' => 'شماره موبایل', 'email_label' => 'ایمیل', 'company_label' => 'نام کسب‌وکار' ),
 			'intro'   => array( 'title' => '', 'desc' => '', 'start_label' => 'شروع آزمون' ),
 			'axes'    => array(),        // [ {id,label} ]
@@ -177,6 +178,7 @@ final class Quiz_CPT {
 		$out = self::defaults();
 		$out['scoring'] = in_array( ( $d['scoring'] ?? 'sum' ), array( 'sum', 'axis' ), true ) ? $d['scoring'] : 'sum';
 		$out['tier_basis'] = in_array( ( $d['tier_basis'] ?? 'percent' ), array( 'percent', 'raw' ), true ) ? $d['tier_basis'] : 'percent';
+		$out['test_mode']  = empty( $d['test_mode'] ) ? 0 : 1;
 
 		foreach ( array( 'required', 'name', 'mobile', 'email', 'company' ) as $k ) {
 			$out['lead'][ $k ] = empty( $d['lead'][ $k ] ) ? 0 : 1;

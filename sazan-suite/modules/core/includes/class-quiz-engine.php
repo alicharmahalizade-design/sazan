@@ -227,9 +227,14 @@ final class Quiz_Engine {
 				$answers[ (int) $k ] = is_array( $v ) ? array_map( 'intval', $v ) : intval( $v );
 			}
 		}
+		$test_mode   = ! empty( $data['test_mode'] );
 		$draft_token = sanitize_text_field( wp_unslash( $_POST['draft'] ?? '' ) );
-		$draft = $draft_token ? get_transient( self::draft_key( $draft_token ) ) : false;
-		if ( ! is_array( $draft ) || absint( $draft['quiz_id'] ) !== $quiz_id ) { wp_send_json_error( array( 'msg' => 'ابتدا شماره موبایل را تأیید کنید.' ) ); }
+		$draft       = $draft_token ? get_transient( self::draft_key( $draft_token ) ) : false;
+
+		if ( ! $test_mode && ( ! is_array( $draft ) || absint( $draft['quiz_id'] ) !== $quiz_id ) ) {
+			wp_send_json_error( array( 'msg' => 'ابتدا شماره موبایل را تأیید کنید.' ) );
+		}
+		// در حالت تست، پاسخ‌های ارسالی مستقیم پذیرفته می‌شوند چون نشستی ساخته نشده است.
 		if ( is_array( $draft ) && absint( $draft['quiz_id'] ) === $quiz_id ) {
 			$answers = (array) $draft['answers'];
 		}
@@ -448,9 +453,10 @@ final class Quiz_Engine {
 			);
 		}
 		return array(
-			'lead'  => $data['lead'],
-			'intro' => $data['intro'],
+			'lead'      => $data['lead'],
+			'intro'     => $data['intro'],
 			'questions' => $questions,
+			'test_mode' => empty( $data['test_mode'] ) ? 0 : 1,
 		);
 	}
 
@@ -465,6 +471,9 @@ final class Quiz_Engine {
 		ob_start();
 		?>
 		<div class="sz-quiz" data-quiz="<?php echo esc_attr( $quiz_id ); ?>" dir="rtl">
+			<?php if ( ! empty( $data['test_mode'] ) && current_user_can( 'edit_posts' ) ) : ?>
+				<div class="sz-quiz-testbar">حالت تست فعال است — تأیید پیامکی انجام نمی‌شود. برای خاموش کردن، در تنظیمات همین آزمون تیک «حالت تست» را بردارید.</div>
+			<?php endif; ?>
 			<script type="application/json" class="sz-quiz-cfg"><?php echo $cfg; // محتوای امن، JSON ?></script>
 			<div class="sz-quiz-stage"><div class="sz-quiz-loading">در حال بارگذاری…</div></div>
 		</div>

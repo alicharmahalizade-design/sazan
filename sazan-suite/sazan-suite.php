@@ -3,7 +3,7 @@
  * Plugin Name: سازان سوئیت (Sazan Suite)
  * Plugin URI:  https://sazan.ir/
  * Description: مجموعه‌ی یکپارچه‌ی سازان — هسته و ویجت‌های المنتور، پنل کاربری و ارزیابی، CRM تیم فروش و صفحه‌ی اختصاصی محصول؛ همگی در یک افزونه با یک «کنترل پنل تنظیمات» جامع و دسته‌بندی‌شده.
- * Version:     2.5.8
+ * Version:     2.5.9
  * Author:      Sazan
  * Text Domain: sazan-suite
  * Domain Path: /languages
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /* ثابت‌های سوئیت ---------------------------------------------------------- */
-define( 'SAZAN_SUITE_VERSION', '2.5.8' );
+define( 'SAZAN_SUITE_VERSION', '2.5.9' );
 define( 'SAZAN_SUITE_FILE', __FILE__ );
 define( 'SAZAN_SUITE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SAZAN_SUITE_URL', plugin_dir_url( __FILE__ ) );

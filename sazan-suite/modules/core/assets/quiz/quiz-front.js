@@ -20,7 +20,9 @@
     var cfg, quizId = root.getAttribute('data-quiz');
     try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { stage.innerHTML = 'خطا در بارگذاری.'; return; }
 
-    var answers = {}, step = -2; // -2 = mobile verification, -1 = intro
+    var testMode = !!cfg.test_mode;
+    // -2 = تأیید موبایل، -1 = معرفی و دکمه شروع. در حالت تست، تأیید موبایل رد می‌شود.
+    var answers = {}, step = testMode ? -1 : -2;
     var leadFields = cfg.lead || {};
     var needLead = !!leadFields.required;
     var totalSteps = cfg.questions.length;
@@ -47,14 +49,23 @@
       stage.innerHTML = '<div class="szf-card szf-verify"><div class="szf-step-kicker">مرحله ۱ از ۳</div>' +
         '<h2>تأیید شماره موبایل</h2><p class="szf-desc">برای ذخیرهٔ مرحله‌ای پاسخ‌ها، شماره موبایل خود را وارد کنید.</p>' +
         '<label class="szf-field">شماره موبایل<input class="szf-mobile" type="tel" inputmode="numeric" autocomplete="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹"></label>' +
-        '<div class="szf-otp-row" hidden><label class="szf-field">کد تأیید ارسال‌شده<input class="szf-code" type="text" inputmode="numeric" maxlength="۶" autocomplete="one-time-code"></label></div>' +
-        '<div class="szf-err" hidden></div><button class="szf-btn szf-send-code">ارسال کد تأیید</button><button class="szf-btn szf-verify-code" hidden>تأیید و شروع آزمون</button></div>';
+        '<div class="szf-otp-row" hidden><label class="szf-field">کد تأیید ارسال‌شده<input class="szf-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>' +
+        '<button type="button" class="szf-link szf-edit-mobile">ویرایش شماره موبایل</button></div>' +
+        '<div class="szf-err" hidden></div>' +
+        '<div class="szf-actions"><button class="szf-btn szf-send-code">ارسال کد تأیید</button>' +
+        '<button class="szf-btn szf-verify-code" hidden>تأیید و ادامه</button></div></div>';
       var send = stage.querySelector('.szf-send-code'), verify = stage.querySelector('.szf-verify-code'), mobile = stage.querySelector('.szf-mobile'), code = stage.querySelector('.szf-code'), row = stage.querySelector('.szf-otp-row');
+      var editBtn = stage.querySelector('.szf-edit-mobile');
+      var sendLabel = send.textContent;
+
+      editBtn.onclick = function () { go(-2); };
+
       send.onclick = function () {
-        var val = mobile.value.trim(), fd = new FormData(); fd.append('action','sazan_quiz_start'); fd.append('nonce',SazanQuiz.nonce); fd.append('quiz_id',quizId); fd.append('mobile',val); send.disabled = true;
-        fetch(SazanQuiz.ajax,{method:'POST',credentials:'same-origin',body:fd}).then(function(r){return r.json();}).then(function(res){ if(!res.success){ showErr(res.data&&res.data.msg||'ارسال کد انجام نشد.'); send.disabled=false; return; } challenge=res.data.challenge; verifiedMobile=val; row.hidden=false; send.hidden=true; verify.hidden=false; code.focus(); }).catch(function(){showErr('خطای ارتباط با سرور.');send.disabled=false;});
+        var val = mobile.value.trim(), fd = new FormData(); fd.append('action','sazan_quiz_start'); fd.append('nonce',SazanQuiz.nonce); fd.append('quiz_id',quizId); fd.append('mobile',val);
+        send.disabled = true; send.textContent = 'در حال ارسال…';
+        fetch(SazanQuiz.ajax,{method:'POST',credentials:'same-origin',body:fd}).then(function(r){return r.json();}).then(function(res){ if(!res.success){ showErr(res.data&&res.data.msg||'ارسال کد انجام نشد.'); send.disabled=false; send.textContent=sendLabel; return; } challenge=res.data.challenge; verifiedMobile=val; row.hidden=false; send.hidden=true; verify.hidden=false; mobile.readOnly=true; code.focus(); }).catch(function(){showErr('خطای ارتباط با سرور.');send.disabled=false;send.textContent=sendLabel;});
       };
-      verify.onclick = function () { var fd=new FormData(); fd.append('action','sazan_quiz_verify'); fd.append('nonce',SazanQuiz.nonce); fd.append('challenge',challenge); fd.append('code',code.value.trim()); verify.disabled=true; fetch(SazanQuiz.ajax,{method:'POST',credentials:'same-origin',body:fd}).then(function(r){return r.json();}).then(function(res){if(!res.success){showErr(res.data&&res.data.msg||'کد نادرست است.');verify.disabled=false;return;} draft=res.data.draft; go(-1);}).catch(function(){showErr('خطای ارتباط با سرور.');verify.disabled=false;}); };
+      verify.onclick = function () { var fd=new FormData(); fd.append('action','sazan_quiz_verify'); fd.append('nonce',SazanQuiz.nonce); fd.append('challenge',challenge); fd.append('code',code.value.trim()); verify.disabled=true; verify.textContent='در حال بررسی…'; fetch(SazanQuiz.ajax,{method:'POST',credentials:'same-origin',body:fd}).then(function(r){return r.json();}).then(function(res){if(!res.success){showErr(res.data&&res.data.msg||'کد نادرست است.');verify.disabled=false;verify.textContent='تأیید و ادامه';return;} draft=res.data.draft; go(-1);}).catch(function(){showErr('خطای ارتباط با سرور.');verify.disabled=false;}); };
     }
 
     function paintIntro() {
