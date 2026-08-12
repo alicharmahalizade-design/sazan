@@ -462,7 +462,15 @@
 
 /* ---------- 7) FAQ ---------- */
 
-.szl-faq__grid { display: grid; grid-template-columns: 1fr 300px; gap: 26px; align-items: center; }
+.szl-faq__grid {
+	display: grid;
+	grid-template-columns: 1fr var(--szl-faq-media-w, 300px);
+	gap: 26px;
+	align-items: center;
+}
+
+/* بدون تصویر، لیست تمام‌عرض می‌شود. */
+.szl-faq__grid--nomedia { grid-template-columns: 1fr; }
 .szl-faq__list { display: grid; gap: 12px; }
 
 .szl-qa {
@@ -484,9 +492,13 @@
 	color: inherit;
 	font: inherit;
 	font-size: 14.5px;
+	line-height: 1.9;
 	text-align: start;
 	cursor: pointer;
 }
+
+.szl-qa__q > span:first-child { min-width: 0; }
+.szl-qa.is-open .szl-qa__q { padding-bottom: 10px; font-weight: 700; }
 
 .szl-qa__ico { transition: transform .2s ease; color: var(--szl-muted); flex: 0 0 auto; }
 .szl-qa.is-open .szl-qa__ico { transform: rotate(180deg); color: var(--szl-cyan); }
@@ -494,12 +506,30 @@
 
 .szl-qa__a {
 	display: none;
-	padding: 0 18px 18px;
+	margin: 0 18px;
+	padding: 14px 0 18px;
+	border-top: 1px solid var(--szl-line);
 	font-size: 13.5px;
+	line-height: 2.1;
 	color: var(--szl-muted);
 }
 
-.szl-qa.is-open .szl-qa__a { display: block; }
+.szl-qa.is-open .szl-qa__a {
+	display: block;
+	animation: szl-qa-in .22s ease;
+}
+
+@keyframes szl-qa-in {
+	from { opacity: 0; transform: translateY(-4px); }
+	to   { opacity: 1; transform: none; }
+}
+
+.szl-qa__a > *:first-child { margin-top: 0; }
+.szl-qa__a > *:last-child { margin-bottom: 0; }
+.szl-qa__a p { margin: 0 0 10px; }
+.szl-qa__a ul,
+.szl-qa__a ol { margin: 0 0 10px; padding-inline-start: 20px; }
+.szl-qa__a a { color: var(--szl-cyan); }
 
 
 /* ---------- 8) HEADER ---------- */

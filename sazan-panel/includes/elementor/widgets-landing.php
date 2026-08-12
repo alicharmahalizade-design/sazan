@@ -1952,7 +1952,7 @@ class SZL_W_Faq extends SZL_Widget_Base {
 			'type'       => \Elementor\Controls_Manager::SLIDER,
 			'size_units' => array( 'px' ),
 			'range'      => array( 'px' => array( 'min' => 120, 'max' => 500 ) ),
-			'selectors'  => array( '{{WRAPPER}} .szl-faq__grid' => 'grid-template-columns: 1fr {{SIZE}}{{UNIT}};' ),
+			'selectors'  => array( '{{WRAPPER}} .szl-faq' => '--szl-faq-media-w: {{SIZE}}{{UNIT}};' ),
 		) );
 		$this->end_controls_section();
 
@@ -1966,8 +1966,10 @@ class SZL_W_Faq extends SZL_Widget_Base {
 		$single = ( $s['single'] ?? 'yes' ) === 'yes' ? 'yes' : 'no';
 		$img    = $this->img( $s['image'] ?? array(), $s['sec_title'] ?? '' );
 
+		$grid_cls = 'szl-faq__grid' . ( '' === $img ? ' szl-faq__grid--nomedia' : '' );
+
 		$o  = '<div class="szl" data-single="' . esc_attr( $single ) . '">';
-		$o .= '<div class="szl-box szl-faq">' . $this->heading_html( $s ) . '<div class="szl-faq__grid">';
+		$o .= '<div class="szl-box szl-faq">' . $this->heading_html( $s ) . '<div class="' . $grid_cls . '">';
 		$o .= '<div class="szl-faq__list">';
 
 		foreach ( $items as $idx => $it ) {
@@ -1981,7 +1983,10 @@ class SZL_W_Faq extends SZL_Widget_Base {
 				. '</div>';
 		}
 
-		$o .= '</div><div class="szl-faq__media">' . $img . '</div>';
+		$o .= '</div>';
+		if ( '' !== $img ) {
+			$o .= '<div class="szl-faq__media">' . $img . '</div>';
+		}
 
 		return $o . '</div></div></div>';
 	}
