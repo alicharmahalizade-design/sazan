@@ -132,6 +132,199 @@ class SZC_Reports {
 		return $out;
 	}
 
+	/* ==================== ریز فعالیت کارشناس ==================== */
+
+	/** بازه‌های آماده‌ی گزارش ریز فعالیت (کلید ⇒ برچسب و تعداد روز). */
+	public static function activity_periods() {
+		return array(
+			'7'  => array( 'label' => 'یک هفته', 'days' => 7 ),
+			'14' => array( 'label' => 'دو هفته', 'days' => 14 ),
+			'21' => array( 'label' => 'سه هفته', 'days' => 21 ),
+			'30' => array( 'label' => 'یک ماه', 'days' => 30 ),
+		);
+	}
+
+	/**
+	 * بازه‌ی تاریخ گزارش را از ورودی‌ها می‌سازد.
+	 * اگر $period یکی از بازه‌های آماده باشد، بازه بر همان اساس از امروز به عقب حساب می‌شود؛
+	 * در غیر این صورت از $from/$to استفاده می‌شود.
+	 *
+	 * @return array{from:string,to:string,days:int,period:string}
+	 */
+	public static function activity_range( $period = '7', $from = '', $to = '' ) {
+		$periods = self::activity_periods();
+		$period  = (string) $period;
+		$today   = wp_date( 'Y-m-d' );
+		if ( isset( $periods[ $period ] ) ) {
+			$days = (int) $periods[ $period ]['days'];
+			$from = wp_date( 'Y-m-d', time() - ( $days - 1 ) * DAY_IN_SECONDS );
+			$to   = $today;
+		} else {
+			$period = 'custom';
+			$from   = self::normalize_date( $from, wp_date( 'Y-m-d', time() - 6 * DAY_IN_SECONDS ) );
+			$to     = self::normalize_date( $to, $today );
+			if ( $from > $to ) {
+				$tmp = $from; $from = $to; $to = $tmp;
+			}
+			$days = (int) round( ( strtotime( $to . ' 12:00:00 UTC' ) - strtotime( $from . ' 12:00:00 UTC' ) ) / DAY_IN_SECONDS ) + 1;
+		}
+		return array( 'from' => $from, 'to' => $to, 'days' => max( 1, $days ), 'period' => $period );
+	}
+
+	/** WHERE مشترکِ گزارش ریز فعالیت روی جدول فعالیت‌ها (alias: a). */
+	protected static function activity_log_where( $owner, $from, $to, $type = 'call', $outcome = '' ) {
+		$where = array( 'a.user_id=%d', 'a.created_at BETWEEN %s AND %s' );
+		$vals  = array( (int) $owner, $from . ' 00:00:00', $to . ' 23:59:59' );
+		if ( $type !== '' && $type !== 'all' ) {
+			$where[] = 'a.type=%s';
+			$vals[]  = sanitize_key( $type );
+		}
+		if ( $outcome !== '' ) {
+			$where[] = 'a.outcome=%s';
+			$vals[]  = sanitize_text_field( $outcome );
+		}
+		return array( implode( ' AND ', $where ), $vals );
+	}
+
+	/**
+	 * ریز فعالیت‌های یک کارشناس در بازه: هر ردیف یک تماس/پیگیری/پیامک با تاریخ و ساعتِ دقیق.
+	 *
+	 * @param int    $owner   شناسه‌ی مالک (کارشناس) در فضای‌نامِ CRM.
+	 * @param string $from    تاریخ شروع (Y-m-d).
+	 * @param string $to      تاریخ پایان (Y-m-d).
+	 * @param string $type    نوع فعالیت؛ 'call' (پیش‌فرض) یا 'all' یا هر نوع دیگر.
+	 * @param string $outcome فیلتر برونداد (مثلاً 'answered').
+	 * @param int    $limit   حداکثر ردیف.
+	 * @param int    $offset  پرش برای صفحه‌بندی.
+	 */
+	public static function agent_activity_log( $owner, $from, $to, $type = 'call', $outcome = '', $limit = 200, $offset = 0 ) {
+		global $wpdb;
+		list( $where, $vals ) = self::activity_log_where( $owner, $from, $to, $type, $outcome );
+		$vals[] = max( 1, min( 5000, (int) $limit ) );
+		$vals[] = max( 0, (int) $offset );
+		return $wpdb->get_results( $wpdb->prepare(
+			'SELECT a.id, a.contact_id, a.type, a.outcome, a.body, a.due_at, a.done, a.created_at,
+				c.first_name, c.last_name, c.mobile, c.stage, c.company, c.source
+			 FROM ' . self::act_table() . ' a LEFT JOIN ' . SZC_Contacts::table() . " c ON c.id=a.contact_id
+			 WHERE $where ORDER BY a.created_at DESC, a.id DESC LIMIT %d OFFSET %d",
+			$vals
+		) );
+	}
+
+	/** شمارِ کلِ ردیف‌های ریز فعالیت (برای صفحه‌بندی). */
+	public static function agent_activity_count( $owner, $from, $to, $type = 'call', $outcome = '' ) {
+		global $wpdb;
+		list( $where, $vals ) = self::activity_log_where( $owner, $from, $to, $type, $outcome );
+		return (int) $wpdb->get_var( $wpdb->prepare(
+			'SELECT COUNT(*) FROM ' . self::act_table() . " a WHERE $where", $vals ) );
+	}
+
+	/** خلاصه‌ی تماس‌های کارشناس در بازه: تفکیک برونداد، نرخ موفقیت و میانگین روزانه. */
+	public static function agent_activity_summary( $owner, $from, $to ) {
+		global $wpdb;
+		$act  = self::act_table();
+		$args = array( (int) $owner, $from . ' 00:00:00', $to . ' 23:59:59' );
+		$row  = $wpdb->get_row( $wpdb->prepare(
+			"SELECT COUNT(*) calls,
+				COUNT(DISTINCT DATE(created_at)) active_days,
+				COUNT(DISTINCT contact_id) contacts,
+				MIN(created_at) first_at,
+				MAX(created_at) last_at
+			 FROM $act WHERE user_id=%d AND type='call' AND created_at BETWEEN %s AND %s",
+			$args ), ARRAY_A );
+		$by_outcome = $wpdb->get_results( $wpdb->prepare(
+			"SELECT outcome, COUNT(*) c FROM $act
+			 WHERE user_id=%d AND type='call' AND created_at BETWEEN %s AND %s GROUP BY outcome",
+			$args ), OBJECT_K );
+		$outcomes = array();
+		foreach ( SZC_Settings::call_outcomes() as $key => $label ) {
+			$outcomes[ $key ] = array( 'label' => $label, 'count' => isset( $by_outcome[ $key ] ) ? (int) $by_outcome[ $key ]->c : 0 );
+		}
+		$other = array( 'followups' => 0, 'sms' => 0, 'notes' => 0 );
+		$mix   = $wpdb->get_row( $wpdb->prepare(
+			"SELECT SUM(type='followup') followups, SUM(type='sms' AND outcome='sent') sms FROM $act
+			 WHERE user_id=%d AND created_at BETWEEN %s AND %s",
+			$args ), ARRAY_A );
+		$other['followups'] = (int) ( $mix['followups'] ?? 0 );
+		$other['sms']       = (int) ( $mix['sms'] ?? 0 );
+		$other['notes']     = (int) $wpdb->get_var( $wpdb->prepare(
+			'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'szc_notes WHERE user_id=%d AND created_at BETWEEN %s AND %s',
+			$args ) );
+
+		$calls    = (int) ( $row['calls'] ?? 0 );
+		$answered = (int) ( $outcomes['answered']['count'] ?? 0 );
+		$days     = max( 1, (int) round( ( strtotime( $to . ' 12:00:00 UTC' ) - strtotime( $from . ' 12:00:00 UTC' ) ) / DAY_IN_SECONDS ) + 1 );
+		return array(
+			'calls'        => $calls,
+			'answered'     => $answered,
+			'answer_rate'  => $calls > 0 ? round( $answered / $calls * 100, 1 ) : 0,
+			'contacts'     => (int) ( $row['contacts'] ?? 0 ),
+			'active_days'  => (int) ( $row['active_days'] ?? 0 ),
+			'range_days'   => $days,
+			'per_day'      => round( $calls / $days, 1 ),
+			'per_active_day' => ( $row['active_days'] ?? 0 ) > 0 ? round( $calls / (int) $row['active_days'], 1 ) : 0,
+			'first_at'     => (string) ( $row['first_at'] ?? '' ),
+			'last_at'      => (string) ( $row['last_at'] ?? '' ),
+			'outcomes'     => $outcomes,
+			'followups'    => $other['followups'],
+			'sms'          => $other['sms'],
+			'notes'        => $other['notes'],
+		);
+	}
+
+	/** تفکیک روزانه‌ی تماس‌ها در بازه (همه‌ی روزها، حتی روزهای بدون تماس). */
+	public static function agent_activity_daily( $owner, $from, $to ) {
+		global $wpdb;
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			'SELECT DATE(created_at) d, COUNT(*) calls, SUM(outcome=%s) answered FROM ' . self::act_table()
+			. " WHERE user_id=%d AND type='call' AND created_at BETWEEN %s AND %s GROUP BY DATE(created_at)",
+			'answered', (int) $owner, $from . ' 00:00:00', $to . ' 23:59:59' ), OBJECT_K );
+		$out  = array();
+		$cur  = strtotime( $from . ' 12:00:00 UTC' );
+		$end  = strtotime( $to . ' 12:00:00 UTC' );
+		$safe = 0;
+		while ( $cur <= $end && $safe++ < 400 ) {
+			$key   = gmdate( 'Y-m-d', $cur );
+			$calls = isset( $rows[ $key ] ) ? (int) $rows[ $key ]->calls : 0;
+			$ans   = isset( $rows[ $key ] ) ? (int) $rows[ $key ]->answered : 0;
+			$out[] = array(
+				'date'     => $key,
+				'label'    => szc_format_mysql( $key . ' 00:00:00', false ),
+				'weekday'  => szc_weekday_fa( $key ),
+				'calls'    => $calls,
+				'answered' => $ans,
+				'rate'     => $calls > 0 ? round( $ans / $calls * 100, 1 ) : 0,
+			);
+			$cur += DAY_IN_SECONDS;
+		}
+		return $out;
+	}
+
+	/** توزیع ساعتی تماس‌ها (۰ تا ۲۳) برای دیدن پرکارترین ساعاتِ روز. */
+	public static function agent_activity_hourly( $owner, $from, $to ) {
+		global $wpdb;
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			'SELECT HOUR(created_at) h, COUNT(*) calls, SUM(outcome=%s) answered FROM ' . self::act_table()
+			. " WHERE user_id=%d AND type='call' AND created_at BETWEEN %s AND %s GROUP BY HOUR(created_at)",
+			'answered', (int) $owner, $from . ' 00:00:00', $to . ' 23:59:59' ), OBJECT_K );
+		$out = array();
+		for ( $h = 0; $h < 24; $h++ ) {
+			$calls = isset( $rows[ $h ] ) ? (int) $rows[ $h ]->calls : 0;
+			$out[] = array(
+				'hour'     => $h,
+				'calls'    => $calls,
+				'answered' => isset( $rows[ $h ] ) ? (int) $rows[ $h ]->answered : 0,
+			);
+		}
+		return $out;
+	}
+
+	/** میان‌بر: نامِ جدول فعالیت‌ها. */
+	protected static function act_table() {
+		global $wpdb;
+		return $wpdb->prefix . 'szc_activities';
+	}
+
 	/** آمار امروز همراه با تارگت و درصد پیشرفت. */
 	public static function agent_day_stats( $owner ) {
 		$out   = self::agent_stats( $owner, wp_date( 'Y-m-d' ), wp_date( 'Y-m-d' ) );

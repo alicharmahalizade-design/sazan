@@ -191,6 +191,29 @@ function szc_format_mysql( $mysql, $with_time = true ) {
 	return $ts ? szc_format_datetime( $ts, $with_time ) : '';
 }
 
+/** Persian weekday name for a Y-m-d (or MySQL datetime) string, read literally. */
+function szc_weekday_fa( $date ) {
+	$date = (string) $date;
+	if ( ! preg_match( '/^(\d{4})-(\d{2})-(\d{2})/', $date, $m ) ) {
+		return '';
+	}
+	$names = array(
+		'Saturday' => 'شنبه', 'Sunday' => 'یکشنبه', 'Monday' => 'دوشنبه', 'Tuesday' => 'سه‌شنبه',
+		'Wednesday' => 'چهارشنبه', 'Thursday' => 'پنجشنبه', 'Friday' => 'جمعه',
+	);
+	$key = gmdate( 'l', gmmktime( 12, 0, 0, (int) $m[2], (int) $m[3], (int) $m[1] ) );
+	return isset( $names[ $key ] ) ? $names[ $key ] : '';
+}
+
+/** Time-only (H:i) with Persian digits from a MySQL datetime string (read literally). */
+function szc_format_time( $mysql ) {
+	$mysql = (string) $mysql;
+	if ( $mysql === '' || strpos( $mysql, '0000-00-00' ) === 0 ) {
+		return '';
+	}
+	return preg_match( '/\b(\d{2}:\d{2})/', $mysql, $m ) ? szc_fa_digits( $m[1] ) : '';
+}
+
 /** Relative "x minutes/hours ago" in Persian for a MySQL datetime. */
 function szc_time_ago( $mysql ) {
 	if ( empty( $mysql ) ) {

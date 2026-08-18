@@ -25,6 +25,7 @@ class SZC_Admin_Pages {
 		add_action( 'admin_post_szc_blacklist_add',   array( __CLASS__, 'handle_blacklist_add' ) );
 		add_action( 'admin_post_szc_blacklist_remove', array( __CLASS__, 'handle_blacklist_remove' ) );
 		add_action( 'admin_post_szc_export',          array( __CLASS__, 'handle_export' ) );
+		add_action( 'admin_post_szc_activity_export', array( __CLASS__, 'handle_activity_export' ) );
 		add_action( 'admin_post_szc_merge_group',     array( __CLASS__, 'handle_merge_group' ) );
 		add_action( 'admin_post_szc_pipeline_save',   array( __CLASS__, 'handle_pipeline_save' ) );
 		add_action( 'admin_post_szc_goal_summary_send', array( __CLASS__, 'handle_goal_summary_send' ) );
@@ -2056,6 +2057,299 @@ class SZC_Admin_Pages {
 
 	/* ==================== گزارش‌ها ==================== */
 
+	/* ==================== ریز فعالیت کارشناس ==================== */
+
+	/** ورودی‌های فیلترِ گزارش ریز فعالیت (مشترکِ صفحه و خروجی CSV). */
+	protected static function activity_request( $src ) {
+		$is_manager = SZC_Settings::is_manager();
+		$scope      = SZC_Settings::scope_owner();
+		$agent      = isset( $src['agent'] ) ? absint( $src['agent'] ) : 0;
+		if ( ! $is_manager ) {
+			$agent = (int) $scope;
+		}
+		$range   = SZC_Reports::activity_range(
+			isset( $src['period'] ) ? sanitize_text_field( wp_unslash( $src['period'] ) ) : '7',
+			isset( $src['from'] ) ? sanitize_text_field( wp_unslash( $src['from'] ) ) : '',
+			isset( $src['to'] ) ? sanitize_text_field( wp_unslash( $src['to'] ) ) : ''
+		);
+		$type    = isset( $src['type'] ) ? sanitize_key( wp_unslash( $src['type'] ) ) : 'call';
+		$outcome = isset( $src['outcome'] ) ? sanitize_text_field( wp_unslash( $src['outcome'] ) ) : '';
+		if ( $outcome !== '' && ! isset( SZC_Settings::call_outcomes()[ $outcome ] ) ) {
+			$outcome = '';
+		}
+		return array(
+			'agent'      => $agent,
+			'is_manager' => $is_manager,
+			'from'       => $range['from'],
+			'to'         => $range['to'],
+			'days'       => $range['days'],
+			'period'     => $range['period'],
+			'type'       => in_array( $type, array( 'call', 'followup', 'sms', 'stage', 'all' ), true ) ? $type : 'call',
+			'outcome'    => $outcome,
+		);
+	}
+
+	/** برچسبِ فارسیِ نوعِ فعالیت. */
+	protected static function activity_type_label( $type ) {
+		$labels = array( 'call' => 'تماس', 'followup' => 'پیگیری', 'sms' => 'پیامک', 'stage' => 'تغییر مرحله', 'note' => 'یادداشت', 'external' => 'تعامل واتساپ/تلگرام' );
+		return $labels[ $type ] ?? $type;
+	}
+
+	/** صفحه‌ی «ریز فعالیت کارشناس»: تاریخ و ساعتِ دقیقِ هر تماس و نتیجه‌ی آن. */
+	public static function page_agent_activity() {
+		self::guard();
+		$f = self::activity_request( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+		$agents  = SZC_Settings::assignable_users();
+		$periods = SZC_Reports::activity_periods();
+		$page_no = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$per     = 100;
+
+		$summary = $daily = $hourly = $rows = array();
+		$total   = 0;
+		if ( $f['agent'] > 0 ) {
+			$summary = SZC_Reports::agent_activity_summary( $f['agent'], $f['from'], $f['to'] );
+			$daily   = SZC_Reports::agent_activity_daily( $f['agent'], $f['from'], $f['to'] );
+			$hourly  = SZC_Reports::agent_activity_hourly( $f['agent'], $f['from'], $f['to'] );
+			$total   = SZC_Reports::agent_activity_count( $f['agent'], $f['from'], $f['to'], $f['type'], $f['outcome'] );
+			$rows    = SZC_Reports::agent_activity_log( $f['agent'], $f['from'], $f['to'], $f['type'], $f['outcome'], $per, ( $page_no - 1 ) * $per );
+		}
+		$max_day  = 1;
+		foreach ( $daily as $d ) { $max_day = max( $max_day, (int) $d['calls'] ); }
+		$max_hour = 1;
+		foreach ( $hourly as $h ) { $max_hour = max( $max_hour, (int) $h['calls'] ); }
+		$base = array_filter( array(
+			'agent'   => $f['agent'],
+			'period'  => $f['period'],
+			'from'    => $f['from'],
+			'to'      => $f['to'],
+			'type'    => $f['type'],
+			'outcome' => $f['outcome'],
+		) );
+		?>
+		<div class="wrap szc-wrap szc-activity">
+			<h1>ریز فعالیت کارشناس فروش</h1>
+			<p class="szc-muted">تاریخ و ساعتِ دقیقِ هر تماس، نتیجه‌ی آن و مخاطبِ مربوطه — در بازه‌ی یک‌هفته، دوهفته، سه‌هفته، یک‌ماهه یا بازه‌ی دلخواه.</p>
+
+			<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="szc-report-filter szc-activity-filter">
+				<input type="hidden" name="page" value="szc-agent-activity">
+				<?php if ( $f['is_manager'] ) : ?>
+					<label>کارشناس
+						<select name="agent">
+							<option value="0">— انتخاب کنید —</option>
+							<?php foreach ( $agents as $oid => $name ) : ?>
+								<option value="<?php echo (int) $oid; ?>" <?php selected( $f['agent'], $oid ); ?>><?php echo esc_html( $name ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</label>
+				<?php else : ?>
+					<input type="hidden" name="agent" value="<?php echo (int) $f['agent']; ?>">
+				<?php endif; ?>
+				<label>بازه
+					<select name="period">
+						<?php foreach ( $periods as $key => $meta ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $f['period'], (string) $key ); ?>><?php echo esc_html( $meta['label'] ); ?></option>
+						<?php endforeach; ?>
+						<option value="custom" <?php selected( $f['period'], 'custom' ); ?>>بازه‌ی دلخواه</option>
+					</select>
+				</label>
+				<label>از <input type="date" name="from" value="<?php echo esc_attr( $f['from'] ); ?>"></label>
+				<label>تا <input type="date" name="to" value="<?php echo esc_attr( $f['to'] ); ?>"></label>
+				<label>نوع
+					<select name="type">
+						<option value="call" <?php selected( $f['type'], 'call' ); ?>>تماس</option>
+						<option value="followup" <?php selected( $f['type'], 'followup' ); ?>>پیگیری</option>
+						<option value="sms" <?php selected( $f['type'], 'sms' ); ?>>پیامک</option>
+						<option value="all" <?php selected( $f['type'], 'all' ); ?>>همه</option>
+					</select>
+				</label>
+				<label>نتیجه
+					<select name="outcome">
+						<option value="">همه</option>
+						<?php foreach ( SZC_Settings::call_outcomes() as $key => $label ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $f['outcome'], $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+				<button class="button button-primary">نمایش گزارش</button>
+			</form>
+
+			<p class="szc-muted szc-activity-quick">
+				بازه‌های آماده:
+				<?php foreach ( $periods as $key => $meta ) : ?>
+					<a class="button button-small<?php echo $f['period'] === (string) $key ? ' button-primary' : ''; ?>"
+						href="<?php echo esc_url( self::url( 'szc-agent-activity', array( 'agent' => $f['agent'], 'period' => $key, 'type' => $f['type'], 'outcome' => $f['outcome'] ) ) ); ?>"><?php echo esc_html( $meta['label'] ); ?></a>
+				<?php endforeach; ?>
+			</p>
+
+			<?php if ( $f['agent'] <= 0 ) : ?>
+				<div class="szc-card"><p class="szc-muted">برای دیدن ریز فعالیت، یک کارشناس را انتخاب کنید.</p></div>
+			<?php else : ?>
+				<div class="szc-card">
+					<h2><?php echo esc_html( SZC_Auth::display_name( $f['agent'] ) ?: 'کارشناس #' . $f['agent'] ); ?>
+						<span class="szc-muted"> — <?php echo esc_html( szc_format_mysql( $f['from'] . ' 00:00:00', false ) . ' تا ' . szc_format_mysql( $f['to'] . ' 00:00:00', false ) ); ?>
+							(<?php echo esc_html( szc_fa_digits( $f['days'] ) ); ?> روز)</span>
+					</h2>
+					<div class="szc-kpis szc-kpis-compact">
+						<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $summary['calls'] ) ); ?></span><span class="szc-kpi-l">کل تماس</span></div>
+						<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $summary['answered'] ) ); ?></span><span class="szc-kpi-l">تماس موفق (پاسخ داد)</span></div>
+						<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $summary['answer_rate'] ) ); ?>٪</span><span class="szc-kpi-l">نرخ موفقیت</span></div>
+						<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $summary['contacts'] ) ); ?></span><span class="szc-kpi-l">مخاطب یکتا</span></div>
+						<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $summary['active_days'] ) ); ?></span><span class="szc-kpi-l">روز کاری فعال</span></div>
+						<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $summary['per_active_day'] ) ); ?></span><span class="szc-kpi-l">میانگین تماس در روز فعال</span></div>
+						<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $summary['followups'] ) ); ?></span><span class="szc-kpi-l">پیگیری ثبت‌شده</span></div>
+						<div class="szc-kpi"><span class="szc-kpi-n"><?php echo esc_html( szc_fa_digits( $summary['sms'] ) ); ?></span><span class="szc-kpi-l">پیامک ارسالی</span></div>
+					</div>
+					<div class="szc-outcome-chips">
+						<?php foreach ( $summary['outcomes'] as $key => $meta ) : ?>
+							<a class="szc-chip<?php echo $f['outcome'] === $key ? ' is-on' : ''; ?>"
+								href="<?php echo esc_url( self::url( 'szc-agent-activity', array_merge( $base, array( 'outcome' => $f['outcome'] === $key ? '' : $key, 'paged' => 1 ) ) ) ); ?>">
+								<?php echo esc_html( $meta['label'] ); ?>: <b><?php echo esc_html( szc_fa_digits( $meta['count'] ) ); ?></b>
+							</a>
+						<?php endforeach; ?>
+					</div>
+				</div>
+
+				<div class="szc-single-grid">
+					<div class="szc-col szc-card">
+						<h3>تفکیک روزانه</h3>
+						<table class="widefat striped">
+							<thead><tr><th>روز</th><th>تاریخ</th><th>تماس</th><th>موفق</th><th>نرخ</th><th></th></tr></thead>
+							<tbody>
+							<?php foreach ( $daily as $d ) : ?>
+								<tr>
+									<td><?php echo esc_html( $d['weekday'] ); ?></td>
+									<td><?php echo esc_html( $d['label'] ); ?></td>
+									<td><?php echo esc_html( szc_fa_digits( $d['calls'] ) ); ?></td>
+									<td><b><?php echo esc_html( szc_fa_digits( $d['answered'] ) ); ?></b></td>
+									<td><?php echo esc_html( szc_fa_digits( $d['rate'] ) ); ?>٪</td>
+									<td class="szc-barcell"><i style="width:<?php echo (int) round( $d['calls'] / $max_day * 100 ); ?>%"></i></td>
+								</tr>
+							<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
+					<div class="szc-col szc-card">
+						<h3>پرکارترین ساعات روز</h3>
+						<table class="widefat striped">
+							<thead><tr><th>ساعت</th><th>تماس</th><th>موفق</th><th></th></tr></thead>
+							<tbody>
+							<?php foreach ( $hourly as $h ) : if ( ! $h['calls'] ) { continue; } ?>
+								<tr>
+									<td><?php echo esc_html( szc_fa_digits( sprintf( '%02d:00', $h['hour'] ) ) ); ?></td>
+									<td><?php echo esc_html( szc_fa_digits( $h['calls'] ) ); ?></td>
+									<td><b><?php echo esc_html( szc_fa_digits( $h['answered'] ) ); ?></b></td>
+									<td class="szc-barcell"><i style="width:<?php echo (int) round( $h['calls'] / $max_hour * 100 ); ?>%"></i></td>
+								</tr>
+							<?php endforeach; ?>
+							<?php if ( ! $summary['calls'] ) : ?><tr><td colspan="4" class="szc-muted">تماسی در این بازه ثبت نشده است.</td></tr><?php endif; ?>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="szc-card">
+					<div class="szc-report-head">
+						<div><h2>ریز فعالیت‌ها</h2><p class="szc-muted"><?php echo esc_html( szc_fa_digits( $total ) ); ?> رکورد در این بازه و فیلتر.</p></div>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<?php wp_nonce_field( 'szc_activity_export' ); ?>
+							<input type="hidden" name="action" value="szc_activity_export">
+							<?php foreach ( array( 'agent', 'period', 'from', 'to', 'type', 'outcome' ) as $key ) : ?>
+								<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $f[ $key ] ); ?>">
+							<?php endforeach; ?>
+							<button class="button">خروجی CSV (اکسل)</button>
+						</form>
+					</div>
+					<div class="szc-table-scroll">
+						<table class="widefat striped szc-activity-table">
+							<thead><tr><th>ردیف</th><th>تاریخ</th><th>روز</th><th>ساعت</th><th>نوع</th><th>نتیجه</th><th>مخاطب</th><th>موبایل</th><th>توضیح</th></tr></thead>
+							<tbody>
+							<?php if ( ! $rows ) : ?>
+								<tr><td colspan="9" class="szc-muted">فعالیتی با این فیلترها ثبت نشده است.</td></tr>
+							<?php else : $i = ( $page_no - 1 ) * $per; foreach ( $rows as $r ) :
+								$i++;
+								$name = trim( (string) $r->first_name . ' ' . (string) $r->last_name );
+								if ( $name === '' ) { $name = szc_fa_digits( (string) $r->mobile ); }
+								$ok = ( $r->type === 'call' && $r->outcome === 'answered' );
+								?>
+								<tr class="<?php echo $ok ? 'szc-row-ok' : ''; ?>">
+									<td class="szc-muted"><?php echo esc_html( szc_fa_digits( $i ) ); ?></td>
+									<td><?php echo esc_html( szc_format_mysql( $r->created_at, false ) ); ?></td>
+									<td class="szc-muted"><?php echo esc_html( szc_weekday_fa( $r->created_at ) ); ?></td>
+									<td><b><?php echo esc_html( szc_format_time( $r->created_at ) ); ?></b></td>
+									<td><?php echo esc_html( self::activity_type_label( $r->type ) ); ?></td>
+									<td>
+										<?php if ( $r->type === 'call' ) : ?>
+											<span class="szc-outcome <?php echo $ok ? 'is-ok' : 'is-no'; ?>"><?php echo esc_html( SZC_Settings::outcome_label( $r->outcome ) ); ?></span>
+										<?php else : ?>
+											<?php echo esc_html( $r->outcome ?: '—' ); ?>
+										<?php endif; ?>
+									</td>
+									<td><?php if ( $r->contact_id ) : ?><a href="<?php echo esc_url( self::url( 'szc-contacts', array( 'contact' => (int) $r->contact_id ) ) ); ?>"><?php echo esc_html( $name ); ?></a><?php else : ?>—<?php endif; ?></td>
+									<td class="szc-muted"><?php echo esc_html( szc_fa_digits( (string) $r->mobile ) ); ?></td>
+									<td class="szc-muted"><?php echo esc_html( (string) $r->body ?: '—' ); ?></td>
+								</tr>
+							<?php endforeach; endif; ?>
+							</tbody>
+						</table>
+					</div>
+					<?php
+					$pages = (int) ceil( $total / $per );
+					if ( $pages > 1 ) {
+						echo '<div class="tablenav"><div class="tablenav-pages">' . paginate_links( array(
+							'base'      => self::url( 'szc-agent-activity', $base ) . '&paged=%#%',
+							'format'    => '',
+							'current'   => $page_no,
+							'total'     => $pages,
+							'prev_text' => '‹',
+							'next_text' => '›',
+						) ) . '</div></div>';
+					}
+					?>
+				</div>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/** خروجی CSV از ریز فعالیت‌های کارشناس (سازگار با اکسل فارسی). */
+	public static function handle_activity_export() {
+		self::guard();
+		check_admin_referer( 'szc_activity_export' );
+		$f = self::activity_request( $_POST );
+		if ( $f['agent'] <= 0 ) {
+			wp_die( 'کارشناس مشخص نشده است.' );
+		}
+		$rows = SZC_Reports::agent_activity_log( $f['agent'], $f['from'], $f['to'], $f['type'], $f['outcome'], 5000 );
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=sazan-activity-' . (int) $f['agent'] . '-' . $f['from'] . '_' . $f['to'] . '.csv' );
+		$out = fopen( 'php://output', 'w' );
+		fwrite( $out, "\xEF\xBB\xBF" );
+		fputcsv( $out, array( 'کارشناس', 'تاریخ شمسی', 'روز هفته', 'ساعت', 'تاریخ میلادی', 'نوع', 'نتیجه', 'موفق؟', 'مخاطب', 'موبایل', 'شرکت', 'منبع', 'توضیح' ) );
+		$agent_name = SZC_Auth::display_name( $f['agent'] );
+		foreach ( $rows as $r ) {
+			$name = trim( (string) $r->first_name . ' ' . (string) $r->last_name );
+			fputcsv( $out, array(
+				$agent_name,
+				szc_format_mysql( $r->created_at, false ),
+				szc_weekday_fa( $r->created_at ),
+				substr( (string) $r->created_at, 11, 5 ),
+				$r->created_at,
+				self::activity_type_label( $r->type ),
+				$r->type === 'call' ? SZC_Settings::outcome_label( $r->outcome ) : $r->outcome,
+				( $r->type === 'call' && $r->outcome === 'answered' ) ? 'بله' : 'خیر',
+				$name,
+				(string) $r->mobile,
+				(string) $r->company,
+				(string) $r->source,
+				(string) $r->body,
+			) );
+		}
+		fclose( $out );
+		exit;
+	}
+
 	public static function page_reports() {
 		self::guard();
 		$is_manager = SZC_Settings::is_manager();
@@ -2229,6 +2523,7 @@ class SZC_Admin_Pages {
 							<button class="button button-primary">ارسال جمع‌بندی امروز برای مدیران</button>
 						</form>
 						<a class="button" href="<?php echo esc_url( self::url( 'szc-settings' ) . '#notifications' ); ?>">تنظیم اعلان‌ها و شماره مدیران</a>
+						<a class="button" href="<?php echo esc_url( self::url( 'szc-agent-activity', array( 'period' => 7 ) ) ); ?>">ریز فعالیت کارشناسان</a>
 					</div>
 				</div>
 

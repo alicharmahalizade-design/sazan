@@ -56,6 +56,7 @@ class SZC_Admin {
 		add_submenu_page( 'szc', 'فرایند فروش', 'فرایند فروش', $cap, 'szc-pipeline', array( 'SZC_Admin_Pages', 'page_pipeline' ) );
 		add_submenu_page( 'szc', 'پیامک و اتوماسیون', 'پیامک و اتوماسیون', $cap, 'szc-broadcast', array( 'SZC_Admin_Pages', 'page_broadcast' ) );
 		add_submenu_page( 'szc', 'گزارش‌ها', 'گزارش‌ها', $cap, 'szc-reports', array( 'SZC_Admin_Pages', 'page_reports' ) );
+		add_submenu_page( 'szc', 'ریز فعالیت کارشناس', 'ریز فعالیت کارشناس', $cap, 'szc-agent-activity', array( 'SZC_Admin_Pages', 'page_agent_activity' ) );
 		add_submenu_page( 'szc', 'تیم فروش', 'تیم فروش', $cap, 'szc-agents', array( 'SZC_Admin_Pages', 'page_agents' ) );
 		add_submenu_page( 'szc', 'مرکز تنظیمات', 'مرکز تنظیمات', $cap, 'szc-settings', array( 'SZC_Admin_Pages', 'page_settings_center' ) );
 

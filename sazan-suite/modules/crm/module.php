@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SZC_VERSION', '1.26.0' );
+define( 'SZC_VERSION', '1.27.0' );
 define( 'SZC_FILE', __FILE__ );
 define( 'SZC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SZC_URL', plugin_dir_url( __FILE__ ) );

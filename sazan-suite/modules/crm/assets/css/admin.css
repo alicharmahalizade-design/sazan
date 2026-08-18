@@ -350,3 +350,19 @@ a.szc-stat:hover{border-color:#2271b1}
 .szc-settings-pane[data-settings-pane="sms"] .szc-section-save{min-height:52px;margin:8px 0;padding:6px 10px;border-radius:11px}.szc-settings-pane[data-settings-pane="sms"] .szc-section-save .button{min-height:38px}.szc-pattern-quick-form>form{padding-top:10px}.szc-pattern-quick-form .szc-pattern-quick-grid{gap:8px;padding:0 12px 8px}.szc-pattern-quick-form .szc-pattern-quick-actions{padding:0 12px 12px}.szc-pattern-quick-form textarea{min-height:70px}
 @media(max-width:1100px){.szc-pattern-pair{grid-template-columns:1fr}.szc-sms-compact-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:782px){.szc-settings-center__hero{padding:14px}.szc-sms-enable{align-items:flex-start}.szc-sms-enable>div{align-items:flex-start;flex-direction:column;gap:2px}.szc-sms-compact-grid,.szc-pattern-fields{grid-template-columns:1fr}.szc-scard-tags{display:none}}
+
+
+/* ==================== ریز فعالیت کارشناس ==================== */
+.szc-activity .szc-activity-filter{flex-wrap:wrap;gap:8px}
+.szc-activity .szc-activity-quick{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
+.szc-activity .szc-outcome-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.szc-activity .szc-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1px solid #d3d8e0;background:#fff;color:inherit;text-decoration:none;font-size:12px}
+.szc-activity .szc-chip:hover{border-color:#2271b1}
+.szc-activity .szc-chip.is-on{background:#2271b1;border-color:#2271b1;color:#fff}
+.szc-activity .szc-barcell{width:120px}
+.szc-activity .szc-barcell i{display:block;height:8px;border-radius:4px;background:#2271b1;min-width:2px}
+.szc-activity .szc-outcome{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;background:#f0f0f1}
+.szc-activity .szc-outcome.is-ok{background:#e6f4ea;color:#1a7f37}
+.szc-activity .szc-outcome.is-no{background:#fdecea;color:#8a1f11}
+.szc-activity .szc-row-ok td{background:#f6fdf8}
+.szc-activity .szc-activity-table td{vertical-align:middle}
