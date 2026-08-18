@@ -15,6 +15,9 @@ class SZC_Agents {
 	/** آفستِ فضای‌نامِ مالکیت برای کارشناسان (بالاتر از هر شناسه‌ی واقعیِ کاربرِ وردپرس). */
 	const OFFSET = 2000000000;
 
+	/** کلیدِ کشِ نگاشتِ شناسه‌های قدیمیِ کارشناسان (کاربرِ وردپرس). */
+	const LEGACY_MAP_KEY = 'szc_agent_legacy_map';
+
 	public static function table() {
 		global $wpdb;
 		return $wpdb->prefix . 'szc_agents';
@@ -93,6 +96,86 @@ class SZC_Agents {
 		return $out;
 	}
 
+	/**
+	 * همه‌ی شناسه‌هایی که فعالیت‌های یک کارشناس ممکن است زیرِ آن‌ها ثبت شده باشد.
+	 *
+	 * پیش از مهاجرتِ کارشناسان (نسخه‌های قدیمی)، کارشناس یک کاربرِ وردپرس بود و
+	 * تماس‌ها با شناسه‌ی همان کاربر در جدولِ فعالیت‌ها ذخیره می‌شدند. مهاجرت فقط
+	 * مالکیتِ مخاطبین (owner_id) را بازنویسی کرد، نه user_id فعالیت‌ها. بنابراین
+	 * برای گزارشِ سوابق باید شناسه‌ی تازه‌ی کارشناس و شناسه‌ی کاربرِ وردپرسیِ
+	 * قدیمی‌اش (که با موبایلِ یکسان پیدا می‌شود) هر دو در نظر گرفته شوند.
+	 *
+	 * @param int $owner_id شناسه‌ی مالک در فضای‌نامِ CRM.
+	 * @return int[] فهرست شناسه‌های بازیگر (همیشه شاملِ خودِ $owner_id).
+	 */
+	public static function actor_ids( $owner_id ) {
+		$owner_id = (int) $owner_id;
+		if ( $owner_id <= 0 ) {
+			return array();
+		}
+		$map = self::legacy_map();
+		$ids = array( $owner_id );
+		if ( ! empty( $map[ $owner_id ] ) ) {
+			$ids = array_merge( $ids, (array) $map[ $owner_id ] );
+		}
+		return array_values( array_unique( array_map( 'intval', $ids ) ) );
+	}
+
+	/**
+	 * نگاشتِ [owner_id => [wp_user_id, ...]] برای کارشناسانی که قبلاً کاربرِ وردپرس بوده‌اند.
+	 * تطبیق بر اساسِ موبایل (متای کاربر یا نامِ کاربری) انجام و نتیجه کش می‌شود.
+	 */
+	public static function legacy_map( $force = false ) {
+		$cached = $force ? false : get_transient( self::LEGACY_MAP_KEY );
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+		$map = array();
+		foreach ( self::all() as $agent ) {
+			$mobile = szc_normalize_mobile( $agent->mobile );
+			if ( $mobile === '' ) {
+				continue;
+			}
+			$found = self::find_wp_users_by_mobile( $mobile );
+			if ( $found ) {
+				$map[ self::to_owner( (int) $agent->id ) ] = $found;
+			}
+		}
+		set_transient( self::LEGACY_MAP_KEY, $map, DAY_IN_SECONDS );
+		return $map;
+	}
+
+	/** کشِ نگاشتِ شناسه‌های قدیمی را باطل می‌کند (پس از افزودن/ویرایش کارشناس). */
+	public static function flush_legacy_map() {
+		delete_transient( self::LEGACY_MAP_KEY );
+	}
+
+	/** کاربرانِ وردپرسی که موبایلشان با شماره‌ی داده‌شده یکی است. */
+	protected static function find_wp_users_by_mobile( $mobile ) {
+		global $wpdb;
+		$mobile = szc_normalize_mobile( $mobile );
+		if ( ! szc_is_valid_mobile( $mobile ) ) {
+			return array();
+		}
+		$variants = array_unique( array( $mobile, ltrim( $mobile, '0' ), '98' . ltrim( $mobile, '0' ), '+98' . ltrim( $mobile, '0' ) ) );
+		$ph       = implode( ',', array_fill( 0, count( $variants ), '%s' ) );
+		$keys     = array( 'billing_phone', 'mobile', 'phone', 'digits_phone', 'user_mobile', 'mobile_number' );
+		$kph      = implode( ',', array_fill( 0, count( $keys ), '%s' ) );
+		$ids      = $wpdb->get_col( $wpdb->prepare(
+			"SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key IN ($kph) AND meta_value IN ($ph) LIMIT 20",
+			array_merge( $keys, $variants )
+		) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$by_login = $wpdb->get_col( $wpdb->prepare(
+			"SELECT ID FROM {$wpdb->users} WHERE user_login IN ($ph) LIMIT 20", $variants
+		) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$all = array_map( 'intval', array_merge( (array) $ids, (array) $by_login ) );
+		// شناسه‌های معتبر و خارج از فضای‌نامِ کارشناسان.
+		$all = array_filter( $all, function ( $id ) {
+			return $id > 0 && $id < self::OFFSET;
+		} );
+		return array_values( array_unique( $all ) );
+	}
+
 	/* ==================== نوشتن ==================== */
 
 	/**
@@ -131,6 +214,7 @@ class SZC_Agents {
 			'updated_at' => $now,
 		) );
 		$id = (int) $wpdb->insert_id;
+		self::flush_legacy_map();
 		if ( $id && class_exists( 'SZC_Audit' ) ) {
 			SZC_Audit::log( 'create', 'agent', $id, 'کارشناس ایجاد شد' );
 		}
@@ -151,6 +235,7 @@ class SZC_Agents {
 		$wpdb->update( self::table(), array(
 			'name' => $name, 'mobile' => $mobile, 'updated_at' => current_time( 'mysql' ),
 		), array( 'id' => (int) $id ) );
+		self::flush_legacy_map();
 		if ( class_exists( 'SZC_Audit' ) ) {
 			SZC_Audit::log( 'update', 'agent', $id, 'اطلاعات کارشناس ویرایش شد' );
 		}
@@ -270,6 +355,7 @@ class SZC_Agents {
 		}
 		$wpdb->update( SZC_Contacts::table(), array( 'owner_id' => 0 ), array( 'owner_id' => self::to_owner( $id ) ) );
 		$wpdb->delete( self::table(), array( 'id' => $id ) );
+		self::flush_legacy_map();
 	}
 
 	/* ==================== احراز هویت ==================== */

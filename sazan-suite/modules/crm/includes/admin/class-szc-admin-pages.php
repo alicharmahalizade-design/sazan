@@ -2072,6 +2072,10 @@ class SZC_Admin_Pages {
 			isset( $src['from'] ) ? sanitize_text_field( wp_unslash( $src['from'] ) ) : '',
 			isset( $src['to'] ) ? sanitize_text_field( wp_unslash( $src['to'] ) ) : ''
 		);
+		$basis   = isset( $src['basis'] ) ? sanitize_key( wp_unslash( $src['basis'] ) ) : 'actor';
+		if ( ! isset( SZC_Reports::activity_bases()[ $basis ] ) ) {
+			$basis = 'actor';
+		}
 		$type    = isset( $src['type'] ) ? sanitize_key( wp_unslash( $src['type'] ) ) : 'call';
 		$outcome = isset( $src['outcome'] ) ? sanitize_text_field( wp_unslash( $src['outcome'] ) ) : '';
 		if ( $outcome !== '' && ! isset( SZC_Settings::call_outcomes()[ $outcome ] ) ) {
@@ -2086,6 +2090,7 @@ class SZC_Admin_Pages {
 			'period'     => $range['period'],
 			'type'       => in_array( $type, array( 'call', 'followup', 'sms', 'stage', 'all' ), true ) ? $type : 'call',
 			'outcome'    => $outcome,
+			'basis'      => $basis,
 		);
 	}
 
@@ -2107,11 +2112,11 @@ class SZC_Admin_Pages {
 		$summary = $daily = $hourly = $rows = array();
 		$total   = 0;
 		if ( $f['agent'] > 0 ) {
-			$summary = SZC_Reports::agent_activity_summary( $f['agent'], $f['from'], $f['to'] );
-			$daily   = SZC_Reports::agent_activity_daily( $f['agent'], $f['from'], $f['to'] );
-			$hourly  = SZC_Reports::agent_activity_hourly( $f['agent'], $f['from'], $f['to'] );
-			$total   = SZC_Reports::agent_activity_count( $f['agent'], $f['from'], $f['to'], $f['type'], $f['outcome'] );
-			$rows    = SZC_Reports::agent_activity_log( $f['agent'], $f['from'], $f['to'], $f['type'], $f['outcome'], $per, ( $page_no - 1 ) * $per );
+			$summary = SZC_Reports::agent_activity_summary( $f['agent'], $f['from'], $f['to'], $f['basis'] );
+			$daily   = SZC_Reports::agent_activity_daily( $f['agent'], $f['from'], $f['to'], $f['basis'] );
+			$hourly  = SZC_Reports::agent_activity_hourly( $f['agent'], $f['from'], $f['to'], $f['basis'] );
+			$total   = SZC_Reports::agent_activity_count( $f['agent'], $f['from'], $f['to'], $f['type'], $f['outcome'], $f['basis'] );
+			$rows    = SZC_Reports::agent_activity_log( $f['agent'], $f['from'], $f['to'], $f['type'], $f['outcome'], $per, ( $page_no - 1 ) * $per, $f['basis'] );
 		}
 		$max_day  = 1;
 		foreach ( $daily as $d ) { $max_day = max( $max_day, (int) $d['calls'] ); }
@@ -2124,6 +2129,7 @@ class SZC_Admin_Pages {
 			'to'      => $f['to'],
 			'type'    => $f['type'],
 			'outcome' => $f['outcome'],
+			'basis'   => $f['basis'],
 		) );
 		?>
 		<div class="wrap szc-wrap szc-activity">
@@ -2170,6 +2176,13 @@ class SZC_Admin_Pages {
 						<?php endforeach; ?>
 					</select>
 				</label>
+				<label>مبنای محاسبه
+					<select name="basis">
+						<?php foreach ( SZC_Reports::activity_bases() as $key => $label ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $f['basis'], $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
 				<button class="button button-primary">نمایش گزارش</button>
 			</form>
 
@@ -2177,7 +2190,7 @@ class SZC_Admin_Pages {
 				بازه‌های آماده:
 				<?php foreach ( $periods as $key => $meta ) : ?>
 					<a class="button button-small<?php echo $f['period'] === (string) $key ? ' button-primary' : ''; ?>"
-						href="<?php echo esc_url( self::url( 'szc-agent-activity', array( 'agent' => $f['agent'], 'period' => $key, 'type' => $f['type'], 'outcome' => $f['outcome'] ) ) ); ?>"><?php echo esc_html( $meta['label'] ); ?></a>
+						href="<?php echo esc_url( self::url( 'szc-agent-activity', array( 'agent' => $f['agent'], 'period' => $key, 'type' => $f['type'], 'outcome' => $f['outcome'], 'basis' => $f['basis'] ) ) ); ?>"><?php echo esc_html( $meta['label'] ); ?></a>
 				<?php endforeach; ?>
 			</p>
 
@@ -2208,6 +2221,28 @@ class SZC_Admin_Pages {
 						<?php endforeach; ?>
 					</div>
 				</div>
+
+				<?php
+				$orphans = $f['is_manager'] ? SZC_Reports::unattributed_actors( $f['from'], $f['to'] ) : array();
+				if ( $orphans ) : ?>
+					<div class="szc-card szc-orphans">
+						<h3>تماس‌های نسبت‌داده‌نشده در این بازه</h3>
+						<p class="szc-muted">این تماس‌ها زیرِ شناسه‌ای ثبت شده‌اند که به هیچ کارشناسِ فعلی وصل نیست — معمولاً سوابقی که پیش از تبدیلِ کارشناسان به کاربرِ مستقلِ CRM ثبت شده‌اند. برای دیدنشان در پرونده‌ی کارشناس، مبنای محاسبه را روی «مالکِ فعلیِ مخاطب» بگذارید.</p>
+						<table class="widefat striped">
+							<thead><tr><th>ثبت‌کننده</th><th>تعداد تماس</th><th>از تاریخ</th><th>تا تاریخ</th></tr></thead>
+							<tbody>
+							<?php foreach ( $orphans as $o ) : ?>
+								<tr>
+									<td><?php echo esc_html( $o->name ); ?></td>
+									<td><b><?php echo esc_html( szc_fa_digits( $o->calls ) ); ?></b></td>
+									<td><?php echo esc_html( szc_format_mysql( $o->first_at, false ) ); ?></td>
+									<td><?php echo esc_html( szc_format_mysql( $o->last_at, false ) ); ?></td>
+								</tr>
+							<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
+				<?php endif; ?>
 
 				<div class="szc-single-grid">
 					<div class="szc-col szc-card">
@@ -2253,7 +2288,7 @@ class SZC_Admin_Pages {
 						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 							<?php wp_nonce_field( 'szc_activity_export' ); ?>
 							<input type="hidden" name="action" value="szc_activity_export">
-							<?php foreach ( array( 'agent', 'period', 'from', 'to', 'type', 'outcome' ) as $key ) : ?>
+							<?php foreach ( array( 'agent', 'period', 'from', 'to', 'type', 'outcome', 'basis' ) as $key ) : ?>
 								<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $f[ $key ] ); ?>">
 							<?php endforeach; ?>
 							<button class="button">خروجی CSV (اکسل)</button>
@@ -2319,7 +2354,7 @@ class SZC_Admin_Pages {
 		if ( $f['agent'] <= 0 ) {
 			wp_die( 'کارشناس مشخص نشده است.' );
 		}
-		$rows = SZC_Reports::agent_activity_log( $f['agent'], $f['from'], $f['to'], $f['type'], $f['outcome'], 5000 );
+		$rows = SZC_Reports::agent_activity_log( $f['agent'], $f['from'], $f['to'], $f['type'], $f['outcome'], 5000, 0, $f['basis'] );
 
 		nocache_headers();
 		header( 'Content-Type: text/csv; charset=utf-8' );
