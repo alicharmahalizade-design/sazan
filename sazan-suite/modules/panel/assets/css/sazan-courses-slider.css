@@ -1,0 +1,57 @@
+/* ===== سازان: اسلایدر دوره‌ها (۱۷ طرح) ===== */
+.szp-cslider{direction:rtl;width:100%;max-width:1440px;margin-inline:auto;font-family:'Vazirmatn','Vazir',Tahoma,sans-serif}
+.szp-cs-heading{margin:0 0 12px;font-size:20px;font-weight:800;color:#1f2933}
+
+/* نوار سوییچ طرح (بازدیدکننده) */
+.szp-cs-switch{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.szp-cs-switch-btn{font-family:inherit;font-size:12px;line-height:1.6;cursor:pointer;border:1px solid rgba(24,147,184,.4);background:rgba(24,147,184,.08);color:#1893B8;border-radius:8px;padding:5px 11px;transition:all .2s ease}
+.szp-cs-switch-btn:hover{background:rgba(24,147,184,.16)}
+.szp-cs-switch-btn.is-active{background:#1893B8;color:#fff;border-color:#1893B8}
+
+/* مقیاس‌بندی واکنش‌گرا: صحنه‌ی ۱۴۴۰×۴۴۰ به عرض ظرف اسکیل می‌شود */
+.szp-cs-scaler{position:relative;width:100%;overflow:hidden}
+.szp-cs-stagewrap{position:absolute;top:0;right:0;width:1440px;height:440px;transform-origin:top right}
+.szp-cs-doc{position:absolute;inset:0;display:none}
+.szp-cs-doc.is-active{display:block}
+.szp-cs-stage{margin:0 !important}
+
+/* گذارِ اسلایدها */
+.szp-cs-slide{position:absolute;inset:0;opacity:0;pointer-events:none}
+.szp-cs-slide.is-active{opacity:1;pointer-events:auto}
+.szp-cs-anim-fade{transform:translateY(26px);transition:opacity .65s ease,transform .65s ease}
+.szp-cs-anim-fade.is-active{transform:translateY(0)}
+.szp-cs-anim-slidex{transform:translateX(-50px);transition:opacity .65s ease,transform .65s ease}
+.szp-cs-anim-slidex.is-active{transform:translateX(0)}
+.szp-cs-anim-rot3d{transform:perspective(1400px) rotateY(-38deg) scale(.92);transform-origin:right center;transition:opacity .7s ease,transform .7s cubic-bezier(.3,.9,.3,1)}
+.szp-cs-anim-rot3d.is-active{transform:perspective(1400px) rotateY(0deg) scale(1)}
+.szp-cs-anim-card{opacity:.45;transform:translate(-52px,22px) scale(.94);filter:blur(1px);z-index:1;transition:all .6s cubic-bezier(.4,0,.2,1)}
+.szp-cs-anim-card.is-active{opacity:1;transform:none;filter:none;z-index:2}
+
+/* عناصر تزیینیِ وابسته به اسلاید فعال (شماره/متن سایه‌ای) */
+.szp-cs-deco{opacity:0;transition:opacity .6s ease}
+.szp-cs-slide.is-active .szp-cs-deco{opacity:1}
+
+/* نقطه‌های ناوبری */
+.szp-cs-dot{width:9px;height:9px;border-radius:100px;border:none;padding:0;cursor:pointer;background:rgba(139,163,179,.35);transition:all .4s ease}
+.szp-cs-dot.is-active{width:30px;background:#1893B8}
+.szp-cs-dot--v.is-active{width:9px;height:30px}
+
+/* تصویر کماندار */
+.szp-cs-archer{max-width:none}
+
+/* کی‌فریم‌های طرح (از بوم طراحی) */
+@keyframes glowPulse{0%,100%{opacity:.55}50%{opacity:.85}}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(50%)}}
+@keyframes spinSlow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes dashMove{from{background-position:0 0}to{background-position:80px 0}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes shine{0%{transform:translateX(-120%) skewX(-20deg)}100%{transform:translateX(320%) skewX(-20deg)}}
+@keyframes scanY{0%{top:-10%;opacity:0}8%{opacity:1}92%{opacity:1}100%{top:110%;opacity:0}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes aurora{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(60px,-30px) scale(1.15)}66%{transform:translate(-40px,20px) scale(.9)}}
+@keyframes ringPulse{0%{transform:scale(.7);opacity:.8}100%{transform:scale(1.6);opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+	.szp-cs-slide,.szp-cs-deco,.szp-cs-dot{transition:opacity .2s ease}
+	.szp-cs-archer,.szp-cs-stage *{animation:none !important}
+}

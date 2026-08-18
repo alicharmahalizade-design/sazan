@@ -1,0 +1,110 @@
+/* ==========================================================================
+   سازان پنل — مدیریت ادمین بوم طراحی خدمت
+   ========================================================================== */
+
+.szp-cva { direction: rtl; }
+.szp-cva-card {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	padding: 16px 20px;
+	margin: 16px 0;
+	max-width: 1100px;
+}
+.szp-cva-card h2 { margin-top: 4px; }
+.szp-cva-ok { color: #1a7f37; font-weight: 700; }
+
+.szp-cva-toolbar {
+	margin: 14px 0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.szp-cva-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin: 12px 0 18px;
+}
+.szp-cva-msg { font-weight: 700; }
+.szp-cva-msg.is-ok { color: #1a7f37; }
+.szp-cva-msg.is-err { color: #b32d2e; }
+
+.szp-cva-settings-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.szp-cva-settings-actions .submit { margin: 0; padding: 0; }
+.szp-ai-test-msg { font-weight: 700; }
+.szp-ai-test-msg.is-ok { color: #1a7f37; }
+.szp-ai-test-msg.is-err { color: #b32d2e; }
+
+/* شبکه سه ستونه برای زنجیره‌ها (در صفحه عریض). */
+.szp-cva-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 14px;
+}
+@media (max-width: 1100px) { .szp-cva-grid { grid-template-columns: 1fr; } }
+
+.szp-cva-sec {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	padding: 12px 14px;
+}
+.szp-cva-sec h3 { margin: 4px 0 12px; font-size: 15px; }
+.szp-cva-tag {
+	display: inline-block;
+	background: #2271b1;
+	color: #fff;
+	border-radius: 6px;
+	padding: 1px 8px;
+	font-size: 12px;
+	margin-left: 6px;
+}
+.szp-cva-items { margin: 0; padding: 0; list-style: none; }
+.szp-cva-empty { color: #777; font-style: italic; }
+
+.szp-cva-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	background: #fff;
+	border: 1px solid #e2e4e7;
+	border-radius: 8px;
+	padding: 8px 10px;
+	margin-bottom: 8px;
+	transition: border-color .2s, box-shadow .2s;
+}
+.szp-cva-pick { margin-top: 2px; }
+.szp-cva-text {
+	flex: 1;
+	min-width: 0;
+	line-height: 1.9;
+	outline: none;
+	word-break: break-word;
+}
+.szp-cva-text:focus { box-shadow: 0 0 0 2px rgba(34,113,177,.35); border-radius: 4px; }
+.szp-cva-badge {
+	flex: 0 0 auto;
+	font-size: 11px;
+	font-weight: 700;
+	color: #8a6d00;
+	white-space: nowrap;
+	opacity: 0;
+}
+.szp-cva-item.szp-cva-dup .szp-cva-badge { opacity: 1; }
+
+/* موارد تکراری: قاب رنگی هم‌گروه + برچسب نگه‌داشتن. */
+.szp-cva-item.szp-cva-dup { border-width: 2px; }
+.szp-cva-item.szp-cva-keep { box-shadow: inset 4px 0 0 #1a7f37; }
+
+.szp-cva-g0 { border-color: #d63638 !important; background: #fcf0f1; }
+.szp-cva-g1 { border-color: #2271b1 !important; background: #eef5fb; }
+.szp-cva-g2 { border-color: #b26200 !important; background: #fbf3e8; }
+.szp-cva-g3 { border-color: #1a7f37 !important; background: #eef8f1; }
+.szp-cva-g4 { border-color: #8c33b5 !important; background: #f6eefb; }
+.szp-cva-g5 { border-color: #0a7c86 !important; background: #e9f7f8; }
+.szp-cva-g6 { border-color: #b51d6b !important; background: #fbeef5; }
+.szp-cva-g7 { border-color: #5b6b00 !important; background: #f5f7e8; }
