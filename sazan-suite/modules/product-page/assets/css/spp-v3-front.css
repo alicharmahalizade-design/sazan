@@ -448,23 +448,54 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 /* ثبت‌نام کارت‌به‌کارت — کارت بانکی و آپلود رسید داخل پاپ‌آپ. */
 .enroll-summary .btn-primary,.enroll-cta{font-family:inherit;cursor:pointer}
 .enroll-summary button.btn-primary{width:100%;border:0}
-.enroll-card{display:grid;gap:10px;margin-top:22px;padding:18px 20px;border:1px solid rgba(2,198,254,.3);border-radius:20px;background:radial-gradient(circle at 88% 0,rgba(2,198,254,.14),transparent 40%),rgba(3,10,28,.72)}
-.enroll-card__row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.enroll-card__row>span{min-width:104px;color:var(--muted);font-size:13px}
-.enroll-card__row>strong{color:var(--text);font-size:16px;font-weight:800}
-.enroll-card__number{letter-spacing:.16em;font-size:19px!important;font-variant-numeric:tabular-nums;word-break:break-word}
-.enroll-card__number--iban{letter-spacing:.08em;font-size:15px!important}
-.enroll-card__copy{margin-right:auto;min-height:38px;padding:0 16px;border:1px solid rgba(2,198,254,.34);border-radius:11px;color:#9fe9ff;background:rgba(2,198,254,.08);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:.2s}
+
+/* پاپ‌آپ فشرده: همه‌چیز باید بدون اسکرول در یک صفحه جا شود. */
+.enroll-dialog{width:min(560px,100%);max-height:min(700px,calc(100svh - 32px));padding:22px 24px 24px}
+.enroll-dialog__head{padding-left:46px}
+.enroll-dialog__head h2{margin:0;color:var(--text);font-size:17px;font-weight:900;line-height:1.6}
+.enroll-dialog__head p{margin:6px 0 0;color:var(--muted);font-size:12px;line-height:1.75}
+.enroll-dialog .review-dialog__close{top:12px;left:12px;width:34px;height:34px;border-radius:11px;font-size:20px}
+.enroll-form{gap:11px;margin-top:14px}
+.enroll-form .review-form__grid{gap:10px}
+.enroll-form label{gap:5px;font-size:12px}
+.enroll-form label>span small{font-size:11px}
+.enroll-form input{min-height:42px;padding:9px 12px;border-radius:11px;font-size:15px!important;line-height:1.6}
+.enroll-form .review-form__status{min-height:0;font-size:12px;line-height:1.7}
+.enroll-form .review-form__submit{min-height:46px;border-radius:12px;font-size:13px}
+
+.enroll-card{display:grid;gap:7px;margin-top:14px;padding:13px 15px;border:1px solid rgba(2,198,254,.3);border-radius:16px;background:radial-gradient(circle at 88% 0,rgba(2,198,254,.14),transparent 40%),rgba(3,10,28,.72)}
+.enroll-card__row{display:grid;grid-template-columns:84px minmax(0,1fr) auto;align-items:center;gap:4px 10px}
+.enroll-card__row>span{color:var(--muted);font-size:12px}
+.enroll-card__row>strong{color:var(--text);font-size:13px;font-weight:800}
+.enroll-card__number{letter-spacing:.1em;font-size:15px!important;font-variant-numeric:tabular-nums;word-break:break-word}
+.enroll-card__number--iban{letter-spacing:.04em;font-size:12.5px!important}
+.enroll-card__copy{min-height:30px;padding:0 12px;border:1px solid rgba(2,198,254,.34);border-radius:9px;color:#9fe9ff;background:rgba(2,198,254,.08);font-family:inherit;font-size:11px;font-weight:800;cursor:pointer;transition:.2s}
 .enroll-card__copy:hover{border-color:var(--cyan);background:rgba(2,198,254,.16)}
 .enroll-card__copy.is-copied{color:#063321;background:#63e7aa;border-color:#63e7aa}
-.enroll-upload{display:grid;gap:8px}
-.enroll-upload__label{color:#dceaf1;font-size:14px;font-weight:800}
+
+.enroll-upload{display:grid;gap:5px}
+.enroll-upload__label{color:#dceaf1;font-size:12px;font-weight:800}
 .enroll-upload__label b{color:#ffbd24}
-.enroll-upload__drop{position:relative;display:grid;justify-items:center;gap:6px;padding:22px 16px;text-align:center;border:1px dashed rgba(159,208,225,.32);border-radius:16px;background:rgba(2,8,24,.55);cursor:pointer;transition:border-color .2s ease,background .2s ease}
-.enroll-upload__drop:hover{border-color:var(--cyan);background:rgba(2,12,31,.85)}
+.enroll-form .enroll-upload__drop{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:6px 11px;padding:11px 13px;border:1px dashed rgba(159,208,225,.32);border-radius:13px;background:rgba(2,8,24,.55);cursor:pointer;transition:border-color .2s ease,background .2s ease}
+.enroll-form .enroll-upload__drop:hover{border-color:var(--cyan);background:rgba(2,12,31,.85)}
 .enroll-upload__drop input[type=file]{position:absolute;inset:0;width:100%;height:100%;min-height:0!important;padding:0!important;border:0!important;opacity:0;cursor:pointer}
-.enroll-upload__icon{width:40px;height:40px;display:grid;place-items:center;border-radius:13px;color:#00151a;background:var(--cyan);font-size:19px;font-weight:900}
-.enroll-upload__text{color:#dceaf1;font-size:14px;font-weight:800;word-break:break-all}
+.enroll-upload__icon{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border-radius:10px;color:#00151a;background:var(--cyan);font-size:16px;font-weight:900}
+.enroll-upload__text{color:#dceaf1;font-size:12.5px;font-weight:800;word-break:break-word}
 .enroll-upload__text.is-filled{color:#63e7aa}
-.enroll-upload__drop small{color:var(--muted);font-size:12px}
-@media(max-width:720px){.enroll-card{padding:16px}.enroll-card__row>span{min-width:88px;font-size:12px}.enroll-card__number{font-size:17px!important;letter-spacing:.1em}.enroll-card__number--iban{font-size:14px!important;letter-spacing:.04em}.enroll-card__copy{margin-right:0;width:100%}}
+.enroll-form .enroll-upload__drop small{margin-right:auto;flex:0 0 auto;color:var(--muted);font-size:11px}
+
+@media(max-width:720px){
+	.enroll-dialog{max-height:calc(100svh - 10px);padding:18px 14px calc(16px + env(safe-area-inset-bottom))}
+	.enroll-dialog__head{padding-left:42px}
+	.enroll-dialog__head h2{font-size:15px}
+	.enroll-form .review-form__grid{grid-template-columns:1fr 1fr}
+	/* روی موبایل ۱۶ پیکسل لازم است تا سافاری هنگام فوکوس صفحه را زوم نکند. */
+	.enroll-form input{min-height:44px;font-size:16px!important}
+	.enroll-card{padding:12px}
+	.enroll-card__row{grid-template-columns:70px minmax(0,1fr) auto}
+	.enroll-card__row>span{font-size:11px}
+	.enroll-card__number{font-size:14px!important}
+	.enroll-card__number--iban{font-size:11.5px!important}
+	.enroll-form .enroll-upload__drop small{flex-basis:100%;margin-right:43px}
+	.enroll-form .review-form__submit{position:static}
+}

@@ -517,7 +517,7 @@ final class SPP_V3_Enroll {
 			'holder'  => self::plain( isset( $d['manual_card_holder'] ) ? $d['manual_card_holder'] : '', self::plain( spp_global( 'enroll_card_holder', '' ) ) ),
 			'bank'    => self::plain( isset( $d['manual_bank'] ) ? $d['manual_bank'] : '', self::plain( spp_global( 'enroll_bank', '' ) ) ),
 			'amount'  => self::plain( isset( $d['manual_amount'] ) ? $d['manual_amount'] : '', wp_strip_all_tags( $product->get_price_html() ) ),
-			'note'    => self::plain( isset( $d['manual_note'] ) ? $d['manual_note'] : '', self::plain( spp_global( 'enroll_note', '' ), 'مبلغ دوره را به شماره کارت زیر واریز کنید، سپس تصویر رسید واریزی و مشخصات خود را در همین فرم ثبت کنید. پس از بررسی رسید، ثبت‌نام شما نهایی می‌شود.' ) ),
+			'note'    => self::plain( isset( $d['manual_note'] ) ? $d['manual_note'] : '', self::plain( spp_global( 'enroll_note', '' ) ) ),
 		);
 	}
 

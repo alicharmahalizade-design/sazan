@@ -389,7 +389,7 @@ final class SPP_V3_Renderer {
 		<div class="review-modal enroll-modal" hidden data-spp-v3-enroll-modal>
 			<div class="review-dialog enroll-dialog" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr( $title_id ); ?>" tabindex="-1">
 				<button class="review-dialog__close" type="button" data-spp-v3-enroll-close aria-label="بستن فرم ثبت‌نام">×</button>
-				<header class="review-dialog__head"><span class="kicker">ثبت‌نام دوره</span><h2 id="<?php echo esc_attr( $title_id ); ?>">ثبت‌نام در <?php echo esc_html( $product->get_name() ); ?></h2><p><?php echo esc_html( $card['note'] ); ?></p></header>
+				<header class="enroll-dialog__head"><h2 id="<?php echo esc_attr( $title_id ); ?>">ثبت‌نام دوره</h2><?php if ( '' !== $card['note'] ) : ?><p><?php echo esc_html( $card['note'] ); ?></p><?php endif; ?></header>
 
 				<div class="enroll-card">
 					<?php if ( '' !== $card['number'] ) : ?><div class="enroll-card__row"><span>شماره کارت</span><strong class="enroll-card__number" dir="ltr"><?php echo esc_html( SPP_V3_Enroll::group( $card['number'] ) ); ?></strong><button type="button" class="enroll-card__copy" data-spp-v3-copy="<?php echo esc_attr( $card['number'] ); ?>" aria-label="کپی شماره کارت">کپی</button></div><?php endif; ?>
@@ -404,7 +404,10 @@ final class SPP_V3_Renderer {
 						<label><span>نام <b aria-hidden="true">*</b></span><input type="text" name="first_name" value="<?php echo esc_attr( $first_name ); ?>" autocomplete="given-name" required></label>
 						<label><span>نام خانوادگی <b aria-hidden="true">*</b></span><input type="text" name="last_name" value="<?php echo esc_attr( $last_name ); ?>" autocomplete="family-name" required></label>
 					</div>
-					<label><span>شماره موبایل <b aria-hidden="true">*</b></span><input type="tel" name="phone" inputmode="numeric" dir="ltr" placeholder="09123456789" autocomplete="tel" required></label>
+					<div class="review-form__grid">
+						<label><span>شماره موبایل <b aria-hidden="true">*</b></span><input type="tel" name="phone" inputmode="numeric" dir="ltr" placeholder="09123456789" autocomplete="tel" required></label>
+						<label><span>توضیح <small>(اختیاری)</small></span><input type="text" name="note"></label>
+					</div>
 					<div class="enroll-upload">
 						<span class="enroll-upload__label">تصویر رسید واریزی <b aria-hidden="true">*</b></span>
 						<label class="enroll-upload__drop">
@@ -414,7 +417,6 @@ final class SPP_V3_Renderer {
 							<small>JPG، PNG، WEBP یا PDF تا <?php echo esc_html( SPP_V3_Enroll::max_size_label() ); ?></small>
 						</label>
 					</div>
-					<label><span>توضیح <small>(اختیاری)</small></span><textarea name="note" rows="3" placeholder="اگر نکته‌ای درباره واریز یا ثبت‌نامتان هست، اینجا بنویسید."></textarea></label>
 					<label class="review-form__hp" aria-hidden="true">این فیلد را خالی بگذارید<input type="text" name="spp_hp" tabindex="-1" autocomplete="off"></label>
 					<input type="hidden" name="product" value="<?php echo esc_attr( $post_id ); ?>">
 					<p class="review-form__status" data-spp-v3-enroll-status aria-live="polite"></p>
