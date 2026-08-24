@@ -1,0 +1,2175 @@
+/* =========================================================================
+   سازان — صفحه اختصاصی محصول | استایل فرانت
+   سکشن ۱: هیرو + کارت خرید + نوار مزایا
+   ========================================================================= */
+
+.spp {
+	--spp-bg: #040b14;
+	--spp-card: #0b1a2b;
+	--spp-card-2: #102338;
+	--spp-border: #1b3346;
+	--spp-text: #e9f1f7;
+	--spp-text-2: #b9cad6;
+	--spp-muted: #8598a7;
+	--spp-cyan: #2ec5ec;
+	--spp-gold: #f2b950;
+	--spp-gold-2: #d9992c;
+
+	--spp-radius: 22px;
+	--spp-wrap: 1320px;
+	--spp-sec-y: 0px;
+	--spp-gap: 16px;
+
+	direction: rtl;
+	box-sizing: border-box;
+	color: var(--spp-text);
+	background: var(--spp-bg);
+	padding: var(--spp-sec-y) 0;
+	font-size: 16px;
+	line-height: 1.8;
+}
+
+.spp *,
+.spp *::before,
+.spp *::after {
+	box-sizing: border-box;
+}
+
+/* ریست با :where تا صفرِ specificity داشته باشد و قواعد کلاس‌ها همیشه بر آن غالب شوند. */
+.spp :where(p, h1, h2, h3, h4, ul, ol, li, figure, blockquote) {
+	margin: 0;
+	padding: 0;
+}
+
+.spp :where(ul, ol) {
+	list-style: none;
+}
+
+.spp a {
+	text-decoration: none;
+	color: inherit;
+}
+
+.spp-wrap {
+	max-width: var(--spp-wrap);
+	margin-inline: auto;
+	padding-inline: 16px;
+}
+
+/* --- شبکه‌ی اصلی: کارت خرید سمت راست، محتوا سمت چپ ---------------------- */
+.spp-hero__grid {
+	display: grid;
+	grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+	gap: var(--spp-gap);
+	align-items: stretch;
+}
+
+.spp-hero__main {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	min-width: 0;
+}
+
+/* =========================================================================
+   کارت هیرو
+   ========================================================================= */
+.spp-hero__card {
+	position: relative;
+	overflow: hidden;
+	border: 1px solid var(--spp-border);
+	border-radius: var(--spp-radius);
+	background-color: var(--spp-card);
+	background-image:
+		linear-gradient(0deg, rgba(4, 11, 20, .82), rgba(4, 11, 20, .55)),
+		var(--spp-hero-bg, none),
+		radial-gradient(120% 130% at 8% 100%, rgba(46, 197, 236, .20), transparent 58%),
+		radial-gradient(90% 110% at 88% 0%, rgba(46, 197, 236, .10), transparent 62%),
+		linear-gradient(150deg, #0d2135 0%, #071523 62%, #050f1b 100%);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(220px, 37%);
+	min-height: 452px;
+	isolation: isolate;
+}
+
+/* هاله‌ی فیروزه‌ای پشت تصویر */
+.spp-hero__glow {
+	position: absolute;
+	inset-inline-start: -6%;
+	bottom: -32%;
+	width: 62%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: radial-gradient(circle, rgba(46, 197, 236, .30), rgba(46, 197, 236, 0) 62%);
+	filter: blur(6px);
+	pointer-events: none;
+	z-index: 0;
+}
+
+.spp-hero__body {
+	position: relative;
+	z-index: 2;
+	padding: 30px 38px 28px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 14px;
+}
+
+/* --- برچسب‌ها ----------------------------------------------------------- */
+.spp-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	border-radius: 999px;
+	font-size: 13px;
+	font-weight: 700;
+	/* برای فارسی line-height نزدیک ۱ حروف را خفه می‌کند. */
+	line-height: 1.7;
+	padding: 5px 18px;
+	white-space: nowrap;
+}
+
+.spp-chip .spp-i {
+	flex: 0 0 auto;
+}
+
+.spp-chip--gold-o {
+	color: var(--spp-gold);
+	border: 1px solid rgba(242, 185, 80, .45);
+	background: rgba(242, 185, 80, .07);
+}
+
+.spp-chip--gold {
+	color: #2a1a02;
+	background: linear-gradient(180deg, var(--spp-gold), var(--spp-gold-2));
+	box-shadow: 0 6px 18px -8px rgba(242, 185, 80, .8);
+}
+
+/* --- عنوان ------------------------------------------------------------- */
+.spp-hero__title {
+	font-size: clamp(28px, 3.9vw, 56px);
+	font-weight: 900;
+	line-height: 1.38;
+	text-wrap: balance;
+	margin-top: 13px;
+	letter-spacing: -.01em;
+	color: #fff;
+	background: linear-gradient(180deg, #ffffff 25%, #b9cddc 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.spp-hero__title .spp-hl {
+	background: linear-gradient(180deg, #ffd98a, var(--spp-gold-2));
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.spp-hero__sub {
+	font-size: clamp(14px, 1.15vw, 17px);
+	color: var(--spp-text-2);
+	max-width: 46ch;
+	margin-top: 12px;
+}
+
+/* --- مشخصات دوره -------------------------------------------------------- */
+.spp-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 22px;
+	margin-top: 0;
+}
+
+.spp-meta__i {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	text-align: center;
+}
+
+/* آیکن بالا، برچسب زیر آن، مقدار در پایین — همان چیدمان طرح. */
+.spp-meta__top {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+}
+
+.spp-meta__ic {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 8px;
+	color: var(--spp-cyan);
+	background: rgba(46, 197, 236, .10);
+	border: 1px solid rgba(46, 197, 236, .22);
+	flex: 0 0 auto;
+}
+
+.spp-meta__lb {
+	font-size: 13.5px;
+	font-weight: 700;
+	line-height: 1.7;
+	color: var(--spp-text);
+	white-space: nowrap;
+}
+
+.spp-meta__vl {
+	font-size: 12.5px;
+	line-height: 1.7;
+	color: var(--spp-muted);
+	white-space: nowrap;
+}
+
+/* --- دکمه‌ها ------------------------------------------------------------ */
+.spp-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	height: 50px;
+	padding: 0 28px;
+	border: 0;
+	border-radius: 12px;
+	font-size: 15px;
+	font-weight: 800;
+	line-height: 1.6;
+	cursor: pointer;
+	transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+}
+
+.spp-btn:hover {
+	transform: translateY(-2px);
+}
+
+.spp-btn--gold {
+	color: #2a1a02;
+	background: linear-gradient(180deg, #f8ca67, var(--spp-gold-2));
+	box-shadow: 0 14px 28px -14px rgba(242, 185, 80, .85);
+}
+
+.spp-btn--gold:hover {
+	box-shadow: 0 18px 34px -14px rgba(242, 185, 80, 1);
+}
+
+.spp-btn--ghost {
+	color: var(--spp-text);
+	background: rgba(255, 255, 255, .03);
+	border: 1px solid rgba(255, 255, 255, .20);
+}
+
+.spp-btn--ghost:hover {
+	border-color: var(--spp-cyan);
+	color: #fff;
+}
+
+.spp-btn--block {
+	width: 100%;
+}
+
+.spp-hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 14px;
+}
+
+/* --- دکمه‌ی پخش روی تصویر ----------------------------------------------- */
+.spp-play {
+	position: absolute;
+	inset-inline-start: 18px;
+	bottom: 78px;
+	z-index: 3;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 16px 6px 6px;
+	border: 1px solid rgba(255, 255, 255, .16);
+	border-radius: 999px;
+	background: rgba(6, 17, 28, .55);
+	backdrop-filter: blur(8px);
+	color: var(--spp-text);
+	font: inherit;
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.7;
+	cursor: pointer;
+	transition: border-color .2s ease, background-color .2s ease;
+}
+
+.spp-play:hover {
+	border-color: var(--spp-cyan);
+	background: rgba(6, 17, 28, .8);
+}
+
+.spp-play__btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	color: #08222e;
+	background: linear-gradient(180deg, #7fe3ff, var(--spp-cyan));
+	box-shadow: 0 0 0 6px rgba(46, 197, 236, .14);
+	flex: 0 0 auto;
+}
+
+/* --- اعتماد اجتماعی ----------------------------------------------------- */
+.spp-proof {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 20px;
+}
+
+.spp-avatars {
+	display: inline-flex;
+	flex-direction: row-reverse;
+}
+
+.spp-avatars .spp-avatars__i {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid var(--spp-card);
+	background: var(--spp-card-2);
+	margin-inline-start: -11px;
+	display: block;
+}
+
+.spp-avatars .spp-avatars__i:last-child {
+	margin-inline-start: 0;
+}
+
+.spp-proof__txt {
+	font-size: 14px;
+	line-height: 1.8;
+	color: var(--spp-text-2);
+}
+
+.spp-proof__txt b {
+	color: var(--spp-gold);
+	font-weight: 800;
+	margin-inline-end: 3px;
+}
+
+/* --- تصویر مدرس --------------------------------------------------------- */
+.spp-hero__figure {
+	position: relative;
+	z-index: 1;
+	overflow: hidden;
+}
+
+/* تصویر مطلق است تا نسبت‌ابعادِ فایل، ارتفاع کارت را تعیین نکند. */
+.spp-hero__figure .spp-hero__img {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	object-position: bottom center;
+	filter: drop-shadow(0 24px 40px rgba(0, 0, 0, .55));
+}
+
+/* =========================================================================
+   نوار مزایا
+   ========================================================================= */
+.spp-features {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	border: 1px solid var(--spp-border);
+	border-radius: 18px;
+	background: linear-gradient(180deg, var(--spp-card-2), var(--spp-card));
+	padding: 16px 8px;
+}
+
+.spp-features__i {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 13px;
+	padding: 2px 18px;
+}
+
+.spp-features__i + .spp-features__i::before {
+	content: "";
+	position: absolute;
+	inset-inline-end: 0;
+	top: 4px;
+	bottom: 4px;
+	width: 1px;
+	background: var(--spp-border);
+}
+
+.spp-features__ic {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	border-radius: 11px;
+	color: var(--spp-cyan);
+	background: rgba(46, 197, 236, .10);
+	border: 1px solid rgba(46, 197, 236, .20);
+	flex: 0 0 auto;
+}
+
+.spp-features__tx {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	line-height: 1.6;
+}
+
+.spp-features__tx strong {
+	font-size: 14px;
+	font-weight: 800;
+	color: var(--spp-text);
+}
+
+.spp-features__tx em {
+	font-size: 12.5px;
+	font-style: normal;
+	color: var(--spp-muted);
+}
+
+/* =========================================================================
+   کارت خرید
+   ========================================================================= */
+/* سه ناحیه: بالا (قیمت) — وسط (فهرست، وسط‌چین در فضای آزاد) — پایین (چسبیده به کف) */
+.spp-buy {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	padding: 24px 22px;
+	border-radius: var(--spp-radius);
+	border: 1px solid rgba(242, 185, 80, .34);
+	background:
+		radial-gradient(120% 80% at 50% 0%, rgba(242, 185, 80, .10), transparent 60%),
+		linear-gradient(180deg, #0f2337 0%, #091626 100%);
+	box-shadow: 0 30px 70px -40px rgba(242, 185, 80, .55);
+	text-align: center;
+}
+
+.spp-buy__top {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex: 0 0 auto;
+}
+
+.spp-buy__offer {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--spp-text-2);
+	margin-top: 12px;
+}
+
+.spp-buy__price {
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 0 8px;
+	line-height: 1.15;
+	margin-top: 8px;
+}
+
+.spp-buy__num {
+	font-size: clamp(34px, 3vw, 44px);
+	font-weight: 900;
+	line-height: 1.1;
+	color: #fff;
+}
+
+.spp-buy__unit {
+	font-size: clamp(16px, 1.4vw, 21px);
+	font-weight: 800;
+	color: #fff;
+}
+
+.spp-buy__sub {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	font-size: 13px;
+	margin-top: 10px;
+}
+
+.spp-off {
+	display: inline-flex;
+	align-items: center;
+	border-radius: 8px;
+	padding: 3px 10px;
+	font-weight: 800;
+	line-height: 1.7;
+	color: #2a1a02;
+	background: linear-gradient(180deg, var(--spp-gold), var(--spp-gold-2));
+}
+
+.spp-old {
+	color: var(--spp-muted);
+	text-decoration: line-through;
+	text-decoration-color: rgba(133, 152, 167, .8);
+}
+
+/* --- وسط: فهرست امکانات ------------------------------------------------- */
+
+/* فضای آزادِ کارت را می‌گیرد و فهرست را در آن وسط‌چین می‌کند. */
+.spp-buy__mid {
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	margin-top: 20px;
+	padding-block: 20px;
+	border-top: 1px solid rgba(255, 255, 255, .07);
+}
+
+.spp-buy__list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	text-align: start;
+}
+
+.spp-buy__list li {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 14px;
+	color: var(--spp-text-2);
+	line-height: 1.75;
+}
+
+.spp-tick {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 6px;
+	flex: 0 0 auto;
+	color: var(--spp-gold);
+	background: rgba(242, 185, 80, .12);
+}
+
+/* --- پایین: دکمه‌ی خرید + ضمانت، چسبیده به کف کارت ---------------------- */
+.spp-buy__foot {
+	flex: 0 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: auto;
+}
+
+.spp-buy .spp-btn--gold {
+	height: 54px;
+	font-size: 16px;
+}
+
+/* --- جعبه‌ی ضمانت ------------------------------------------------------- */
+.spp-guard {
+	display: flex;
+	align-items: center;
+	gap: 13px;
+	text-align: start;
+	padding: 14px 15px;
+	border-radius: 14px;
+	border: 1px solid rgba(242, 185, 80, .22);
+	background: rgba(242, 185, 80, .06);
+}
+
+.spp-guard__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	border-radius: 11px;
+	flex: 0 0 auto;
+	color: var(--spp-gold);
+	background: rgba(242, 185, 80, .12);
+}
+
+.spp-guard__txt {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	line-height: 1.6;
+}
+
+.spp-guard__txt strong {
+	font-size: 14px;
+	font-weight: 800;
+	color: var(--spp-text);
+}
+
+.spp-guard__txt em {
+	font-size: 12.5px;
+	font-style: normal;
+	color: var(--spp-muted);
+}
+
+/* =========================================================================
+   سکشن ۲ — درباره دوره + این دوره برای شماست اگر
+   ========================================================================= */
+.spp-about__card {
+	position: relative;
+	overflow: hidden;
+	display: grid;
+	grid-template-columns: minmax(0, 45%) minmax(0, 55%);
+	gap: 0;
+	border: 1px solid var(--spp-border);
+	border-radius: var(--spp-radius);
+	background:
+		radial-gradient(80% 120% at 96% 6%, rgba(46, 197, 236, .14), transparent 58%),
+		linear-gradient(180deg, var(--spp-card-2) 0%, var(--spp-card) 100%);
+	padding: 28px 38px 32px;
+	isolation: isolate;
+}
+
+.spp-about__glow {
+	position: absolute;
+	inset-inline-start: auto;
+	inset-inline-end: -8%;
+	top: -30%;
+	width: 34%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: radial-gradient(circle, rgba(46, 197, 236, .22), rgba(46, 197, 236, 0) 62%);
+	pointer-events: none;
+	z-index: 0;
+}
+
+/* --- ستون راست: معرفی --------------------------------------------------- */
+.spp-about__intro {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	/* ستون اول در RTL سمت راست است: تصویر تزئینی. */
+	grid-template-columns: min(55%, var(--spp-about-fig, 200px)) minmax(0, 1fr);
+	align-items: start;
+	gap: 16px;
+	padding-inline-end: 34px;
+	border-inline-end: 1px solid rgba(255, 255, 255, .07);
+}
+
+.spp-about__card--nodiv .spp-about__intro {
+	border-inline-end: 0;
+}
+
+.spp-about__card--nofig .spp-about__intro {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+/* جابه‌جایی با position نسبی (نه margin) تا عرضِ جعبه دقیقاً برابر ستون بماند
+   و عددِ اسلایدرِ المنتور همان اندازه‌ی واقعیِ تصویر باشد. */
+.spp-about__fig {
+	position: relative;
+	inset-inline-start: -30px;
+	top: -14px;
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-start;
+	min-width: 0;
+}
+
+.spp-about__fig .spp-about__img {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	height: auto;
+	filter: drop-shadow(0 14px 30px rgba(0, 0, 0, .45));
+}
+
+.spp-about__txt {
+	min-width: 0;
+}
+
+.spp-about__h {
+	font-size: clamp(17px, 1.4vw, 20px);
+	font-weight: 800;
+	line-height: 1.5;
+	color: var(--spp-text);
+	margin: 0;
+}
+
+.spp-about__body {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.spp-about__body p {
+	font-size: 15px;
+	line-height: 1.85;
+	color: var(--spp-text-2);
+	text-align: justify;
+	text-justify: inter-word;
+}
+
+/* --- ستون چپ: مناسب برای ------------------------------------------------ */
+.spp-about__fit {
+	position: relative;
+	z-index: 1;
+	padding-inline-start: 34px;
+	min-width: 0;
+}
+
+.spp-fit {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-top: 16px;
+}
+
+.spp-fit__i {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 6px 12px;
+	border: 1px solid var(--spp-border);
+	border-radius: 12px;
+	background: rgba(255, 255, 255, .02);
+	transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+.spp-fit__i:hover {
+	border-color: rgba(46, 197, 236, .40);
+	background: rgba(46, 197, 236, .05);
+	transform: translateX(-3px);
+}
+
+.spp-fit__ic {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border-radius: 9px;
+	flex: 0 0 auto;
+	color: var(--spp-cyan);
+	background: rgba(46, 197, 236, .10);
+	border: 1px solid rgba(46, 197, 236, .22);
+}
+
+.spp-fit__tx {
+	font-size: 14.5px;
+	font-weight: 600;
+	line-height: 1.8;
+	color: var(--spp-text-2);
+}
+
+/* =========================================================================
+   سکشن ۳ — ویژگی‌های دوره + سرفصل‌ها
+   ========================================================================= */
+.spp-curr__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 57.5fr) minmax(0, 42.5fr);
+	gap: 24px;
+	align-items: stretch;
+}
+
+/* کارت مشترک دو ستون */
+.spp-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	border: 1px solid var(--spp-border);
+	border-radius: var(--spp-radius);
+	background: linear-gradient(180deg, var(--spp-card-2) 0%, var(--spp-card) 100%);
+	padding: 24px 24px 26px;
+	min-width: 0;
+}
+
+.spp-card__h {
+	font-size: clamp(16px, 1.3vw, 19px);
+	font-weight: 800;
+	line-height: 1.6;
+	color: var(--spp-text);
+	margin: 0 0 18px;
+}
+
+/* --- کاشی‌های ویژگی ------------------------------------------------------ */
+.spp-feat__grid {
+	display: grid;
+	grid-template-columns: repeat(var(--spp-feat-cols, 4), minmax(0, 1fr));
+	gap: 16px;
+	align-content: start;
+}
+
+/* آیکن ستون اول (راست) و عنوان/توضیح ستون دوم روی هم — مثل ماکت. */
+.spp-feat__i {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	gap: 3px 9px;
+	padding: 11px 12px;
+	border: 1px solid var(--spp-border);
+	border-radius: 14px;
+	background: rgba(255, 255, 255, .02);
+	min-width: 0;
+	transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+.spp-feat__i:hover {
+	border-color: rgba(46, 197, 236, .38);
+	background: rgba(46, 197, 236, .05);
+	transform: translateY(-2px);
+}
+
+.spp-feat__ic {
+	grid-row: 1 / span 2;
+	align-self: center;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 8px;
+	flex: 0 0 auto;
+	color: var(--spp-cyan);
+	background: rgba(46, 197, 236, .10);
+	border: 1px solid rgba(46, 197, 236, .22);
+}
+
+/* اگر توضیح نداشت، آیکن فقط یک ردیف را بگیرد. */
+.spp-feat__i:not(:has(.spp-feat__d)) .spp-feat__ic {
+	grid-row: auto;
+}
+
+.spp-feat__t {
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 1.55;
+	color: var(--spp-text);
+	min-width: 0;
+}
+
+.spp-feat__d {
+	font-size: 12px;
+	font-style: normal;
+	line-height: 1.65;
+	color: var(--spp-muted);
+}
+
+/* --- سرفصل‌ها ------------------------------------------------------------ */
+.spp-syl__list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.spp-syl__d {
+	border-radius: 12px;
+}
+
+.spp-syl__row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 44px;
+	padding: 6px 12px;
+	border: 1px solid var(--spp-border);
+	border-radius: 12px;
+	background: rgba(255, 255, 255, .02);
+	cursor: pointer;
+	list-style: none;
+	transition: border-color .2s ease, background-color .2s ease;
+}
+
+/* مثلث پیش‌فرضِ summary در مرورگرها */
+.spp-syl__row::-webkit-details-marker,
+.spp-syl__row::marker {
+	display: none;
+	content: "";
+}
+
+.spp-syl__row--plain {
+	cursor: default;
+}
+
+.spp-syl__row:hover {
+	border-color: rgba(46, 197, 236, .38);
+	background: rgba(46, 197, 236, .05);
+}
+
+.spp-syl__d[open] > .spp-syl__row {
+	border-color: rgba(46, 197, 236, .45);
+	background: rgba(46, 197, 236, .06);
+	border-end-start-radius: 0;
+	border-end-end-radius: 0;
+}
+
+.spp-syl__n {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 8px;
+	flex: 0 0 auto;
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 1;
+	color: #fff;
+	background: linear-gradient(180deg, #2189c9, #14669f);
+	box-shadow: 0 4px 12px -6px rgba(33, 137, 201, .9);
+}
+
+.spp-syl__t {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.7;
+	color: var(--spp-text-2);
+}
+
+.spp-syl__s {
+	flex: 0 0 auto;
+	font-size: 12.5px;
+	line-height: 1.7;
+	color: var(--spp-muted);
+	white-space: nowrap;
+}
+
+.spp-syl__chev {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 8px;
+	flex: 0 0 auto;
+	color: var(--spp-muted);
+	border: 1px solid var(--spp-border);
+	transition: transform .25s ease, color .2s ease, border-color .2s ease;
+}
+
+.spp-syl__row:hover .spp-syl__chev {
+	color: var(--spp-cyan);
+	border-color: rgba(46, 197, 236, .38);
+}
+
+.spp-syl__d[open] .spp-syl__chev {
+	transform: rotate(180deg);
+	color: var(--spp-cyan);
+	border-color: rgba(46, 197, 236, .38);
+}
+
+.spp-syl__body {
+	padding: 14px 16px 16px;
+	border: 1px solid rgba(46, 197, 236, .28);
+	border-top: 0;
+	border-end-start-radius: 12px;
+	border-end-end-radius: 12px;
+	background: rgba(46, 197, 236, .03);
+}
+
+.spp-syl__body p {
+	font-size: 13.5px;
+	line-height: 1.9;
+	color: var(--spp-muted);
+}
+
+.spp-syl__body p + p {
+	margin-top: 10px;
+}
+
+/* دکمه‌ی پایین کارت — هم‌تراز با انتهای ردیف‌ها (چپ در RTL) */
+.spp-syl__btn {
+	align-self: flex-end;
+	margin-top: auto;
+	padding-top: 0;
+}
+
+.spp-btn--outline {
+	height: 42px;
+	padding: 0 20px;
+	font-size: 13.5px;
+	color: var(--spp-cyan);
+	background: transparent;
+	border: 1px solid rgba(46, 197, 236, .45);
+	border-radius: 10px;
+}
+
+.spp-btn--outline:hover {
+	color: #fff;
+	background: rgba(46, 197, 236, .12);
+	border-color: var(--spp-cyan);
+}
+
+.spp-syl__list + .spp-syl__btn {
+	margin-top: 18px;
+}
+
+/* =========================================================================
+   سکشن ۴ — معرفی مدرس
+   ========================================================================= */
+.spp-inst {
+	--spp-inst-out: 34px;   /* بیرون‌زدگی عکس از بالای کارت */
+	--spp-inst-fig: 272px;  /* عرض ستون عکس */
+	--spp-inst-pad: 22px;   /* padding عمودی کارت */
+}
+
+.spp-inst__card {
+	position: relative;
+	/* عکس باید از بالا بزند بیرون، پس نه overflow:hidden. */
+	overflow: visible;
+	display: grid;
+	grid-template-columns: min(34%, var(--spp-inst-fig)) minmax(0, 1.35fr) minmax(0, 1fr);
+	align-items: center;
+	gap: 24px;
+	margin-top: var(--spp-inst-out);
+	padding: var(--spp-inst-pad) 28px;
+	border: 1px solid var(--spp-border);
+	border-radius: var(--spp-radius);
+	background:
+		radial-gradient(70% 130% at 88% 100%, rgba(46, 197, 236, .14), transparent 60%),
+		linear-gradient(180deg, var(--spp-card-2) 0%, var(--spp-card) 100%);
+}
+
+.spp-inst__card--nofig {
+	grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+	margin-top: 0;
+}
+
+.spp-inst__glow {
+	position: absolute;
+	inset-inline-start: 4%;
+	bottom: -18%;
+	width: 26%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: radial-gradient(circle, rgba(46, 197, 236, .20), rgba(46, 197, 236, 0) 62%);
+	pointer-events: none;
+	z-index: 0;
+}
+
+/* --- عکس: به کف کارت لنگر است و از بالا بیرون می‌زند ---------------------- */
+.spp-inst__fig {
+	position: relative;
+	z-index: 2;
+	align-self: stretch;
+	min-width: 0;
+}
+
+.spp-inst__fig .spp-inst__img {
+	position: absolute;
+	inset-inline: 0;
+	/* کفِ عکس دقیقاً روی لبه‌ی پایین کارت می‌نشیند. */
+	bottom: calc(-1 * var(--spp-inst-pad));
+	display: block;
+	width: 100%;
+	/* ارتفاع = ارتفاع سلول + دو padding کارت + بیرون‌زدگی
+	   ⇒ لبه‌ی بالای عکس همان --spp-inst-out بالاتر از لبه‌ی کارت می‌ایستد. */
+	height: calc(100% + var(--spp-inst-pad) * 2 + var(--spp-inst-out));
+	object-fit: contain;
+	object-position: bottom center;
+	filter: drop-shadow(0 18px 34px rgba(0, 0, 0, .55));
+}
+
+/* --- نام، عنوان و آمار --------------------------------------------------- */
+.spp-inst__main {
+	position: relative;
+	z-index: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.spp-inst__eyebrow {
+	font-size: 12.5px;
+	line-height: 1.7;
+	color: var(--spp-muted);
+}
+
+.spp-inst__name {
+	font-size: clamp(19px, 1.9vw, 26px);
+	font-weight: 900;
+	line-height: 1.5;
+	color: #fff;
+	margin: 4px 0 0;
+}
+
+.spp-inst__role {
+	font-size: 13.5px;
+	line-height: 1.8;
+	color: var(--spp-text-2);
+	margin-top: 6px;
+}
+
+.spp-inst__stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px 52px;
+	margin-top: 16px;
+}
+
+.spp-stat {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	text-align: center;
+}
+
+.spp-stat__v {
+	font-size: clamp(18px, 1.65vw, 23px);
+	font-weight: 900;
+	line-height: 1.5;
+	color: #fff;
+	white-space: nowrap;
+}
+
+.spp-stat__l {
+	font-size: 12px;
+	font-style: normal;
+	line-height: 1.7;
+	color: var(--spp-muted);
+	white-space: nowrap;
+}
+
+/* --- سوابق -------------------------------------------------------------- */
+.spp-inst__points {
+	position: relative;
+	z-index: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+}
+
+.spp-point {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	min-width: 0;
+}
+
+.spp-point__ic {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 8px;
+	flex: 0 0 auto;
+	color: var(--spp-cyan);
+	background: rgba(46, 197, 236, .10);
+	border: 1px solid rgba(46, 197, 236, .22);
+}
+
+.spp-point__t {
+	font-size: 13.5px;
+	line-height: 1.8;
+	color: var(--spp-text-2);
+}
+
+/* =========================================================================
+   سکشن ۵ — مهارت‌های پس از دوره
+   ========================================================================= */
+.spp-skills {
+	--spp-skill-c: 44px;   /* قطر دایره */
+}
+
+.spp-skills__card {
+	border: 1px solid var(--spp-border);
+	border-radius: var(--spp-radius);
+	background:
+		radial-gradient(60% 140% at 50% 0%, rgba(46, 197, 236, .08), transparent 62%),
+		linear-gradient(180deg, var(--spp-card-2) 0%, var(--spp-card) 100%);
+	padding: 24px 40px 26px;
+}
+
+.spp-skills__h {
+	font-size: clamp(17px, 1.5vw, 21px);
+	font-weight: 800;
+	line-height: 1.7;
+	color: var(--spp-text);
+	text-align: center;
+	margin: 0;
+}
+
+/* ستون‌های هم‌عرض و بدون gap تا خط‌چین دقیقاً مرکز-به-مرکز بیفتد. */
+.spp-skills__row {
+	display: grid;
+	grid-template-columns: repeat(var(--spp-skill-n, 5), minmax(0, 1fr));
+	gap: 0;
+	margin-top: 24px;
+}
+
+.spp-skill {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 14px;
+	padding-inline: 6px;
+	text-align: center;
+}
+
+.spp-skill__ic {
+	position: relative;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--spp-skill-c);
+	height: var(--spp-skill-c);
+	border-radius: 50%;
+	flex: 0 0 auto;
+	color: var(--spp-cyan);
+	border: 1px solid rgba(46, 197, 236, .40);
+	/* پس‌زمینه‌ی مات + رینگ، تا خط‌چین پشت دایره پنهان شود و با فاصله قطع شود. */
+	background: var(--spp-card);
+	box-shadow: 0 0 0 7px var(--spp-card), 0 0 22px -6px rgba(46, 197, 236, .55);
+	transition: color .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.spp-skill:hover .spp-skill__ic {
+	border-color: var(--spp-cyan);
+	transform: translateY(-3px);
+}
+
+.spp-skill__t {
+	font-size: 13.5px;
+	line-height: 1.8;
+	color: var(--spp-text-2);
+}
+
+/* خط‌چین مرکزِ هر دایره تا مرکز دایره‌ی بعدی — فقط وقتی همه در یک ردیف‌اند. */
+@media (min-width: 1025px) {
+	.spp-skills__card:not(.spp-skills__card--noline) .spp-skill:not(:last-child)::before {
+		content: "";
+		position: absolute;
+		top: calc(var(--spp-skill-c) / 2);
+		inset-inline-end: 50%;
+		width: 100%;
+		border-top: 1px dashed rgba(255, 255, 255, .16);
+		z-index: 0;
+	}
+}
+
+/* =========================================================================
+   سکشن ۶ — نظرات دانشجویان
+   ========================================================================= */
+.spp-tst__card {
+	border: 1px solid var(--spp-border);
+	border-radius: var(--spp-radius);
+	background:
+		radial-gradient(60% 140% at 50% 0%, rgba(46, 197, 236, .07), transparent 62%),
+		linear-gradient(180deg, var(--spp-card-2) 0%, var(--spp-card) 100%);
+	padding: 20px 20px 22px;
+}
+
+.spp-tst__h {
+	font-size: clamp(17px, 1.5vw, 21px);
+	font-weight: 800;
+	line-height: 1.7;
+	color: var(--spp-text);
+	text-align: center;
+	margin: 0;
+}
+
+/* --- کاروسل ------------------------------------------------------------- */
+.spp-tst__carousel {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin-top: 16px;
+}
+
+.spp-tst__track {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: calc((100% - 2 * 18px) / 3);
+	gap: 18px;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	scrollbar-width: none;
+	padding-block: 2px;
+}
+
+.spp-tst__track::-webkit-scrollbar {
+	display: none;
+}
+
+.spp-tst__track:focus-visible {
+	outline: 2px solid rgba(46, 197, 236, .5);
+	outline-offset: 4px;
+	border-radius: 12px;
+}
+
+.spp-tst__i {
+	scroll-snap-align: start;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	min-width: 0;
+	padding: 16px 16px 14px;
+	border: 1px solid var(--spp-border);
+	border-radius: 16px;
+	background: rgba(255, 255, 255, .02);
+	transition: border-color .2s ease, background-color .2s ease;
+}
+
+.spp-tst__i:hover {
+	border-color: rgba(46, 197, 236, .32);
+	background: rgba(46, 197, 236, .04);
+}
+
+.spp-tst__top {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	min-width: 0;
+}
+
+.spp-tst__av {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	overflow: hidden;
+	flex: 0 0 auto;
+	background: var(--spp-card-2);
+	border: 1px solid var(--spp-border);
+}
+
+.spp-tst__av .spp-tst__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.spp-tst__ph {
+	font-size: 15px;
+	font-weight: 800;
+	color: var(--spp-cyan);
+}
+
+.spp-tst__who {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.spp-tst__name {
+	font-size: 13.5px;
+	font-weight: 800;
+	line-height: 1.6;
+	color: var(--spp-text);
+}
+
+.spp-tst__role {
+	font-size: 12px;
+	font-style: normal;
+	line-height: 1.6;
+	color: var(--spp-muted);
+}
+
+.spp-tst__txt {
+	flex: 1 1 auto;
+	font-size: 13.5px;
+	line-height: 1.9;
+	color: var(--spp-text-2);
+}
+
+.spp-stars {
+	display: inline-flex;
+	gap: 3px;
+	font-size: 15px;
+	line-height: 1;
+	letter-spacing: 1px;
+}
+
+.spp-stars__s {
+	color: rgba(255, 255, 255, .16);
+}
+
+.spp-stars__s.is-on {
+	color: var(--spp-gold);
+}
+
+/* --- دکمه‌های ناوبری ----------------------------------------------------- */
+.spp-nav {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	flex: 0 0 auto;
+	border-radius: 12px;
+	cursor: pointer;
+	color: var(--spp-text-2);
+	background: rgba(255, 255, 255, .03);
+	border: 1px solid var(--spp-border);
+	transition: color .2s ease, border-color .2s ease, opacity .2s ease;
+}
+
+.spp-nav:hover:not(:disabled) {
+	color: var(--spp-cyan);
+	border-color: rgba(46, 197, 236, .45);
+}
+
+.spp-nav:disabled {
+	opacity: .35;
+	cursor: default;
+}
+
+.spp-tst__carousel.is-static .spp-nav {
+	display: none;
+}
+
+/* --- دکمه‌ی ثبت تجربه ---------------------------------------------------- */
+.spp-tst__cta {
+	display: flex;
+	justify-content: center;
+	margin-top: 20px;
+}
+
+/* =========================================================================
+   فرم پاپ‌آپ «ثبت تجربه»
+   ========================================================================= */
+.spp-modal--form[hidden] {
+	display: none;
+}
+
+/* specificity بالاتر از .spp-modal__box (مودال ویدیو) تا نسبت‌ابعاد ۱۶:۹ و
+   overflow:hidden آن، فرم را نبُرد. */
+.spp-modal--form .spp-modal__box--form {
+	width: min(620px, 100%);
+	aspect-ratio: auto;
+	max-height: min(92vh, 92dvh);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	background: linear-gradient(180deg, var(--spp-card-2) 0%, var(--spp-card) 100%);
+	border: 1px solid var(--spp-border);
+	border-radius: 18px;
+}
+
+.spp-form {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 26px 24px 24px;
+}
+
+.spp-form__h {
+	font-size: 18px;
+	font-weight: 800;
+	line-height: 1.7;
+	color: var(--spp-text);
+	margin: 0;
+}
+
+.spp-form__note {
+	font-size: 13px;
+	line-height: 1.8;
+	color: var(--spp-muted);
+	margin: -8px 0 0;
+}
+
+.spp-form__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 14px;
+}
+
+.spp-form__f {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+	min-width: 0;
+}
+
+.spp-form__f--full {
+	grid-column: 1 / -1;
+}
+
+.spp-form__f > span {
+	font-size: 13px;
+	line-height: 1.7;
+	color: var(--spp-text-2);
+}
+
+.spp-form__f > span b {
+	color: var(--spp-gold);
+}
+
+.spp-form__f > span i {
+	font-style: normal;
+	color: var(--spp-muted);
+	font-size: 12px;
+}
+
+.spp-form input[type="text"],
+.spp-form input[type="email"],
+.spp-form textarea {
+	width: 100%;
+	font: inherit;
+	font-size: 14px;
+	line-height: 1.8;
+	color: var(--spp-text);
+	background: rgba(255, 255, 255, .04);
+	border: 1px solid var(--spp-border);
+	border-radius: 10px;
+	padding: 10px 12px;
+	transition: border-color .2s ease, background-color .2s ease;
+}
+
+.spp-form input::placeholder,
+.spp-form textarea::placeholder {
+	color: var(--spp-muted);
+}
+
+.spp-form input:focus,
+.spp-form textarea:focus {
+	outline: none;
+	border-color: rgba(46, 197, 236, .55);
+	background: rgba(46, 197, 236, .05);
+}
+
+.spp-form textarea {
+	resize: vertical;
+	min-height: 96px;
+}
+
+/* ستاره‌های امتیاز — از راست به چپ پر می‌شوند. */
+.spp-rate {
+	display: inline-flex;
+	gap: 4px;
+	padding: 6px 0;
+}
+
+.spp-rate__s {
+	cursor: pointer;
+	line-height: 1;
+}
+
+.spp-rate__s input {
+	position: absolute;
+	opacity: 0;
+	width: 1px;
+	height: 1px;
+}
+
+.spp-rate__s span {
+	font-size: 24px;
+	color: rgba(255, 255, 255, .18);
+	transition: color .15s ease, transform .15s ease;
+	display: inline-block;
+}
+
+/* در DOM از ۵ به ۱ چیده شده: با انتخابِ هر ستاره، خودش و بعدی‌ها طلایی می‌شوند. */
+.spp-rate__s:has(input:checked) span,
+.spp-rate__s:has(input:checked) ~ .spp-rate__s span {
+	color: var(--spp-gold);
+}
+
+.spp-rate:hover .spp-rate__s span {
+	color: rgba(255, 255, 255, .18);
+}
+
+.spp-rate__s:hover span,
+.spp-rate__s:hover ~ .spp-rate__s span {
+	color: var(--spp-gold);
+}
+
+.spp-rate__s input:focus-visible + span {
+	transform: scale(1.15);
+	outline: 2px solid rgba(46, 197, 236, .5);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* تله‌ی ربات */
+.spp-form__hp {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.spp-form__msg {
+	font-size: 13px;
+	line-height: 1.8;
+	margin: 0;
+	min-height: 1px;
+}
+
+.spp-form__msg.is-busy {
+	color: var(--spp-muted);
+}
+
+.spp-form__msg.is-ok {
+	color: #52d1a4;
+}
+
+.spp-form__msg.is-err {
+	color: #ef6f68;
+}
+
+/* =========================================================================
+   سکشن ۷ — سوالات متداول
+   ========================================================================= */
+.spp-faq__card {
+	display: grid;
+	grid-template-columns: minmax(110px, 14%) minmax(0, 1fr);
+	gap: 22px;
+	align-items: start;
+	border: 1px solid var(--spp-border);
+	border-radius: var(--spp-radius);
+	background:
+		radial-gradient(70% 130% at 96% 20%, rgba(46, 197, 236, .12), transparent 60%),
+		linear-gradient(180deg, var(--spp-card-2) 0%, var(--spp-card) 100%);
+	padding: 22px 24px 24px;
+}
+
+/* --- ستون راست: عنوان + «؟» --------------------------------------------- */
+.spp-faq__aside {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+.spp-faq__h {
+	font-size: clamp(16px, 1.4vw, 20px);
+	font-weight: 800;
+	line-height: 1.7;
+	color: var(--spp-text);
+	margin: 0;
+	align-self: stretch;
+	text-align: center;
+}
+
+.spp-faq__deco {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+}
+
+.spp-faq__deco .spp-faq__img {
+	display: block;
+	width: 100%;
+	max-width: 120px;
+	height: auto;
+}
+
+.spp-faq__mark {
+	font-size: clamp(66px, 8vw, 116px);
+	font-weight: 800;
+	line-height: 1.1;
+	/* پرشدگی کم‌رنگ + خطِ دور، تا در مرورگرهای بدون text-stroke هم دیده شود. */
+	color: rgba(46, 197, 236, .16);
+	-webkit-text-stroke: 2px rgba(46, 197, 236, .75);
+	filter: drop-shadow(0 0 20px rgba(46, 197, 236, .40));
+	user-select: none;
+}
+
+/* --- ستون‌های سوال ------------------------------------------------------- */
+.spp-faq__cols {
+	display: grid;
+	grid-template-columns: repeat(var(--spp-faq-cols, 2), minmax(0, 1fr));
+	gap: 10px 18px;
+	min-width: 0;
+}
+
+.spp-faq__col {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-width: 0;
+}
+
+.spp-faq__row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 44px;
+	padding: 6px 14px;
+	border: 1px solid var(--spp-border);
+	border-radius: 12px;
+	background: rgba(255, 255, 255, .02);
+	cursor: pointer;
+	list-style: none;
+	transition: border-color .2s ease, background-color .2s ease;
+}
+
+.spp-faq__row::-webkit-details-marker,
+.spp-faq__row::marker {
+	display: none;
+	content: "";
+}
+
+.spp-faq__row--plain {
+	cursor: default;
+}
+
+.spp-faq__row:hover {
+	border-color: rgba(46, 197, 236, .38);
+	background: rgba(46, 197, 236, .05);
+}
+
+.spp-faq__d[open] > .spp-faq__row {
+	border-color: rgba(46, 197, 236, .45);
+	background: rgba(46, 197, 236, .06);
+	border-end-start-radius: 0;
+	border-end-end-radius: 0;
+}
+
+.spp-faq__q {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: 13.5px;
+	font-weight: 600;
+	line-height: 1.7;
+	color: var(--spp-text-2);
+}
+
+.spp-faq__chev {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 8px;
+	flex: 0 0 auto;
+	color: var(--spp-muted);
+	border: 1px solid var(--spp-border);
+	transition: transform .25s ease, color .2s ease, border-color .2s ease;
+}
+
+.spp-faq__row:hover .spp-faq__chev {
+	color: var(--spp-cyan);
+	border-color: rgba(46, 197, 236, .38);
+}
+
+.spp-faq__d[open] .spp-faq__chev {
+	transform: rotate(180deg);
+	color: var(--spp-cyan);
+	border-color: rgba(46, 197, 236, .38);
+}
+
+.spp-faq__a {
+	padding: 13px 15px 15px;
+	border: 1px solid rgba(46, 197, 236, .28);
+	border-top: 0;
+	border-end-start-radius: 12px;
+	border-end-end-radius: 12px;
+	background: rgba(46, 197, 236, .03);
+}
+
+.spp-faq__a p {
+	font-size: 13px;
+	line-height: 1.95;
+	color: var(--spp-muted);
+}
+
+.spp-faq__a p + p {
+	margin-top: 10px;
+}
+
+/* =========================================================================
+   مودال ویدیو
+   ========================================================================= */
+.spp-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: rgba(3, 8, 14, .86);
+	backdrop-filter: blur(6px);
+}
+
+.spp-modal__box {
+	position: relative;
+	width: min(960px, 100%);
+	aspect-ratio: 16 / 9;
+	border-radius: 16px;
+	overflow: hidden;
+	background: #000;
+	border: 1px solid var(--spp-border);
+}
+
+.spp-modal__box > iframe,
+.spp-modal__box > video {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	display: block;
+}
+
+.spp-modal__x {
+	position: absolute;
+	top: 10px;
+	inset-inline-end: 10px;
+	z-index: 2;
+	width: 38px;
+	height: 38px;
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	font-size: 20px;
+	line-height: 1;
+	color: #fff;
+	background: rgba(0, 0, 0, .55);
+}
+
+/* =========================================================================
+   واکنش‌گرا
+   ========================================================================= */
+@media (max-width: 1200px) {
+	.spp-hero__grid {
+		grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+	}
+
+	.spp-hero__body {
+		padding: 32px 30px 28px;
+	}
+
+	.spp-hero__card {
+		min-height: 400px;
+	}
+}
+
+@media (max-width: 1024px) {
+	.spp-hero__grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.spp-about__card {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 26px;
+		padding: 26px 24px 28px;
+	}
+
+	.spp-about__intro {
+		padding-inline-end: 0;
+		padding-bottom: 26px;
+		border-inline-end: 0;
+		border-bottom: 1px solid rgba(255, 255, 255, .07);
+	}
+
+	.spp-about__card--nodiv .spp-about__intro {
+		border-bottom: 0;
+		padding-bottom: 0;
+	}
+
+	.spp-about__fit {
+		padding-inline-start: 0;
+	}
+
+	.spp-about__fig {
+		inset-inline-start: 0;
+		top: 0;
+	}
+
+	.spp-curr__grid {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 20px;
+	}
+
+	.spp-feat__grid {
+		grid-template-columns: repeat(min(var(--spp-feat-cols, 4), 3), minmax(0, 1fr));
+	}
+
+	.spp-inst__card {
+		grid-template-columns: min(30%, var(--spp-inst-fig)) minmax(0, 1fr);
+		gap: 20px 22px;
+	}
+
+	.spp-inst__points {
+		grid-column: 1 / -1;
+		padding-top: 18px;
+		border-top: 1px solid rgba(255, 255, 255, .07);
+	}
+
+	.spp-skills__card {
+		padding: 24px 22px 26px;
+	}
+
+	.spp-skills__row {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 24px 0;
+	}
+
+	.spp-tst__track {
+		grid-auto-columns: calc((100% - 18px) / 2);
+	}
+
+	.spp-faq__card {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 16px;
+		padding: 20px 20px 22px;
+	}
+
+	.spp-faq__aside {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		gap: 14px;
+	}
+
+	.spp-faq__h {
+		align-self: auto;
+		text-align: start;
+	}
+
+	.spp-faq__deco {
+		width: auto;
+	}
+
+	.spp-faq__mark {
+		font-size: 54px;
+	}
+
+	.spp-faq__deco .spp-faq__img {
+		max-width: 62px;
+	}
+
+	.spp-buy {
+		order: 2;
+	}
+
+	.spp-hero__main {
+		order: 1;
+	}
+
+	.spp-hero__card {
+		min-height: 0;
+	}
+
+	.spp-hero__figure {
+		min-height: 300px;
+	}
+}
+
+@media (max-width: 860px) {
+	.spp-features {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 14px 0;
+	}
+
+	.spp-features__i:nth-child(odd) + .spp-features__i::before {
+		top: 2px;
+		bottom: 2px;
+	}
+
+	.spp-features__i:nth-child(3)::before {
+		display: none;
+	}
+}
+
+@media (max-width: 720px) {
+	.spp-hero__card {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.spp-about__intro {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 14px;
+	}
+
+	.spp-about__fig {
+		order: 0;
+		justify-content: flex-start;
+	}
+
+	.spp-about__fig .spp-about__img {
+		max-width: 120px;
+	}
+
+	.spp-about__body p {
+		text-align: start;
+	}
+
+	.spp-card {
+		padding: 20px 16px 22px;
+	}
+
+	.spp-feat__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	.spp-syl__btn {
+		align-self: stretch;
+	}
+
+	/* موبایل: عکس بالا و وسط، بیرون‌زدگی کمتر تا سر بریده نشود. */
+	.spp-inst {
+		--spp-inst-out: 20px;
+	}
+
+	.spp-inst__card {
+		grid-template-columns: minmax(0, 1fr);
+		justify-items: center;
+		text-align: center;
+		padding-inline: 18px;
+	}
+
+	.spp-inst__fig {
+		width: min(62%, var(--spp-inst-fig));
+		aspect-ratio: 3 / 4;
+	}
+
+	.spp-inst__main {
+		align-items: center;
+	}
+
+	.spp-inst__stats {
+		justify-content: center;
+	}
+
+	.spp-inst__points {
+		align-items: flex-start;
+		text-align: start;
+	}
+
+	.spp-skills__row {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 22px 0;
+		margin-top: 22px;
+	}
+
+	.spp-skill {
+		gap: 10px;
+	}
+
+	.spp-tst__track {
+		grid-auto-columns: 100%;
+	}
+
+	.spp-tst__carousel {
+		gap: 8px;
+	}
+
+	.spp-nav {
+		width: 34px;
+		height: 34px;
+	}
+
+	.spp-form__grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.spp-form {
+		padding: 22px 18px 20px;
+	}
+
+	.spp-faq__cols {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 10px;
+	}
+
+	.spp-hero__figure {
+		order: -1;
+		min-height: 260px;
+		padding-top: 18px;
+	}
+
+	.spp-hero__figure .spp-hero__img {
+		max-height: 320px;
+	}
+
+	.spp-hero__body {
+		padding: 22px 20px 26px;
+		align-items: center;
+		text-align: center;
+	}
+
+	.spp-hero__sub {
+		max-width: none;
+	}
+
+	.spp-meta {
+		justify-content: center;
+		gap: 14px 22px;
+	}
+
+	.spp-hero__actions {
+		width: 100%;
+		flex-direction: column;
+	}
+
+	.spp-hero__actions .spp-btn {
+		width: 100%;
+	}
+
+	.spp-play {
+		inset-inline-start: 50%;
+		transform: translateX(50%);
+		bottom: 10px;
+	}
+
+	.spp-play:hover {
+		transform: translateX(50%) translateY(-2px);
+	}
+
+	.spp-proof {
+		flex-direction: column;
+		gap: 8px;
+	}
+}
+
+@media (max-width: 520px) {
+	.spp-feat__grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.spp-syl__t {
+		font-size: 13.5px;
+	}
+
+	.spp-features {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.spp-features__i + .spp-features__i::before {
+		display: none;
+	}
+
+	.spp-features__i {
+		justify-content: flex-start;
+	}
+}

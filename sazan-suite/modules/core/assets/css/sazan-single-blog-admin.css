@@ -1,0 +1,20 @@
+.sazan-sb-meta-box { color: #1d2327; }
+.sazan-sb-native-map { margin: 0 0 18px; padding: 13px 15px; border-right: 4px solid #08a8d4; border-radius: 5px; background: #eefaff; }
+.sazan-sb-native-map strong { display: block; margin-bottom: 4px; color: #075a73; }
+.sazan-sb-native-map p { margin: 0; line-height: 1.8; }
+.sazan-sb-switch-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+.sazan-sb-switch-row input { margin-top: 4px; }
+.sazan-sb-switch-row span { display: grid; gap: 3px; }
+.sazan-sb-switch-row small { color: #646970; }
+.sazan-sb-download-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px 20px; margin-bottom: 15px; padding: 17px; border: 1px solid #dcdcde; border-radius: 7px; background: #fff; transition: opacity .2s ease; }
+.sazan-sb-download-fields.is-disabled { opacity: .55; }
+.sazan-sb-field { display: grid; align-content: start; gap: 7px; }
+.sazan-sb-field-wide { grid-column: 1 / -1; }
+.sazan-sb-field > label { font-weight: 600; }
+.sazan-sb-media-row { display: grid; grid-template-columns: minmax(220px, 1fr) auto auto; gap: 8px; }
+.sazan-sb-file-status { display: block; overflow-wrap: anywhere; }
+@media (max-width: 782px) {
+	.sazan-sb-download-fields { grid-template-columns: 1fr; }
+	.sazan-sb-field-wide { grid-column: auto; }
+	.sazan-sb-media-row { grid-template-columns: 1fr; }
+}
