@@ -213,17 +213,57 @@ final class SPP_V3_Enroll {
 	}
 
 	/**
+	 * تبدیل ارقام فارسی/عربی به لاتین، بدون دست‌زدن به بقیه‌ی کاراکترها.
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	public static function latin_digits( $value ) {
+		$fa = array( '۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹' );
+		$ar = array( '٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩' );
+		$en = array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+		return str_replace( $fa, $en, str_replace( $ar, $en, (string) $value ) );
+	}
+
+	/**
 	 * تبدیل ارقام فارسی/عربی به لاتین و حذف هر کاراکتر غیرعددی.
 	 *
 	 * @param string $value
 	 * @return string
 	 */
 	public static function normalize_digits( $value ) {
-		$fa = array( '۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹' );
-		$ar = array( '٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩' );
-		$en = array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+		return (string) preg_replace( '/[^0-9]/', '', self::latin_digits( $value ) );
+	}
 
-		return (string) preg_replace( '/[^0-9]/', '', str_replace( $fa, $en, str_replace( $ar, $en, (string) $value ) ) );
+	/**
+	 * یکسان‌سازی شماره شبا: حذف فاصله و خط تیره و افزودن پیشوند IR.
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	public static function normalize_iban( $value ) {
+		$value = strtoupper( (string) preg_replace( '/[^0-9A-Za-z]/', '', self::latin_digits( $value ) ) );
+
+		if ( '' === $value ) {
+			return '';
+		}
+
+		if ( 0 !== strpos( $value, 'IR' ) && 24 === strlen( $value ) && ctype_digit( $value ) ) {
+			$value = 'IR' . $value;
+		}
+
+		return $value;
+	}
+
+	/**
+	 * گروه‌بندی چهارتایی برای خواناتر شدن شماره کارت و شبا.
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	public static function group( $value ) {
+		return trim( chunk_split( (string) $value, 4, ' ' ) );
 	}
 
 	/**
@@ -468,10 +508,12 @@ final class SPP_V3_Enroll {
 
 		$number = self::plain( isset( $d['manual_card_number'] ) ? $d['manual_card_number'] : '', self::plain( spp_global( 'enroll_card_number', '' ) ) );
 		$digits = self::normalize_digits( $number );
+		$iban   = self::plain( isset( $d['manual_iban'] ) ? $d['manual_iban'] : '', self::plain( spp_global( 'enroll_iban', '' ) ) );
 
 		return array(
 			'enabled' => '1' === ( isset( $d['manual_enabled'] ) ? $d['manual_enabled'] : '1' ),
 			'number'  => $digits ? $digits : $number,
+			'iban'    => self::normalize_iban( $iban ),
 			'holder'  => self::plain( isset( $d['manual_card_holder'] ) ? $d['manual_card_holder'] : '', self::plain( spp_global( 'enroll_card_holder', '' ) ) ),
 			'bank'    => self::plain( isset( $d['manual_bank'] ) ? $d['manual_bank'] : '', self::plain( spp_global( 'enroll_bank', '' ) ) ),
 			'amount'  => self::plain( isset( $d['manual_amount'] ) ? $d['manual_amount'] : '', wp_strip_all_tags( $product->get_price_html() ) ),
@@ -482,8 +524,8 @@ final class SPP_V3_Enroll {
 	/**
 	 * آیا پاپ‌آپ ثبت‌نام برای این دوره فعال است؟
 	 *
-	 * شماره کارت شرط فعال‌شدن است؛ بدون آن پاپ‌آپ چیزی برای نمایش ندارد و
-	 * دکمه‌ها به مسیر همیشگی سبد خرید برمی‌گردند.
+	 * دست‌کم یکی از شماره کارت یا شماره شبا شرط فعال‌شدن است؛ بدون آن‌ها پاپ‌آپ
+	 * چیزی برای نمایش ندارد و دکمه‌ها به مسیر همیشگی سبد خرید برمی‌گردند.
 	 *
 	 * @param WC_Product $product
 	 * @param array      $data
@@ -491,6 +533,6 @@ final class SPP_V3_Enroll {
 	 */
 	public static function is_active( $product, $data ) {
 		$card = self::card_details( $product, $data );
-		return $card['enabled'] && '' !== $card['number'];
+		return $card['enabled'] && ( '' !== $card['number'] || '' !== $card['iban'] );
 	}
 }

@@ -385,7 +385,6 @@ final class SPP_V3_Renderer {
 		$first_name  = $is_member ? $user->first_name : '';
 		$last_name   = $is_member ? $user->last_name : '';
 		$title_id    = 'spp-enroll-title-' . absint( $post_id );
-		$grouped     = trim( chunk_split( $card['number'], 4, ' ' ) );
 		?>
 		<div class="review-modal enroll-modal" hidden data-spp-v3-enroll-modal>
 			<div class="review-dialog enroll-dialog" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr( $title_id ); ?>" tabindex="-1">
@@ -393,7 +392,8 @@ final class SPP_V3_Renderer {
 				<header class="review-dialog__head"><span class="kicker">ثبت‌نام دوره</span><h2 id="<?php echo esc_attr( $title_id ); ?>">ثبت‌نام در <?php echo esc_html( $product->get_name() ); ?></h2><p><?php echo esc_html( $card['note'] ); ?></p></header>
 
 				<div class="enroll-card">
-					<div class="enroll-card__row"><span>شماره کارت</span><strong class="enroll-card__number" dir="ltr" data-spp-v3-card="<?php echo esc_attr( $card['number'] ); ?>"><?php echo esc_html( $grouped ); ?></strong><button type="button" class="enroll-card__copy" data-spp-v3-card-copy>کپی</button></div>
+					<?php if ( '' !== $card['number'] ) : ?><div class="enroll-card__row"><span>شماره کارت</span><strong class="enroll-card__number" dir="ltr"><?php echo esc_html( SPP_V3_Enroll::group( $card['number'] ) ); ?></strong><button type="button" class="enroll-card__copy" data-spp-v3-copy="<?php echo esc_attr( $card['number'] ); ?>" aria-label="کپی شماره کارت">کپی</button></div><?php endif; ?>
+					<?php if ( '' !== $card['iban'] ) : ?><div class="enroll-card__row enroll-card__row--iban"><span>شماره شبا</span><strong class="enroll-card__number enroll-card__number--iban" dir="ltr"><?php echo esc_html( SPP_V3_Enroll::group( $card['iban'] ) ); ?></strong><button type="button" class="enroll-card__copy" data-spp-v3-copy="<?php echo esc_attr( $card['iban'] ); ?>" aria-label="کپی شماره شبا">کپی</button></div><?php endif; ?>
 					<?php if ( '' !== $card['holder'] ) : ?><div class="enroll-card__row"><span>به نام</span><strong><?php echo esc_html( $card['holder'] ); ?></strong></div><?php endif; ?>
 					<?php if ( '' !== $card['bank'] ) : ?><div class="enroll-card__row"><span>بانک</span><strong><?php echo esc_html( $card['bank'] ); ?></strong></div><?php endif; ?>
 					<?php if ( '' !== $card['amount'] ) : ?><div class="enroll-card__row"><span>مبلغ قابل واریز</span><strong><?php echo esc_html( $card['amount'] ); ?></strong></div><?php endif; ?>

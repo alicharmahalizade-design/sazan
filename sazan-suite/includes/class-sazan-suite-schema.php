@@ -1479,6 +1479,56 @@ class Sazan_Suite_Schema {
 					),
 				),
 
+				'product_enroll' => array(
+					'label'       => 'ثبت‌نام کارت‌به‌کارت',
+					'description' => 'شماره کارت و شبایی که در پاپ‌آپ ثبت‌نام همه‌ی دوره‌ها نمایش داده می‌شود. تا وقتی هیچ‌کدام پر نشده باشد، دکمه‌های ثبت‌نام به سبد خرید می‌روند. برای یک دوره‌ی خاص می‌توانید در متاباکس همان محصول مقدار دیگری بگذارید.',
+					'store'       => 'spp',
+					'module'      => 'product-page',
+					'columns'     => 2,
+					'fields'      => array(
+						'enroll_card_number' => array(
+							'type'        => 'text',
+							'label'       => 'شماره کارت',
+							'placeholder' => '6037991112345678',
+							'ltr'         => true,
+							'hint'        => 'شماره ۱۶ رقمی کارت. با فاصله یا خط تیره هم وارد کنید، خودش مرتب می‌شود.',
+						),
+						'enroll_iban' => array(
+							'type'        => 'text',
+							'label'       => 'شماره شبا',
+							'placeholder' => 'IR123456789012345678901234',
+							'ltr'         => true,
+							'hint'        => 'با یا بدون IR وارد کنید؛ در پاپ‌آپ به شکل استاندارد نمایش داده می‌شود.',
+						),
+						'enroll_card_holder' => array(
+							'type'        => 'text',
+							'label'       => 'نام صاحب حساب',
+							'placeholder' => 'نام و نام خانوادگی',
+						),
+						'enroll_bank' => array(
+							'type'        => 'text',
+							'label'       => 'نام بانک',
+							'placeholder' => 'بانک ملت',
+						),
+						'enroll_note' => array(
+							'type'  => 'textarea',
+							'label' => 'توضیح بالای پاپ‌آپ',
+							'hint'  => 'متنی که پیش از شماره کارت به کاربر نشان داده می‌شود.',
+						),
+						'enroll_success' => array(
+							'type'  => 'textarea',
+							'label' => 'پیام پس از ثبت درخواست',
+						),
+						'enroll_admin_email' => array(
+							'type'        => 'text',
+							'label'       => 'ایمیل دریافت اعلان ثبت‌نام',
+							'placeholder' => 'info@example.com',
+							'ltr'         => true,
+							'hint'        => 'اگر خالی بماند، اعلان به ایمیل مدیر سایت می‌رود. برای چند گیرنده با ویرگول جدا کنید.',
+						),
+					),
+				),
+
 				'product_images' => array(
 					'label'       => 'تصاویر تزئینی مشترک',
 					'description' => 'این تصاویر یک‌بار انتخاب می‌شوند و در سکشن‌های مرتبط همه‌ی دوره‌ها به‌کار می‌روند.',

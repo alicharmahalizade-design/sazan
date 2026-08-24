@@ -452,7 +452,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 .enroll-card__row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .enroll-card__row>span{min-width:104px;color:var(--muted);font-size:13px}
 .enroll-card__row>strong{color:var(--text);font-size:16px;font-weight:800}
-.enroll-card__number{letter-spacing:.16em;font-size:19px!important;font-variant-numeric:tabular-nums}
+.enroll-card__number{letter-spacing:.16em;font-size:19px!important;font-variant-numeric:tabular-nums;word-break:break-word}
+.enroll-card__number--iban{letter-spacing:.08em;font-size:15px!important}
 .enroll-card__copy{margin-right:auto;min-height:38px;padding:0 16px;border:1px solid rgba(2,198,254,.34);border-radius:11px;color:#9fe9ff;background:rgba(2,198,254,.08);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:.2s}
 .enroll-card__copy:hover{border-color:var(--cyan);background:rgba(2,198,254,.16)}
 .enroll-card__copy.is-copied{color:#063321;background:#63e7aa;border-color:#63e7aa}
@@ -466,4 +467,4 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 .enroll-upload__text{color:#dceaf1;font-size:14px;font-weight:800;word-break:break-all}
 .enroll-upload__text.is-filled{color:#63e7aa}
 .enroll-upload__drop small{color:var(--muted);font-size:12px}
-@media(max-width:720px){.enroll-card{padding:16px}.enroll-card__row>span{min-width:88px;font-size:12px}.enroll-card__number{font-size:17px!important;letter-spacing:.1em}.enroll-card__copy{margin-right:0;width:100%}}
+@media(max-width:720px){.enroll-card{padding:16px}.enroll-card__row>span{min-width:88px;font-size:12px}.enroll-card__number{font-size:17px!important;letter-spacing:.1em}.enroll-card__number--iban{font-size:14px!important;letter-spacing:.04em}.enroll-card__copy{margin-right:0;width:100%}}
