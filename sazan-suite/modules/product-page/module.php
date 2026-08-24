@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /* ثابت‌ها ------------------------------------------------------------------ */
-define( 'SPP_VERSION', '2.3.9' );
+define( 'SPP_VERSION', '2.4.0' );
 define( 'SPP_FILE', __FILE__ );
 define( 'SPP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SPP_URL', plugin_dir_url( __FILE__ ) );
@@ -39,6 +39,7 @@ function spp_boot() {
 	require_once SPP_PATH . 'includes/v2/class-spp-v2-schema.php';
 	require_once SPP_PATH . 'includes/v2/class-spp-v2-assets.php';
 	require_once SPP_PATH . 'includes/v3/class-spp-v3-renderer.php';
+	require_once SPP_PATH . 'includes/v3/class-spp-v3-enroll.php';
 
 	// سکشن‌ها — با اضافه شدن هر سکشن جدید، فقط یک خط به این فهرست اضافه می‌شود.
 	require_once SPP_PATH . 'includes/sections/class-spp-section-hero.php';
@@ -67,6 +68,7 @@ function spp_boot() {
 	SPP_V2_Reviews_Ajax::init();
 	SPP_V2_Schema::init();
 	SPP_V2_Assets::init();
+	SPP_V3_Enroll::init();
 
 	// ویجت‌های المنتور.
 	add_action( 'elementor/elements/categories_registered', 'spp_elementor_category' );

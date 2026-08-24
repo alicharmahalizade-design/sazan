@@ -241,6 +241,12 @@ final class SPP_V2_Data {
 					'group_description' => self::field( 'textarea', 'توضیح خرید گروهی', '', array( 'show_if' => 'group_enabled:1' ) ),
 					'group_cta' => self::field( 'text', 'متن CTA گروهی', 'درخواست خرید گروهی', array( 'show_if' => 'group_enabled:1' ) ),
 					'group_url' => self::field( 'url', 'لینک خرید گروهی', '', array( 'show_if' => 'group_enabled:1' ) ),
+					'manual_enabled' => self::field( 'switch', 'ثبت‌نام کارت‌به‌کارت', '1', array( 'hint' => 'وقتی روشن باشد، دکمه‌های ثبت‌نام به‌جای سبد خرید یک پاپ‌آپ باز می‌کنند که شماره کارت را نشان می‌دهد و رسید واریزی، نام و شماره تماس را می‌گیرد.' ) ),
+					'manual_card_number' => self::field( 'text', 'شماره کارت این دوره', '', array( 'show_if' => 'manual_enabled:1', 'hint' => 'اگر خالی بماند، شماره کارت واردشده در تنظیمات سراسری استفاده می‌شود.' ) ),
+					'manual_card_holder' => self::field( 'text', 'نام صاحب حساب', '', array( 'show_if' => 'manual_enabled:1' ) ),
+					'manual_bank' => self::field( 'text', 'نام بانک', '', array( 'show_if' => 'manual_enabled:1' ) ),
+					'manual_amount' => self::field( 'text', 'مبلغ قابل واریز', '', array( 'show_if' => 'manual_enabled:1', 'hint' => 'اگر خالی بماند، قیمت خودِ محصول نمایش داده می‌شود.' ) ),
+					'manual_note' => self::field( 'textarea', 'توضیح پاپ‌آپ ثبت‌نام', '', array( 'show_if' => 'manual_enabled:1', 'hint' => 'اگر خالی بماند، متن پیش‌فرض تنظیمات سراسری نمایش داده می‌شود.' ) ),
 				),
 			),
 			'guarantee' => array(

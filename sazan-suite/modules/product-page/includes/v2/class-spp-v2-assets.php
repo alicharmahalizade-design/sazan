@@ -41,8 +41,10 @@ final class SPP_V2_Assets {
 			wp_register_script( 'spp-v3-front', SPP_URL . 'assets/js/spp-v3-front.js', array(), SPP_VERSION, true );
 			wp_script_add_data( 'spp-v3-front', 'strategy', 'defer' );
 			wp_localize_script( 'spp-v3-front', 'SPPV3', array(
-				'ajax'        => admin_url( 'admin-ajax.php' ),
-				'reviewNonce' => wp_create_nonce( SPP_Reviews::NONCE ),
+				'ajax'          => admin_url( 'admin-ajax.php' ),
+				'reviewNonce'   => wp_create_nonce( SPP_Reviews::NONCE ),
+				'enrollNonce'   => wp_create_nonce( SPP_V3_Enroll::NONCE ),
+				'enrollMaxSize' => SPP_V3_Enroll::max_size(),
 				'i18n'        => array(
 					'sending' => 'در حال ارسال نظر…',
 					'success' => 'نظر شما ثبت شد و پس از تأیید نمایش داده می‌شود.',

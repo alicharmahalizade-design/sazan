@@ -330,6 +330,8 @@ final class SPP_V3_Renderer {
 	private static function enrollment( $product, $data ) {
 		$d = $data['enrollment']; $discount = self::discount( $product ); $purchase_url = $product->add_to_cart_url();
 		$guarantee = $data['guarantee'];
+		$card = SPP_V3_Enroll::card_details( $product, $data );
+		$manual = SPP_V3_Enroll::is_active( $product, $data );
 		$summary_items = array();
 		foreach ( $data['facts']['items'] as $fact ) {
 			$summary = trim( self::plain( $fact['title'] ) . ( ! empty( $fact['value'] ) ? ': ' . self::plain( $fact['value'] ) : '' ), ': ' );
@@ -342,10 +344,84 @@ final class SPP_V3_Renderer {
 		$summary_items = array_slice( array_values( array_unique( array_filter( $summary_items ) ) ), 0, 5 );
 		?>
 		<section class="enrollment" id="enroll"><div class="container"><header class="enroll-head reveal"><span class="kicker"><?php echo esc_html( self::plain( $d['eyebrow'], 'ثبت‌نام' ) ); ?></span><h2><?php echo esc_html( self::plain( $d['title'], 'ثبت‌نام در ' . $product->get_name() ) ); ?></h2><p>روش پرداخت مناسب خود را انتخاب کنید و مسیر یادگیری‌تان را همین امروز آغاز کنید.</p></header><?php if ( '1' === $guarantee['enabled'] ) : ?><div class="enroll-guarantee reveal"><span class="enroll-guarantee__icon"><?php echo self::svg( 'shield' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span><div><b><?php echo esc_html( self::plain( $guarantee['title'], self::plain( $guarantee['duration'], 'شرایط ضمانت دوره' ) ) ); ?></b><small><?php echo esc_html( self::plain( $guarantee['description'], 'با خیال آسوده تصمیم بگیرید؛ شرایط ضمانت پیش از خرید شفاف است.' ) ); ?></small></div></div><?php endif; ?><div class="enroll-layout reveal"><div class="enroll-main"><div class="enroll-tabs" role="tablist" aria-label="روش‌های پرداخت"><button class="enroll-tab active" type="button" role="tab" aria-selected="true" data-enroll-target="pay-cash">پرداخت نقدی</button><?php if ( '1' === $d['installment_enabled'] ) : ?><button class="enroll-tab" type="button" role="tab" aria-selected="false" data-enroll-target="pay-installment">پرداخت اقساطی</button><?php endif; ?><?php if ( '1' === $d['group_enabled'] ) : ?><button class="enroll-tab" type="button" role="tab" aria-selected="false" data-enroll-target="pay-team">خرید گروهی</button><?php endif; ?></div>
-		<article class="enroll-panel active" id="pay-cash"><span class="enroll-status"><?php echo $product->is_in_stock() ? 'ثبت‌نام باز است' : 'ظرفیت تکمیل شده'; ?></span><h3>پرداخت کامل<?php echo $discount ? ' با ' . esc_html( number_format_i18n( $discount ) ) . '٪ تخفیف' : ''; ?></h3><p>هزینه دوره را یک‌جا پرداخت کنید و ثبت‌نامتان را بدون مرحله اضافه کامل کنید.</p><div class="enroll-values"><div class="enroll-value"><b><?php echo wp_kses_post( $product->get_price_html() ); ?></b><small>مبلغ ثبت‌نام</small></div><div class="enroll-value"><b>پرداخت امن</b><small>درگاه بانکی</small></div><div class="enroll-value"><b>شروع سریع</b><small>پس از تکمیل خرید</small></div></div><div class="enroll-action-row"><div class="enroll-quantity" aria-label="تعداد ثبت‌نام"><button type="button" data-qty="minus" aria-label="کم کردن">−</button><output>۱</output><button type="button" data-qty="plus" aria-label="اضافه کردن">+</button></div><a class="enroll-cta" href="<?php echo esc_url( $purchase_url ); ?>" data-product_id="<?php echo esc_attr( $product->get_id() ); ?>"><?php echo esc_html( self::plain( $d['cash_cta'], 'ثبت‌نام و پرداخت' ) ); ?> ←</a></div></article>
+		<article class="enroll-panel active" id="pay-cash"><span class="enroll-status"><?php echo $product->is_in_stock() ? 'ثبت‌نام باز است' : 'ظرفیت تکمیل شده'; ?></span><h3>پرداخت کامل<?php echo $discount ? ' با ' . esc_html( number_format_i18n( $discount ) ) . '٪ تخفیف' : ''; ?></h3><p>هزینه دوره را یک‌جا پرداخت کنید و ثبت‌نامتان را بدون مرحله اضافه کامل کنید.</p><div class="enroll-values"><div class="enroll-value"><b><?php echo wp_kses_post( $product->get_price_html() ); ?></b><small>مبلغ ثبت‌نام</small></div><div class="enroll-value"><b><?php echo $manual ? 'کارت به کارت' : 'پرداخت امن'; ?></b><small><?php echo $manual ? 'ثبت رسید واریزی' : 'درگاه بانکی'; ?></small></div><div class="enroll-value"><b>شروع سریع</b><small><?php echo $manual ? 'پس از تأیید رسید' : 'پس از تکمیل خرید'; ?></small></div></div><div class="enroll-action-row"><?php echo self::enroll_cta( 'enroll-cta', self::plain( $d['cash_cta'], 'ثبت‌نام و پرداخت' ), $purchase_url, $product, $manual ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div></article>
 		<?php if ( '1' === $d['installment_enabled'] ) : ?><article class="enroll-panel" id="pay-installment"><span class="enroll-status">پرداخت منعطف</span><h3><?php echo esc_html( self::plain( $d['installment_count'], '۳' ) ); ?> مرحله پرداخت، بدون فشار نقدینگی</h3><p><?php echo esc_html( $d['installment_description'] ); ?></p><div class="enroll-values"><div class="enroll-value"><b><?php echo esc_html( $d['installment_downpayment'] ); ?></b><small>پیش‌پرداخت</small></div><div class="enroll-value"><b><?php echo esc_html( $d['installment_amount'] ); ?></b><small>مبلغ هر قسط</small></div><div class="enroll-value"><b><?php echo esc_html( $d['installment_interval'] ); ?></b><small>فاصله اقساط</small></div></div><div class="enroll-action-row"><a class="enroll-cta" href="<?php echo esc_url( $d['installment_url'] ); ?>"><?php echo esc_html( $d['installment_cta'] ); ?> ←</a></div></article><?php endif; ?>
 		<?php if ( '1' === $d['group_enabled'] ) : ?><article class="enroll-panel" id="pay-team"><span class="enroll-status">ویژه تیم‌ها</span><h3>هم‌مسیر شوید، یک زبان تصمیم بسازید</h3><p><?php echo esc_html( $d['group_description'] ); ?></p><div class="enroll-values"><div class="enroll-value"><b><?php echo esc_html( $d['group_min'] ); ?> نفر به بالا</b><small>تعرفه اختصاصی تیمی</small></div><div class="enroll-value"><b><?php echo esc_html( $d['group_price'] ); ?></b><small>قیمت هر نفر</small></div><div class="enroll-value"><b>هماهنگی سریع</b><small>مشاوره پیش از خرید</small></div></div><div class="enroll-action-row"><a class="enroll-cta" href="<?php echo esc_url( $d['group_url'] ); ?>"><?php echo esc_html( $d['group_cta'] ); ?> ←</a></div></article><?php endif; ?>
-		</div><aside class="enroll-summary"><span class="enroll-summary__eyebrow">آنچه با ثبت‌نام دریافت می‌کنید</span><div class="enroll-summary__price"><?php echo wp_kses_post( $product->get_price_html() ); ?></div><?php if ( $discount ) : ?><span class="enroll-discount"><?php echo esc_html( number_format_i18n( $discount ) ); ?>٪ تخفیف ویژه</span><?php endif; ?><?php if ( $summary_items ) : ?><ul class="enroll-list"><?php foreach ( $summary_items as $item ) : ?><li><?php echo esc_html( $item ); ?></li><?php endforeach; ?></ul><?php endif; ?><a href="<?php echo esc_url( $purchase_url ); ?>" class="btn btn-primary"><?php echo esc_html( self::plain( $data['intro']['primary_cta'], 'ثبت‌نام در دوره' ) ); ?> ←</a><small class="enroll-summary__note">پرداخت امن انجام می‌شود و رسید خرید در اختیار شما قرار می‌گیرد.</small></aside></div></div></section>
+		</div><aside class="enroll-summary"><span class="enroll-summary__eyebrow">آنچه با ثبت‌نام دریافت می‌کنید</span><div class="enroll-summary__price"><?php echo wp_kses_post( $product->get_price_html() ); ?></div><?php if ( $discount ) : ?><span class="enroll-discount"><?php echo esc_html( number_format_i18n( $discount ) ); ?>٪ تخفیف ویژه</span><?php endif; ?><?php if ( $summary_items ) : ?><ul class="enroll-list"><?php foreach ( $summary_items as $item ) : ?><li><?php echo esc_html( $item ); ?></li><?php endforeach; ?></ul><?php endif; ?><?php echo self::enroll_cta( 'btn btn-primary', self::plain( $data['intro']['primary_cta'], 'ثبت‌نام در دوره' ), $purchase_url, $product, $manual ); // phpcs:ignore WordPress.Security.EscapeOutput ?><small class="enroll-summary__note"><?php echo $manual ? 'رسید واریزی شما بررسی و ثبت‌نامتان تأیید می‌شود.' : 'پرداخت امن انجام می‌شود و رسید خرید در اختیار شما قرار می‌گیرد.'; ?></small></aside></div></div></section><?php if ( $manual ) { self::enroll_modal( $product, $card ); } ?>
+		<?php
+	}
+
+	/**
+	 * دکمه‌ی ثبت‌نام؛ در حالت کارت‌به‌کارت پاپ‌آپ را باز می‌کند و در غیر این
+	 * صورت همان مسیر همیشگی سبد خرید را نگه می‌دارد.
+	 *
+	 * @param string     $class  کلاس ظاهری دکمه.
+	 * @param string     $label  متن دکمه.
+	 * @param string     $url    نشانی افزودن به سبد خرید.
+	 * @param WC_Product $product
+	 * @param bool       $manual فعال بودن ثبت‌نام کارت‌به‌کارت.
+	 * @return string
+	 */
+	private static function enroll_cta( $class, $label, $url, $product, $manual ) {
+		$text = esc_html( $label ) . ' ←';
+
+		if ( $manual ) {
+			return '<button type="button" class="' . esc_attr( $class ) . '" data-spp-v3-enroll-open data-product_id="' . esc_attr( $product->get_id() ) . '">' . $text . '</button>';
+		}
+
+		return '<a class="' . esc_attr( $class ) . '" href="' . esc_url( $url ) . '" data-product_id="' . esc_attr( $product->get_id() ) . '">' . $text . '</a>';
+	}
+
+	/**
+	 * پاپ‌آپ ثبت‌نام: نمایش شماره کارت و دریافت رسید واریزی و مشخصات کاربر.
+	 *
+	 * @param WC_Product $product
+	 * @param array      $card اطلاعات کارت و متن‌ها.
+	 */
+	private static function enroll_modal( $product, $card ) {
+		$post_id     = $product->get_id();
+		$user        = wp_get_current_user();
+		$is_member   = $user && $user->exists();
+		$first_name  = $is_member ? $user->first_name : '';
+		$last_name   = $is_member ? $user->last_name : '';
+		$title_id    = 'spp-enroll-title-' . absint( $post_id );
+		$grouped     = trim( chunk_split( $card['number'], 4, ' ' ) );
+		?>
+		<div class="review-modal enroll-modal" hidden data-spp-v3-enroll-modal>
+			<div class="review-dialog enroll-dialog" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr( $title_id ); ?>" tabindex="-1">
+				<button class="review-dialog__close" type="button" data-spp-v3-enroll-close aria-label="بستن فرم ثبت‌نام">×</button>
+				<header class="review-dialog__head"><span class="kicker">ثبت‌نام دوره</span><h2 id="<?php echo esc_attr( $title_id ); ?>">ثبت‌نام در <?php echo esc_html( $product->get_name() ); ?></h2><p><?php echo esc_html( $card['note'] ); ?></p></header>
+
+				<div class="enroll-card">
+					<div class="enroll-card__row"><span>شماره کارت</span><strong class="enroll-card__number" dir="ltr" data-spp-v3-card="<?php echo esc_attr( $card['number'] ); ?>"><?php echo esc_html( $grouped ); ?></strong><button type="button" class="enroll-card__copy" data-spp-v3-card-copy>کپی</button></div>
+					<?php if ( '' !== $card['holder'] ) : ?><div class="enroll-card__row"><span>به نام</span><strong><?php echo esc_html( $card['holder'] ); ?></strong></div><?php endif; ?>
+					<?php if ( '' !== $card['bank'] ) : ?><div class="enroll-card__row"><span>بانک</span><strong><?php echo esc_html( $card['bank'] ); ?></strong></div><?php endif; ?>
+					<?php if ( '' !== $card['amount'] ) : ?><div class="enroll-card__row"><span>مبلغ قابل واریز</span><strong><?php echo esc_html( $card['amount'] ); ?></strong></div><?php endif; ?>
+				</div>
+
+				<form class="review-form enroll-form" data-spp-v3-enroll-form novalidate>
+					<div class="review-form__grid">
+						<label><span>نام <b aria-hidden="true">*</b></span><input type="text" name="first_name" value="<?php echo esc_attr( $first_name ); ?>" autocomplete="given-name" required></label>
+						<label><span>نام خانوادگی <b aria-hidden="true">*</b></span><input type="text" name="last_name" value="<?php echo esc_attr( $last_name ); ?>" autocomplete="family-name" required></label>
+					</div>
+					<label><span>شماره موبایل <b aria-hidden="true">*</b></span><input type="tel" name="phone" inputmode="numeric" dir="ltr" placeholder="09123456789" autocomplete="tel" required></label>
+					<div class="enroll-upload">
+						<span class="enroll-upload__label">تصویر رسید واریزی <b aria-hidden="true">*</b></span>
+						<label class="enroll-upload__drop">
+							<input type="file" name="receipt" accept="image/jpeg,image/png,image/webp,application/pdf" required data-spp-v3-enroll-file>
+							<span class="enroll-upload__icon" aria-hidden="true">↑</span>
+							<span class="enroll-upload__text" data-spp-v3-enroll-filename>فایل رسید را انتخاب کنید</span>
+							<small>JPG، PNG، WEBP یا PDF تا <?php echo esc_html( SPP_V3_Enroll::max_size_label() ); ?></small>
+						</label>
+					</div>
+					<label><span>توضیح <small>(اختیاری)</small></span><textarea name="note" rows="3" placeholder="اگر نکته‌ای درباره واریز یا ثبت‌نامتان هست، اینجا بنویسید."></textarea></label>
+					<label class="review-form__hp" aria-hidden="true">این فیلد را خالی بگذارید<input type="text" name="spp_hp" tabindex="-1" autocomplete="off"></label>
+					<input type="hidden" name="product" value="<?php echo esc_attr( $post_id ); ?>">
+					<p class="review-form__status" data-spp-v3-enroll-status aria-live="polite"></p>
+					<button class="review-form__submit" type="submit">تکمیل ثبت‌نام <span aria-hidden="true">←</span></button>
+				</form>
+			</div>
+		</div>
 		<?php
 	}
 
