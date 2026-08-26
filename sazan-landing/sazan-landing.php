@@ -45,8 +45,11 @@ function szl_init() {
 
 /** Register (not enqueue) front assets; widgets pull them in via get_*_depends(). */
 function szl_register_assets() {
-	wp_register_style( 'szl-front', SZL_URL . 'assets/css/sazan-landing.css', array(), SZL_VERSION );
-	wp_register_script( 'szl-front', SZL_URL . 'assets/js/sazan-landing.js', array(), SZL_VERSION, true );
+	$css = SZL_DIR . 'assets/css/sazan-landing.css';
+	$js  = SZL_DIR . 'assets/js/sazan-landing.js';
+
+	wp_register_style( 'szl-front', SZL_URL . 'assets/css/sazan-landing.css', array(), file_exists( $css ) ? filemtime( $css ) : SZL_VERSION );
+	wp_register_script( 'szl-front', SZL_URL . 'assets/js/sazan-landing.js', array(), file_exists( $js ) ? filemtime( $js ) : SZL_VERSION, true );
 
 	wp_localize_script( 'szl-front', 'SZL_CFG', array(
 		'ajax'  => admin_url( 'admin-ajax.php' ),
