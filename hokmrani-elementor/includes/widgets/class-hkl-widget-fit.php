@@ -26,6 +26,7 @@ class HKL_Widget_Fit extends HKL_Widget_Base {
 			'intro' => [
 				'label'    => 'عنوان بخش',
 				'controls' => [
+					'section_id' => [ 'type' => 'text', 'label' => 'شناسه بخش (Anchor)', 'default' => '' ],
 					'title' => [ 'type' => 'text', 'label' => 'تیتر', 'default' => 'حکمرانی بر بازار برای همه نیست' ],
 				],
 			],
@@ -54,9 +55,45 @@ class HKL_Widget_Fit extends HKL_Widget_Base {
 		return $html;
 	}
 
+	protected static function styles() {
+		return [
+			'section'  => self::section_style( '.fit' ),
+			'title'    => self::text_style( 'تیتر', '.fit .section-title h2' ),
+			'grid'     => [
+				'label'    => 'چیدمان',
+				'selector' => '.fit-grid',
+				'kinds'    => [ 'gap', 'max_width' ],
+			],
+			'yes'      => self::box_style( 'کارت «مناسب است»', '.fit article.yes' ),
+			'yes_title' => self::text_style( 'عنوان «مناسب است»', '.fit .yes h3' ),
+			'yes_items' => [
+				'label'    => 'موارد «مناسب است»',
+				'selector' => '.fit .yes li',
+				'kinds'    => [ 'typography', 'color', 'margin', 'padding' ],
+			],
+			'yes_mark' => [
+				'label'    => 'نشانه موارد «مناسب است»',
+				'selector' => '.fit .yes li:before',
+				'kinds'    => [ 'color', 'bg', 'hide' ],
+			],
+			'no'       => self::box_style( 'کارت «مناسب نیست»', '.fit article.no' ),
+			'no_title' => self::text_style( 'عنوان «مناسب نیست»', '.fit .no h3' ),
+			'no_items' => [
+				'label'    => 'موارد «مناسب نیست»',
+				'selector' => '.fit .no li',
+				'kinds'    => [ 'typography', 'color', 'margin', 'padding' ],
+			],
+			'no_mark'  => [
+				'label'    => 'نشانه موارد «مناسب نیست»',
+				'selector' => '.fit .no li:before',
+				'kinds'    => [ 'color', 'bg', 'hide' ],
+			],
+		];
+	}
+
 	protected function render_html( array $s ) {
 		?>
-<section class="fit white-section section-pad"><div class="container"><div class="section-title"><h2><?php echo self::t( self::v( $s, 'title' ) ); ?></h2></div><div class="fit-grid">
+<section<?php echo self::id_attr( self::v( $s, 'section_id' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> class="fit white-section section-pad"><div class="container"><div class="section-title"><h2><?php echo self::t( self::v( $s, 'title' ) ); ?></h2></div><div class="fit-grid">
       <article class="yes"><h3><?php echo self::t( self::v( $s, 'yes_title' ) ); ?></h3><ul><?php echo self::list_html( self::v( $s, 'yes_items' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></ul></article>
       <article class="no"><h3><?php echo self::t( self::v( $s, 'no_title' ) ); ?></h3><ul><?php echo self::list_html( self::v( $s, 'no_items' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></ul></article>
     </div></div></section>

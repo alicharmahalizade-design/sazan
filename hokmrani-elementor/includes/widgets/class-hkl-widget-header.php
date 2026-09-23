@@ -26,17 +26,15 @@ class HKL_Widget_Header extends HKL_Widget_Base {
 			'brand' => [
 				'label'    => 'لوگو',
 				'controls' => [
-					'logo'       => [ 'type' => 'media', 'label' => 'تصویر لوگو', 'default' => 'logo-sazan.png' ],
-					'logo_alt'   => [ 'type' => 'text', 'label' => 'متن جایگزین لوگو', 'default' => 'لوگوی سازان' ],
-					'brand_link' => [ 'type' => 'link', 'label' => 'لینک لوگو', 'default' => '#top' ],
+					'logo'        => [ 'type' => 'media', 'label' => 'تصویر لوگو', 'default' => 'logo-sazan.png' ],
+					'logo_alt'    => [ 'type' => 'text', 'label' => 'متن جایگزین لوگو', 'default' => 'لوگوی سازان' ],
+					'brand_link'  => [ 'type' => 'link', 'label' => 'لینک لوگو', 'default' => '#top' ],
 					'brand_label' => [ 'type' => 'text', 'label' => 'عنوان دسترسی‌پذیری لوگو', 'default' => 'حکمرانی بر بازار' ],
 				],
 			],
 			'menu'  => [
 				'label'    => 'منو',
 				'controls' => [
-					'menu_label' => [ 'type' => 'text', 'label' => 'عنوان دکمه منو (موبایل)', 'default' => 'باز کردن منو' ],
-					'nav_label'  => [ 'type' => 'text', 'label' => 'عنوان دسترسی‌پذیری منو', 'default' => 'منوی اصلی' ],
 					'items'      => [
 						'type'        => 'repeater',
 						'label'       => 'آیتم‌های منو',
@@ -53,11 +51,15 @@ class HKL_Widget_Header extends HKL_Widget_Base {
 							[ 'text' => 'سوالات متداول', 'link' => '#faq' ],
 						],
 					],
+					'menu_icon'  => [ 'type' => 'icon', 'label' => 'آیکن دکمه منو (موبایل)' ],
+					'menu_label' => [ 'type' => 'text', 'label' => 'عنوان دکمه منو (دسترسی‌پذیری)', 'default' => 'باز کردن منو' ],
+					'nav_label'  => [ 'type' => 'text', 'label' => 'عنوان منو (دسترسی‌پذیری)', 'default' => 'منوی اصلی' ],
 				],
 			],
 			'cta'   => [
 				'label'    => 'دکمه',
 				'controls' => [
+					'show_cta' => [ 'type' => 'switcher', 'label' => 'نمایش دکمه', 'default' => 'yes' ],
 					'cta_text' => [ 'type' => 'text', 'label' => 'متن دکمه', 'default' => 'درخواست بررسی کار و کسب' ],
 					'cta_link' => [ 'type' => 'link', 'label' => 'لینک دکمه', 'default' => '#assessment' ],
 				],
@@ -65,25 +67,69 @@ class HKL_Widget_Header extends HKL_Widget_Base {
 		];
 	}
 
+	protected static function styles() {
+		return [
+			'bar'         => [
+				'label'    => 'نوار هدر',
+				'selector' => '.topbar',
+				'kinds'    => [ 'background', 'height', 'border', 'shadow' ],
+			],
+			'layout'      => [
+				'label'    => 'چیدمان',
+				'selector' => '.nav-wrap',
+				'kinds'    => [ 'max_width', 'gap', 'padding' ],
+			],
+			'logo'        => [
+				'label'    => 'لوگو',
+				'selector' => '.brand-v2',
+				'kinds'    => [ 'height', 'max_width', 'opacity' ],
+			],
+			'menu'        => [
+				'label'    => 'منو',
+				'selector' => '.nav-wrap nav',
+				'kinds'    => [ 'gap' ],
+			],
+			'links'       => [
+				'label'    => 'لینک‌های منو',
+				'selector' => '.nav-wrap nav a',
+				'hover'    => '.nav-wrap nav a:hover, .nav-wrap nav a.active',
+				'kinds'    => [ 'typography', 'color', 'color_hover', 'border_color_hover', 'padding' ],
+			],
+			'mobile_menu' => [
+				'label'    => 'منوی باز شده (موبایل)',
+				'selector' => '.nav-wrap nav.open',
+				'kinds'    => [ 'background', 'padding', 'radius', 'shadow' ],
+			],
+			'toggle'      => [
+				'label'    => 'دکمه منو (موبایل)',
+				'selector' => '.menu',
+				'kinds'    => [ 'icon_color', 'bg', 'border_color', 'radius', 'width', 'height' ],
+			],
+			'toggle_icon' => self::icon_style( 'آیکن دکمه منو', '.menu svg' ),
+			'cta'         => self::button_style( 'دکمه', '.nav-wrap .btn', [ 'hide' ] ),
+		];
+	}
+
 	protected function render_html( array $s ) {
-		$items = self::rows( $s, 'items' );
-		$nav   = '';
-		foreach ( $items as $i => $item ) {
-			$nav .= '<a' . ( 0 === $i ? ' class="active"' : '' ) . ' href="' . self::u( self::v( $item, 'link' ) ) . '">' . self::t( self::v( $item, 'text' ) ) . '</a>';
+		$nav = '';
+		foreach ( self::rows( $s, 'items' ) as $i => $item ) {
+			$nav .= '<a' . ( 0 === $i ? ' class="active"' : '' ) . self::href( self::arr( $item, 'link' ) ) . '>' . self::t( self::v( $item, 'text' ) ) . '</a>';
 		}
 		?>
 <div id="top" class="anchor-target" aria-hidden="true"></div>
 <header class="topbar">
     <div class="container nav-wrap">
-      <a class="brand" href="<?php echo self::u( self::v( $s, 'brand_link' ) ); ?>" aria-label="<?php echo self::a( self::v( $s, 'brand_label' ) ); ?>">
+      <a class="brand"<?php echo self::href( self::arr( $s, 'brand_link' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> aria-label="<?php echo self::a( self::v( $s, 'brand_label' ) ); ?>">
         <img class="brand-v2" src="<?php echo esc_url( self::media_url( $s['logo'] ?? '' ) ); ?>" alt="<?php echo self::a( self::v( $s, 'logo_alt' ) ); ?>" width="244" height="88">
       </a>
-      <button class="menu" aria-label="<?php echo self::a( self::v( $s, 'menu_label' ) ); ?>" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
+      <button class="menu" aria-label="<?php echo self::a( self::v( $s, 'menu_label' ) ); ?>" aria-expanded="false"><?php echo self::icon( $s['menu_icon'] ?? [], '<svg><use href="#i-menu"/></svg>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
       <nav aria-label="<?php echo self::a( self::v( $s, 'nav_label' ) ); ?>">
         <?php echo $nav; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
 
       </nav>
-      <a class="btn btn-small" href="<?php echo self::u( self::v( $s, 'cta_link' ) ); ?>"><?php echo self::t( self::v( $s, 'cta_text' ) ); ?></a>
+<?php if ( 'yes' === self::v( $s, 'show_cta' ) ) : ?>
+      <a class="btn btn-small"<?php echo self::href( self::arr( $s, 'cta_link' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo self::t( self::v( $s, 'cta_text' ) ); ?></a>
+<?php endif; ?>
     </div>
   </header>
 		<?php

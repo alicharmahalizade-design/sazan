@@ -51,6 +51,7 @@ class HKL_Widget_Program extends HKL_Widget_Base {
 							'image'    => [ 'type' => 'media', 'label' => 'عکس (اختیاری)', 'default' => '', 'description' => 'خالی بماند تا طرح اصلی نمایش داده شود.' ],
 							'title'    => [ 'type' => 'text', 'label' => 'عنوان', 'default' => 'عنوان' ],
 							'subtitle' => [ 'type' => 'text', 'label' => 'زیرعنوان', 'default' => '' ],
+							'link'     => [ 'type' => 'link', 'label' => 'لینک (اختیاری)', 'default' => '', 'description' => 'اگر خالی بماند کارت لینک نمی‌شود.' ],
 						],
 						'default'     => [
 							[ 'style' => 'teacher-bg', 'title' => '۱۴ جلسه آموزش و راهبری', 'subtitle' => 'با عباس شانه سازان' ],
@@ -58,6 +59,41 @@ class HKL_Widget_Program extends HKL_Widget_Base {
 						],
 					],
 				],
+			],
+		];
+	}
+
+	protected static function styles() {
+		return [
+			'section'    => self::section_style( '.program' ),
+			'grid'       => [
+				'label'    => 'چیدمان',
+				'selector' => '.program-grid',
+				'kinds'    => [ 'gap', 'max_width' ],
+			],
+			'intro'      => self::box_style( 'کادر معرفی', '.program-grid > div', [ 'align' ] ),
+			'title'      => self::text_style( 'تیتر', '.program h2' ),
+			'title_hl'   => [
+				'label'    => 'بخش رنگی تیتر',
+				'selector' => '.program h2 span',
+				'kinds'    => [ 'typography', 'color' ],
+			],
+			'text'       => self::text_style( 'توضیح', '.program-grid > div > p' ),
+			'card'       => self::box_style( 'کارت', '.media-card', [ 'align' ] ),
+			'photo'      => [
+				'label'    => 'تصویر کارت',
+				'selector' => '.media-photo',
+				'kinds'    => [ 'background', 'height', 'bg_size', 'bg_position', 'radius' ],
+			],
+			'card_title' => [
+				'label'    => 'عنوان کارت',
+				'selector' => '.media-card b',
+				'kinds'    => [ 'typography', 'color', 'margin' ],
+			],
+			'card_sub'   => [
+				'label'    => 'زیرعنوان کارت',
+				'selector' => '.media-card span',
+				'kinds'    => [ 'typography', 'color', 'margin' ],
 			],
 		];
 	}
@@ -72,8 +108,10 @@ class HKL_Widget_Program extends HKL_Widget_Base {
 			$style = 'board-bg' === self::v( $card, 'style' ) ? 'board-bg' : 'teacher-bg';
 			$image = self::media_url( $card['image'] ?? '' );
 			$attr  = $image ? ' has-photo" style="background-image:url(&quot;' . esc_url( $image ) . '&quot;)' : '';
+			$link  = self::arr( $card, 'link' );
+			$tag   = ! empty( $link['url'] ) ? 'a' : 'article';
 			?>
-        <article class="media-card"><div class="media-photo <?php echo $style . $attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"></div><b><?php echo self::t( self::v( $card, 'title' ) ); ?></b><span><?php echo self::t( self::v( $card, 'subtitle' ) ); ?></span></article>
+        <<?php echo $tag; ?> class="media-card"<?php echo 'a' === $tag ? self::href( $link ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><div class="media-photo <?php echo $style . $attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"></div><b><?php echo self::t( self::v( $card, 'title' ) ); ?></b><span><?php echo self::t( self::v( $card, 'subtitle' ) ); ?></span></<?php echo $tag; ?>>
 <?php endforeach; ?>
       </div>
     </section>

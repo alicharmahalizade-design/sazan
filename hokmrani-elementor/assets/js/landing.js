@@ -174,8 +174,8 @@
       var stop = function () { if (timer) clearInterval(timer); timer = undefined; };
       var start = function () {
         stop();
-        if (reducedMotion || document.hidden || carousel.offsetParent === null) return;
-        timer = setInterval(function () { show(active + 1); }, 5600);
+        if (reducedMotion || document.hidden || carousel.offsetParent === null || carousel.getAttribute('data-autoplay') === 'no') return;
+        timer = setInterval(function () { show(active + 1); }, Number(carousel.getAttribute('data-interval')) || 5600);
       };
       var prev = carousel.querySelector('[data-story-prev]');
       var next = carousel.querySelector('[data-story-next]');
@@ -238,11 +238,11 @@
   };
 
   var sendLead = function (form) {
-    if (!settings.ajaxUrl || !window.fetch || !window.FormData) return;
+    if (!settings.ajaxUrl || !window.fetch || !window.FormData) return Promise.resolve();
     var data = new FormData(form);
     data.append('action', 'hkl_submit_lead');
     data.append('page_url', window.location.href);
-    window.fetch(settings.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: data }).catch(function () {});
+    return window.fetch(settings.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: data }).catch(function () {});
   };
 
   var initEnrollment = function () {
@@ -267,7 +267,9 @@
           return;
         }
         if (error) error.textContent = '';
-        sendLead(form);
+        var sent = sendLead(form);
+        var redirect = form.getAttribute('data-redirect');
+        if (redirect && !isEditor()) sent.then(function () { window.location.href = redirect; });
         form.hidden = true;
         if (success) success.hidden = false;
       });

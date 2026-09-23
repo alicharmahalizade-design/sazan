@@ -115,7 +115,53 @@ final class HKL_Plugin {
 		);
 	}
 
+	/**
+	 * Elementor's "hide on device" classes, re-declared for the landing widgets (their
+	 * wrappers use display: contents/block, which would otherwise override Elementor's
+	 * rule). Uses the site's own breakpoints.
+	 */
+	public static function responsive_visibility_css() {
+		$max  = [ 'mobile' => 767, 'tablet' => 1024 ];
+		$wide = null;
+		if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance->breakpoints ) && method_exists( \Elementor\Plugin::$instance->breakpoints, 'get_active_breakpoints' ) ) {
+			$max = [];
+			foreach ( \Elementor\Plugin::$instance->breakpoints->get_active_breakpoints() as $name => $breakpoint ) {
+				if ( 'min' === $breakpoint->get_direction() ) {
+					$wide = [ $name, (int) $breakpoint->get_value() ];
+				} else {
+					$max[ $name ] = (int) $breakpoint->get_value();
+				}
+			}
+		}
+		asort( $max );
+		$rule = static function ( $device, $min, $to ) {
+			$query = [];
+			if ( null !== $min ) {
+				$query[] = '(min-width:' . $min . 'px)';
+			}
+			if ( null !== $to ) {
+				$query[] = '(max-width:' . $to . 'px)';
+			}
+			$css = 'body.hk-page:not(.elementor-editor-active) .elementor-widget.elementor-hidden-' . $device . '[class*="elementor-widget-hk-"]{display:none!important}';
+			return $query ? '@media ' . implode( ' and ', $query ) . '{' . $css . '}' : $css;
+		};
+		$css  = '';
+		$prev = null;
+		foreach ( $max as $name => $value ) {
+			$css .= $rule( $name, null === $prev ? null : $prev + 1, $value );
+			$prev  = $value;
+		}
+		$css .= $rule( 'desktop', null === $prev ? null : $prev + 1, $wide ? $wide[1] - 1 : null );
+		if ( $wide ) {
+			$css .= $rule( $wide[0], $wide[1], null );
+		}
+		return $css;
+	}
+
 	public function enqueue_for_template() {
+		if ( wp_style_is( self::HANDLE, 'registered' ) ) {
+			wp_add_inline_style( self::HANDLE, self::responsive_visibility_css() );
+		}
 		if ( self::is_landing_template() ) {
 			wp_enqueue_style( self::HANDLE );
 			wp_enqueue_script( self::HANDLE );

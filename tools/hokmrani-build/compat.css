@@ -6,8 +6,14 @@
 
 /* Front end: Elementor wrappers do not generate boxes. Sticky/fixed elements and
    every flow/margin relation behave exactly as in the static page. */
-body.hk-page:not(.elementor-editor-active) :is(.elementor, .elementor-section-wrap, .e-con:not(.hk-box), .e-con-inner, .elementor-section:not(.hk-box), .elementor-container, .elementor-row, .elementor-column, .elementor-column-wrap, .elementor-widget-wrap, .elementor-element.elementor-widget, .elementor-widget-container) {
+body.hk-page:not(.elementor-editor-active) :is(.elementor, .elementor-section-wrap, .e-con:not(.hk-box), .e-con-inner, .elementor-section:not(.hk-box), .elementor-container, .elementor-row, .elementor-column, .elementor-column-wrap, .elementor-widget-wrap, .elementor-element.elementor-widget:not(.hk-boxed):not([data-settings]):not(.elementor-absolute):not(.elementor-fixed), .elementor-widget-container) {
 	display: contents;
+}
+/* A widget whose wrapper was styled in the Advanced tab (margin, background, width,
+   position, animation, motion effects…) keeps a real box so those settings work. */
+body.hk-page .elementor-widget.hk-boxed[class*="elementor-widget-hk-"],
+body.hk-page .elementor-widget[data-settings][class*="elementor-widget-hk-"] {
+	display: block;
 }
 
 /* Editor preview: keep real boxes (Elementor needs them for its handles) but remove all spacing. */
@@ -74,6 +80,29 @@ body.hk-page .elementor-section.hk-box > .elementor-container > .elementor-colum
 	max-width: none;
 }
 
+/* Custom icons chosen in the widgets (the original icons stay untouched). */
+:where(body.hk-page) .hk-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	vertical-align: middle;
+}
+:where(body.hk-page) .hk-icon svg {
+	width: 1em;
+	height: 1em;
+}
+body.hk-page .hk-icon .e-font-icon-svg {
+	fill: currentColor !important;
+	stroke: none !important;
+}
+body.hk-page .hk-icon > i {
+	font-style: normal !important;
+	font-size: inherit;
+	color: inherit;
+	margin: 0;
+}
+
 /* Optional images chosen in the widgets (defaults keep the original artwork). */
 .hk-page .org-logo.has-image img {
 	display: block;
@@ -88,6 +117,12 @@ body.hk-page .elementor-section.hk-box > .elementor-container > .elementor-colum
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
+}
+.hk-page .investment-icon > img {
+	display: block;
+	width: 96px;
+	height: 96px;
+	object-fit: contain;
 }
 .hk-page .media-photo.has-photo:after,
 .hk-page .avatar.has-photo:before {

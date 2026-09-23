@@ -35,6 +35,7 @@ class HKL_Widget_Diagnosis extends HKL_Widget_Base {
 			'intro' => [
 				'label'    => 'عنوان بخش',
 				'controls' => [
+					'section_id'   => [ 'type' => 'text', 'label' => 'شناسه بخش (Anchor)', 'default' => '' ],
 					'eyebrow'      => [ 'type' => 'text', 'label' => 'برچسب بالا', 'default' => 'ریشه‌یابی افت فروش' ],
 					'title'        => [ 'type' => 'text', 'label' => 'تیتر', 'default' => 'شاید مشکل فروش شما، کمبود مشتری نیست' ],
 					'mobile_text'  => [ 'type' => 'text', 'label' => 'توضیح (موبایل)', 'default' => 'گاهی فروش رشد نمی‌کند چون...' ],
@@ -49,9 +50,9 @@ class HKL_Widget_Diagnosis extends HKL_Widget_Base {
 						'label'       => 'کارت‌ها',
 						'title_field' => '{{{ title }}}',
 						'fields'      => [
-							'icon'  => [
+							'icon'        => [
 								'type'    => 'select',
-								'label'   => 'آیکن',
+								'label'   => 'آیکن طرح',
 								'default' => 'advantage',
 								'options' => [
 									'advantage'  => 'مزیت رقابتی',
@@ -62,8 +63,10 @@ class HKL_Widget_Diagnosis extends HKL_Widget_Base {
 									'experience' => 'تجربه مشتری',
 								],
 							],
-							'title' => [ 'type' => 'text', 'label' => 'عنوان', 'default' => 'عنوان' ],
-							'text'  => [ 'type' => 'text', 'label' => 'متن', 'default' => 'توضیح' ],
+							'custom_icon' => [ 'type' => 'icon', 'label' => 'آیکن دلخواه' ],
+							'title'       => [ 'type' => 'text', 'label' => 'عنوان', 'default' => 'عنوان' ],
+							'text'        => [ 'type' => 'text', 'label' => 'متن', 'default' => 'توضیح' ],
+							'link'        => [ 'type' => 'link', 'label' => 'لینک (اختیاری)', 'default' => '', 'description' => 'اگر خالی بماند کارت لینک نمی‌شود.' ],
 						],
 						'default'     => [
 							[ 'icon' => 'advantage', 'title' => 'مزیت رقابتی', 'text' => 'واقعی نیست' ],
@@ -79,10 +82,52 @@ class HKL_Widget_Diagnosis extends HKL_Widget_Base {
 		];
 	}
 
+	protected static function styles() {
+		return [
+			'section'   => self::section_style( '.diagnosis' ),
+			'container' => [
+				'label'    => 'عرض محتوا',
+				'selector' => '.diagnosis > .container',
+				'kinds'    => [ 'max_width', 'padding' ],
+			],
+			'eyebrow'   => self::text_style( 'برچسب بالا', '.diagnosis-intro .eyebrow', [ 'bg', 'radius', 'padding', 'hide' ] ),
+			'title'     => self::text_style( 'تیتر', '.diagnosis-intro h2' ),
+			'mobile'    => self::text_style( 'توضیح (موبایل)', '.diagnosis-mobile-copy', [ 'hide' ] ),
+			'desktop'   => self::text_style( 'توضیح (دسکتاپ)', '.diagnosis-desktop-copy', [ 'hide' ] ),
+			'grid'      => [
+				'label'    => 'چیدمان کارت‌ها',
+				'selector' => '.diagnosis-grid',
+				'kinds'    => [ 'gap', 'margin' ],
+			],
+			'card'      => self::box_style( 'کارت', '.mini-card', [ 'border_color_hover', 'bg_hover', 'align' ] ),
+			'badge'     => [
+				'label'    => 'نشان ستاره کارت',
+				'selector' => '.mini-card:before',
+				'kinds'    => [ 'bg', 'width', 'height', 'hide' ],
+			],
+			'visual'    => [
+				'label'    => 'کادر آیکن',
+				'selector' => '.mini-visual',
+				'kinds'    => [ 'icon_color', 'bg', 'radius', 'width', 'height', 'padding' ],
+			],
+			'icon'      => self::icon_style( 'آیکن', '.mini-visual svg' ),
+			'card_title' => [
+				'label'    => 'عنوان کارت',
+				'selector' => '.mini-card b',
+				'kinds'    => [ 'typography', 'color' ],
+			],
+			'card_text' => [
+				'label'    => 'متن کارت',
+				'selector' => '.mini-card p',
+				'kinds'    => [ 'typography', 'color', 'margin' ],
+			],
+		];
+	}
+
 	protected function render_html( array $s ) {
 		$icons = self::ICONS;
 		?>
-<section class="white-section diagnosis section-pad">
+<section<?php echo self::id_attr( self::v( $s, 'section_id' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> class="white-section diagnosis section-pad">
       <div class="container">
         <div class="section-title diagnosis-intro"><span class="eyebrow"><?php echo self::t( self::v( $s, 'eyebrow' ) ); ?></span><h2><?php echo self::t( self::v( $s, 'title' ) ); ?></h2><p class="diagnosis-mobile-copy"><?php echo self::t( self::v( $s, 'mobile_text' ) ); ?></p><p class="diagnosis-desktop-copy"><?php echo self::t( self::v( $s, 'desktop_text' ) ); ?></p></div>
         <div class="diagnosis-grid">
@@ -92,8 +137,11 @@ class HKL_Widget_Diagnosis extends HKL_Widget_Base {
 			if ( ! isset( $icons[ $icon ] ) ) {
 				$icon = 'advantage';
 			}
+			$visual = self::icon( $card['custom_icon'] ?? [], '<svg viewBox="0 0 64 64">' . $icons[ $icon ] . '</svg>' );
+			$link   = self::arr( $card, 'link' );
+			$tag    = ! empty( $link['url'] ) ? 'a' : 'div';
 			?>
-          <div class="mini-card"><span class="mini-visual visual-<?php echo esc_attr( $icon ); ?>" aria-hidden="true"><svg viewBox="0 0 64 64"><?php echo $icons[ $icon ]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- constant markup. ?></svg></span><b><?php echo self::t( self::v( $card, 'title' ) ); ?></b><p><?php echo self::t( self::v( $card, 'text' ) ); ?></p></div>
+          <<?php echo $tag; ?> class="mini-card"<?php echo 'a' === $tag ? self::href( $link ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><span class="mini-visual visual-<?php echo esc_attr( $icon ); ?>" aria-hidden="true"><?php echo $visual; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span><b><?php echo self::t( self::v( $card, 'title' ) ); ?></b><p><?php echo self::t( self::v( $card, 'text' ) ); ?></p></<?php echo $tag; ?>>
 <?php endforeach; ?>
         </div>
       </div>

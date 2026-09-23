@@ -25,5 +25,5 @@ What the build does:
 Package the plugin:
 
 ```sh
-cd /path/to/repo && rm -f hokmrani-elementor-*.zip && zip -rq hokmrani-elementor-1.0.0.zip hokmrani-elementor
+cd /path/to/repo && rm -f hokmrani-elementor-*.zip && zip -rq hokmrani-elementor-1.1.0.zip hokmrani-elementor
 ```

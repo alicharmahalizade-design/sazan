@@ -31,6 +31,7 @@ class HKL_Widget_Investment extends HKL_Widget_Base {
 			'hero'  => [
 				'label'    => 'تصویر بالا',
 				'controls' => [
+					'section_id' => [ 'type' => 'text', 'label' => 'شناسه بخش (Anchor)', 'default' => '' ],
 					'title'     => [ 'type' => 'text', 'label' => 'تیتر (برای موتور جستجو، مخفی)', 'default' => '۹ درصد پیش‌پرداخت و تسهیلات پنج ماهه' ],
 					'image'     => [ 'type' => 'media', 'label' => 'تصویر', 'default' => 'nine-percent.png' ],
 					'image_alt' => [ 'type' => 'text', 'label' => 'متن جایگزین تصویر', 'default' => '۹ درصد پیش‌پرداخت و تسهیلات پنج ماهه' ],
@@ -53,6 +54,8 @@ class HKL_Widget_Investment extends HKL_Widget_Base {
 									'installment' => 'نمودار اقساط',
 								],
 							],
+							'custom_icon' => [ 'type' => 'icon', 'label' => 'آیکن دلخواه' ],
+							'image'   => [ 'type' => 'media', 'label' => 'تصویر به‌جای آیکن (اختیاری)', 'default' => '' ],
 							'eyebrow' => [ 'type' => 'text', 'label' => 'برچسب', 'default' => '' ],
 							'title'   => [ 'type' => 'text', 'label' => 'عنوان', 'default' => 'عنوان' ],
 							'text'    => [ 'type' => 'rich', 'label' => 'متن', 'default' => '' ],
@@ -62,9 +65,46 @@ class HKL_Widget_Investment extends HKL_Widget_Base {
 							[ 'icon' => 'installment', 'eyebrow' => 'پرداخت منعطف', 'title' => 'شرایط پرداخت مرحله‌ای', 'text' => '<b>۹٪ پیش‌پرداخت</b> و باقیمانده در قالب تسهیلات ۵ ماهه، مطابق شرایط نهایی ثبت‌نام و اعتبارسنجی.' ],
 						],
 					],
-					'cta_text' => [ 'type' => 'text', 'label' => 'متن دکمه (فرم پیش‌ثبت‌نام را باز می‌کند)', 'default' => 'دریافت مشاوره و شرایط ثبت‌نام' ],
+					'show_cta'  => [ 'type' => 'switcher', 'label' => 'نمایش دکمه', 'default' => 'yes' ],
+					'cta_text'  => [ 'type' => 'text', 'label' => 'متن دکمه', 'default' => 'دریافت مشاوره و شرایط ثبت‌نام' ],
+					'cta_link'  => [ 'type' => 'link', 'label' => 'لینک دکمه (اختیاری)', 'default' => '', 'description' => 'اگر خالی بماند دکمه فرم پیش‌ثبت‌نام را باز می‌کند.' ],
+					'cta_arrow' => [ 'type' => 'text', 'label' => 'نماد دکمه', 'default' => '←' ],
+					'cta_icon'  => [ 'type' => 'icon', 'label' => 'آیکن دکمه' ],
 				],
 			],
+		];
+	}
+
+	protected static function styles() {
+		return [
+			'section'  => self::section_style( '.investment-section' ),
+			'wrap'     => [
+				'label'    => 'چیدمان',
+				'selector' => '.investment-wrap',
+				'kinds'    => [ 'gap', 'max_width' ],
+			],
+			'image'    => [
+				'label'    => 'تصویر بالا',
+				'selector' => '.investment-hero img',
+				'kinds'    => [ 'width', 'max_width', 'height', 'opacity', 'hide' ],
+			],
+			'box'      => self::box_style( 'کادر کارت‌ها', '.investment-box', [ 'gap' ] ),
+			'card'     => self::box_style( 'کارت', '.investment-card', [ 'gap' ] ),
+			'icon_box' => [
+				'label'    => 'کادر آیکن',
+				'selector' => '.investment-icon',
+				'kinds'    => [ 'background', 'width', 'min_height', 'radius', 'icon_color', 'hide' ],
+			],
+			'icon'     => self::icon_style( 'آیکن', '.investment-icon svg, .investment-icon img' ),
+			'eyebrow'  => self::text_style( 'برچسب', '.investment-card > div:last-child > span', [ 'bg', 'radius', 'padding' ] ),
+			'title'    => self::text_style( 'عنوان', '.investment-card h3' ),
+			'text'     => self::text_style( 'متن', '.investment-card p' ),
+			'bold'     => [
+				'label'    => 'بخش پررنگ متن',
+				'selector' => '.investment-card p b',
+				'kinds'    => [ 'typography', 'color' ],
+			],
+			'cta'      => self::button_style( 'دکمه', '.investment-cta', [ 'width' ] ),
 		];
 	}
 
@@ -73,7 +113,7 @@ class HKL_Widget_Investment extends HKL_Widget_Base {
 		list( $w, $h ) = self::media_size( $s['image'] ?? '', 1428, 523 );
 		$icons = self::ICONS;
 		?>
-<section class="investment-section white-section section-pad" aria-labelledby="investment-title">
+<section<?php echo self::id_attr( self::v( $s, 'section_id' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> class="investment-section white-section section-pad" aria-labelledby="investment-title">
       <div class="container investment-wrap">
         <header class="investment-hero">
           <h2 id="investment-title" class="sr-only"><?php echo self::t( self::v( $s, 'title' ) ); ?></h2>
@@ -83,15 +123,29 @@ class HKL_Widget_Investment extends HKL_Widget_Base {
         <div class="investment-box">
 <?php
 		foreach ( self::rows( $s, 'cards' ) as $card ) :
-			$icon = isset( $icons[ self::v( $card, 'icon' ) ] ) ? $icons[ self::v( $card, 'icon' ) ] : $icons['wallet'];
+			$icon  = isset( $icons[ self::v( $card, 'icon' ) ] ) ? $icons[ self::v( $card, 'icon' ) ] : $icons['wallet'];
+			$image = self::media_url( $card['image'] ?? '' );
+			$art   = $image ? '<img src="' . esc_url( $image ) . '" alt="" loading="lazy">' : self::icon( $card['custom_icon'] ?? [], $icon[1] );
 			?>
           <article class="investment-card">
-            <div class="investment-icon<?php echo $icon[0]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" aria-hidden="true"><?php echo $icon[1]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- constant markup. ?></div>
+            <div class="investment-icon<?php echo $icon[0]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" aria-hidden="true"><?php echo $art; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
             <div><span><?php echo self::t( self::v( $card, 'eyebrow' ) ); ?></span><h3><?php echo self::t( self::v( $card, 'title' ) ); ?></h3><p><?php echo self::r( self::v( $card, 'text' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p></div>
           </article>
 <?php endforeach; ?>
         </div>
-        <button class="investment-cta" type="button" data-open-enrollment><?php echo self::t( self::v( $s, 'cta_text' ) ); ?> <span aria-hidden="true">←</span></button>
+<?php
+		if ( 'yes' === self::v( $s, 'show_cta' ) ) :
+			$link  = self::arr( $s, 'cta_link' );
+			$arrow = '<span aria-hidden="true">' . self::icon( $s['cta_icon'] ?? [], self::t( self::v( $s, 'cta_arrow' ) ) ) . '</span>';
+			if ( ! empty( $link['url'] ) ) :
+				?>
+        <a class="investment-cta"<?php echo self::href( $link ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo self::t( self::v( $s, 'cta_text' ) ); ?> <?php echo $arrow; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></a>
+			<?php else : ?>
+        <button class="investment-cta" type="button" data-open-enrollment><?php echo self::t( self::v( $s, 'cta_text' ) ); ?> <?php echo $arrow; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
+				<?php
+			endif;
+		endif;
+		?>
       </div>
     </section>
 		<?php
