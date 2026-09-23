@@ -1,0 +1,95 @@
+/*!
+ * Hokmrani Landing for Elementor
+ * Elementor compatibility layer: makes Elementor's own wrappers invisible to layout
+ * so every landing widget renders exactly like the original static page.
+ */
+
+/* Front end: Elementor wrappers do not generate boxes. Sticky/fixed elements and
+   every flow/margin relation behave exactly as in the static page. */
+body.hk-page:not(.elementor-editor-active) :is(.elementor, .elementor-section-wrap, .e-con:not(.hk-box), .e-con-inner, .elementor-section:not(.hk-box), .elementor-container, .elementor-row, .elementor-column, .elementor-column-wrap, .elementor-widget-wrap, .elementor-element.elementor-widget, .elementor-widget-container) {
+	display: contents;
+}
+
+/* Editor preview: keep real boxes (Elementor needs them for its handles) but remove all spacing. */
+body.hk-page.elementor-editor-active .e-con:not(.hk-box) {
+	--display: block;
+	--padding-top: 0px;
+	--padding-right: 0px;
+	--padding-bottom: 0px;
+	--padding-left: 0px;
+	--gap: 0px;
+	--row-gap: 0px;
+	--column-gap: 0px;
+	--width: 100%;
+}
+body.hk-page.elementor-editor-active .elementor-widget[class*="elementor-widget-hk-"] {
+	margin: 0;
+	width: 100%;
+	max-width: none;
+}
+
+/* Structural boxes of the original page (<main> and .opening-shell) are Elementor
+   containers/sections marked with .hk-box. Only Elementor's defaults are reset here
+   (through its variables); every property the landing styles set still wins. */
+body.hk-page .e-con.hk-box {
+	--display: block;
+	--padding-top: 0px;
+	--padding-right: 0px;
+	--padding-bottom: 0px;
+	--padding-left: 0px;
+	--margin-top: 0px;
+	--margin-right: 0px;
+	--margin-bottom: 0px;
+	--margin-left: 0px;
+	--width: 100%;
+	--min-height: 0;
+	--gap: 0px;
+	--row-gap: 0px;
+	--column-gap: 0px;
+	--border-radius: 0;
+	--position: static;
+	--z-index: auto;
+	--overflow: visible;
+	text-align: inherit;
+	transition: none;
+}
+body.hk-page .elementor-section.hk-main {
+	position: static;
+}
+body.hk-page .elementor-section.hk-box > .elementor-container,
+body.hk-page .elementor-section.hk-box > .elementor-container > .elementor-column,
+body.hk-page .elementor-section.hk-box > .elementor-container > .elementor-column > .elementor-widget-wrap {
+	display: contents;
+}
+
+/* Elementor applies border-box to pseudo-elements too (.elementor *:before); the original
+   page only sets it on elements. */
+:where(body.hk-page) .elementor :where(*)::before,
+:where(body.hk-page) .elementor :where(*)::after {
+	box-sizing: content-box;
+}
+
+/* Elementor's generic image reset (.elementor img) must not limit the landing images. */
+:where(body.hk-page) .elementor img {
+	max-width: none;
+}
+
+/* Optional images chosen in the widgets (defaults keep the original artwork). */
+.hk-page .org-logo.has-image img {
+	display: block;
+	max-width: 100%;
+	max-height: 38px;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+}
+.hk-page .media-photo.has-photo,
+.hk-page .avatar.has-photo {
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+.hk-page .media-photo.has-photo:after,
+.hk-page .avatar.has-photo:before {
+	display: none;
+}
