@@ -50,6 +50,7 @@ final class HKL_Plugin {
 
 	private function __construct() {
 		add_action( 'init', [ $this, 'register_assets' ] );
+		add_action( 'init', [ $this, 'maybe_flush_caches' ], 20 );
 		add_action( 'admin_notices', [ $this, 'elementor_notice' ] );
 
 		add_action( 'elementor/elements/categories_registered', [ $this, 'register_category' ] );
@@ -65,6 +66,23 @@ final class HKL_Plugin {
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_for_template' ], 9999 );
 		add_action( 'wp_print_styles', [ $this, 'isolate_template_assets' ], 1 );
 		add_action( 'wp_footer', [ $this, 'maybe_print_sprite' ], 1 );
+		add_action( 'template_redirect', [ $this, 'clean_canvas_output' ] );
+	}
+
+	/**
+	 * The landing canvas prints the widgets' markup untouched: WordPress must not add
+	 * attributes to the images (decoding/loading/fetchpriority change when they paint)
+	 * nor swap characters such as ▶ ✓ ↑ for emoji images.
+	 */
+	public function clean_canvas_output() {
+		if ( ! self::is_landing_template() ) {
+			return;
+		}
+		remove_filter( 'the_content', 'wp_filter_content_tags', 12 );
+		remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+		remove_action( 'wp_print_styles', 'print_emoji_styles' );
+		remove_action( 'wp_enqueue_scripts', 'wp_enqueue_emoji_styles' );
+		remove_filter( 'the_content', 'convert_smilies', 20 );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -97,6 +115,21 @@ final class HKL_Plugin {
 			$data = wp_json_encode( $data );
 		}
 		return is_string( $data ) && false !== strpos( $data, '"widgetType":"hk-' );
+	}
+
+	/**
+	 * After an update of this plugin the widgets' markup/CSS may change: drop Elementor's
+	 * cached element HTML and generated CSS once so pages show the new output.
+	 */
+	public function maybe_flush_caches() {
+		if ( get_option( 'hkl_version' ) === HKL_VERSION ) {
+			return;
+		}
+		update_option( 'hkl_version', HKL_VERSION );
+		delete_post_meta_by_key( '_elementor_element_cache' );
+		if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
+			\Elementor\Plugin::$instance->files_manager->clear_cache();
+		}
 	}
 
 	/* ------------------------------------------------------------------ */

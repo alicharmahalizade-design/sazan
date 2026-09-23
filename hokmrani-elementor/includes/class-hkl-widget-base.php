@@ -116,11 +116,13 @@ abstract class HKL_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	private function uses_wrapper_box() {
-		$settings = $this->get_settings();
+		// Only values saved on the element count (get_settings() also returns control
+		// defaults such as _offset_orientation_h = "start").
+		$settings = $this->get_data( 'settings' );
 		if ( ! is_array( $settings ) ) {
 			return false;
 		}
-		$pattern = '/^_(margin|padding|background_background|background_hover_background|border_border|border_radius|box_shadow_box_shadow_type|element_width|element_custom_width|position|z_index|transform_|flex_|offset_)/';
+		$pattern = '/^_(margin|padding|background_background|background_hover_background|border_border|border_radius|box_shadow_box_shadow_type|element_width|element_custom_width|position|z_index|transform_\w+_popover|flex_size|flex_grow|flex_shrink|flex_align_self|flex_order)/';
 		foreach ( $settings as $key => $value ) {
 			if ( preg_match( $pattern, $key ) && self::has_value( $value ) ) {
 				return true;
@@ -896,23 +898,42 @@ abstract class HKL_Widget_Base extends \Elementor\Widget_Base {
 
 	/**
 	 * A custom icon chosen in an ICONS control, or $fallback (the original markup).
-	 * Font icons are printed as inline SVG when possible so they inherit the size and
-	 * colour rules the original stylesheet has for its SVG icons.
+	 * With Elementor's inline SVG icons the icon inherits the size and colour rules the
+	 * original stylesheet has for its SVG icons; font icons (<i>) are styled in landing.css.
 	 */
 	protected static function icon( $icon, $fallback ) {
 		if ( ! self::has_icon( $icon ) || ! class_exists( '\Elementor\Icons_Manager' ) ) {
 			return $fallback;
 		}
-		$html = '';
-		if ( 'svg' !== ( $icon['library'] ?? '' ) && method_exists( '\Elementor\Icons_Manager', 'get_font_icon_svg' ) ) {
-			$html = (string) \Elementor\Icons_Manager::get_font_icon_svg( $icon, [ 'aria-hidden' => 'true' ] );
-		}
+		$html = self::font_icon_svg( $icon );
 		if ( '' === $html ) {
 			ob_start();
 			\Elementor\Icons_Manager::render_icon( $icon, [ 'aria-hidden' => 'true' ] );
 			$html = (string) ob_get_clean();
 		}
 		return '' === trim( $html ) ? $fallback : '<span class="hk-icon" aria-hidden="true">' . $html . '</span>';
+	}
+
+	/**
+	 * A Font Awesome / eicons icon as inline SVG (the same path Elementor uses for its
+	 * "Inline Font Icons" feature), so it is sized like the original SVG icons whether
+	 * or not that feature is enabled. Returns '' when not possible.
+	 */
+	private static function font_icon_svg( array $icon ) {
+		$manager = '\Elementor\Core\Page_Assets\Data_Managers\Font_Icon_Svg\Manager';
+		if ( 'svg' === ( $icon['library'] ?? '' ) || ! class_exists( $manager ) || ! method_exists( '\Elementor\Icons_Manager', 'get_font_icon_svg' ) ) {
+			return '';
+		}
+		try {
+			$family = $manager::get_font_family( (string) ( $icon['library'] ?? '' ) );
+			if ( ! $family ) {
+				return '';
+			}
+			$icon['font_family'] = $family;
+			return (string) \Elementor\Icons_Manager::get_font_icon_svg( $icon, [ 'aria-hidden' => 'true' ] );
+		} catch ( \Throwable $e ) {
+			return '';
+		}
 	}
 
 	/** Media control value → URL. */
